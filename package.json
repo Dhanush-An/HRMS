@@ -1,0 +1,15 @@
+{
+  "name": "hrms-unified",
+  "version": "1.0.0",
+  "description": "Unified HRMS Project",
+  "scripts": {
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "frontend": "cd frontend && npm run dev",
+    "backend": "cd backend && npm run dev",
+    "dev": "node start.js",
+    "start": "node start.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

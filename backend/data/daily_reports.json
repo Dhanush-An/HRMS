@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "employeeId": 1,
+    "role": "Full Stack developer",
+    "date": "February 12, 2026",
+    "department": "Tech",
+    "morningReport": "updating hrms",
+    "afternoonReport": "updating hrms",
+    "timestamp": "2026-02-12T05:42:17.994Z"
+  },
+  {
+    "id": 2,
+    "employeeId": 6,
+    "role": "Mern Stack developer",
+    "date": "February 12, 2026",
+    "department": "Tech",
+    "morningReport": "hrms uploading",
+    "afternoonReport": "hrms uploading",
+    "timestamp": "2026-02-12T05:47:23.521Z"
+  },
+  {
+    "id": 3,
+    "employeeId": 6,
+    "role": "Mern Stack developer",
+    "date": "February 12, 2026",
+    "department": "Tech",
+    "morningReport": "kjhguytutgyi",
+    "afternoonReport": "hfjhykl.k.,l.mvgdxdxs",
+    "timestamp": "2026-02-12T06:24:52.114Z"
+  }
+]

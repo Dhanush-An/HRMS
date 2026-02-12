@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "type": "General Update",
+    "content": "Monthly attendance report is now available for download.",
+    "time": "10:00 AM",
+    "date": "2/12/2026",
+    "color": "purple"
+  },
+  {
+    "id": 2,
+    "type": "Company Policy",
+    "content": "New leave policy has been updated in the policies section.",
+    "time": "09:15 AM",
+    "date": "2/12/2026",
+    "color": "blue"
+  },
+  {
+    "id": 1770867498371,
+    "type": "General Update",
+    "content": "all are come with formal, because we have Client meeting\n",
+    "color": "purple",
+    "date": "2/12/2026",
+    "time": "09:08 AM"
+  },
+  {
+    "id": 1770875208205,
+    "type": "General Update",
+    "content": "Day after tomorrow the office will be open at 10am",
+    "color": "purple",
+    "date": "2/12/2026",
+    "time": "11:16 AM"
+  }
+]
