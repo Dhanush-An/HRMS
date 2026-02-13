@@ -4,9 +4,10 @@
   "description": "",
   "main": "src/utils/index.js",
   "scripts": {
-      "start": "node index.js",
-    "dev": "nodemon src/utils/index.js",
-    "seed": "node database/seed.js"
+  "build": "tsc",
+  "start": "node dist/index.js",
+  "dev": "nodemon src/utils/index.js",
+  "seed": "node database/seed.js"
   },
   "keywords": [],
   "author": "",
