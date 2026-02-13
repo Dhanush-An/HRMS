@@ -8,22 +8,6 @@
     "status": "Present"
   },
   {
-    "id": 2,
-    "employee_id": 14,
-    "date": "2026-02-12",
-    "check_in": "09:58:08",
-    "status": "Present",
-    "check_out": "09:58:28"
-  },
-  {
-    "id": 3,
-    "employee_id": 13,
-    "date": "2026-02-12",
-    "check_in": "09:59:00",
-    "status": "Present",
-    "check_out": "09:59:03"
-  },
-  {
     "id": 4,
     "employee_id": 5,
     "date": "2026-02-12",
@@ -45,5 +29,12 @@
     "check_in": "11:58:27",
     "status": "Present",
     "check_out": "11:58:28"
+  },
+  {
+    "id": 7,
+    "employee_id": 1,
+    "date": "2026-02-13",
+    "check_in": "09:23:07",
+    "status": "Present"
   }
 ]

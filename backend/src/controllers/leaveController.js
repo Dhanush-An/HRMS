@@ -9,21 +9,23 @@ exports.getAllLeaves = async (req, res) => {
         const leaves = await readData(FILE_NAME);
         const employees = await readData(EMP_FILE);
 
-        const mappedLeaves = leaves.map(leave => {
-            const employee = employees.find(e => String(e.id) === String(leave.employee_id));
-            return {
-                id: leave.id,
-                employeeId: leave.employee_id,
-                employeeName: employee ? employee.name : 'Unknown',
-                leaveType: leave.leave_type,
-                startDate: leave.start_date,
-                endDate: leave.end_date,
-                days: leave.days,
-                reason: leave.reason,
-                status: leave.status,
-                appliedOn: leave.applied_on
-            };
-        });
+        const mappedLeaves = leaves
+            .map(leave => {
+                const employee = employees.find(e => String(e.id) === String(leave.employee_id));
+                return {
+                    id: leave.id,
+                    employeeId: leave.employee_id,
+                    employeeName: employee ? employee.name : null,
+                    leaveType: leave.leave_type,
+                    startDate: leave.start_date,
+                    endDate: leave.end_date,
+                    days: leave.days,
+                    reason: leave.reason,
+                    status: leave.status,
+                    appliedOn: leave.applied_on
+                };
+            })
+            .filter(l => l.employeeName !== null);
 
         res.json(mappedLeaves.sort((a, b) => new Date(b.appliedOn) - new Date(a.appliedOn)));
     } catch (error) {

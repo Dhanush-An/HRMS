@@ -20,7 +20,10 @@ const Dashboard = ({ employees, attendance, leaves, announcements }) => {
         return {
             totalEmployees: employees.length,
             activeEmployees: employees.filter(e => e.status === 'Active').length,
-            presentToday: attendance.filter(a => a.status === 'Present').length,
+            presentToday: attendance.filter(a =>
+                a.status === 'Present' &&
+                a.date === new Date().toISOString().split('T')[0]
+            ).length,
             pendingLeaves: leaves.filter(l => l.status === 'Pending').length,
             documentCompliance: employees.length > 0
                 ? (((employees.length - pendingDocsEmployees.length) / employees.length) * 100).toFixed(0) + '%'

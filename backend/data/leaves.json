@@ -1,52 +1,13 @@
 [
   {
     "id": 1,
-    "employee_id": 2,
-    "leave_type": "Sick Leave",
-    "start_date": "2026-02-12",
-    "end_date": "2026-02-13",
-    "days": 2,
-    "reason": "Medical",
-    "status": "Approved",
-    "applied_on": "2026-02-10",
-    "approved_by": 4,
-    "approved_on": "2026-02-12"
-  },
-  {
-    "id": 2,
-    "employee_id": 14,
-    "leave_type": "Sick Leave",
-    "start_date": "2026-02-13",
-    "end_date": "2026-02-14",
-    "days": 2,
-    "reason": "i need leave for this day",
-    "applied_on": "2026-02-12",
-    "status": "Rejected",
-    "approved_by": 4,
-    "approved_on": "2026-02-12"
-  },
-  {
-    "id": 3,
     "employee_id": 1,
-    "leave_type": "Vacation",
-    "start_date": "2026-02-15",
-    "end_date": "2026-02-17",
-    "days": 3,
-    "reason": "trip to Ooty",
-    "applied_on": "2026-02-12",
-    "status": "Approved",
-    "approved_by": 4,
-    "approved_on": "2026-02-12"
-  },
-  {
-    "id": 4,
-    "employee_id": 6,
     "leave_type": "Sick Leave",
     "start_date": "2026-02-13",
     "end_date": "2026-02-14",
-    "days": 2,
-    "reason": "medical issue",
-    "applied_on": "2026-02-12",
-    "status": "Pending"
+    "days": 1,
+    "reason": "Cold",
+    "status": "Approved",
+    "applied_on": "2026-02-13"
   }
 ]
