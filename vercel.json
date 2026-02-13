@@ -1,8 +1,32 @@
 {
+    "version": 2,
+    "outputDirectory": "frontend/dist",
+    "builds": [
+        {
+            "src": "backend/src/server.js",
+            "use": "@vercel/node"
+        },
+        {
+            "src": "frontend/package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        }
+    ],
     "rewrites": [
         {
-            "source": "/(.*)",
-            "destination": "/"
+            "source": "/api/:match*",
+            "destination": "backend/src/server.js"
+        },
+        {
+            "source": "/assets/:match*",
+            "destination": "frontend/dist/assets/:match*",
+            "check": true
+        },
+        {
+            "source": "/((?!api/).*)",
+            "destination": "frontend/dist/index.html"
         }
     ]
 }
