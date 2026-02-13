@@ -65,7 +65,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 // Only start the server if we're not running in a serverless environment
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL || process.env.RENDER) {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
     });
