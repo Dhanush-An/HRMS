@@ -33,38 +33,42 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/reports', reportRoutes);
 
-// Serve static files from the frontend build directory
-app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+// Only serve static files and SPA catch-all in development
+// Vercel handles this via vercel.json rewrites
+if (process.env.NODE_ENV !== 'production') {
+    app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 
-// Health check
-app.get('/health', (req, res) => {
-    res.json({ status: 'OK', message: 'HRMS API is running' });
-});
-
-// SPA Support - Serve index.html for any non-API routes
-app.use((req, res, next) => {
-    if (req.path.startsWith('/api')) {
-        return res.status(404).json({ message: `API Route not found: ${req.method} ${req.path}` });
-    }
-    const indexPath = path.join(__dirname, '../../frontend/dist/index.html');
-    res.sendFile(indexPath, (err) => {
-        if (err) {
-            res.status(404).json({ message: "Frontend build not found. Please run 'npm run build' or use dev server." });
+    app.use((req, res, next) => {
+        if (req.path.startsWith('/api')) {
+            return res.status(404).json({ message: `API Route not found: ${req.method} ${req.path}` });
         }
+        const indexPath = path.join(__dirname, '../../frontend/dist/index.html');
+        res.sendFile(indexPath, (err) => {
+            if (err) {
+                res.status(404).json({ message: "Frontend build not found. Please run 'npm run build' or use dev server." });
+            }
+        });
     });
-});
+} else {
+    // In production (Vercel), just have a simple API 404
+    app.use('/api/*', (req, res) => {
+        res.status(404).json({ message: `API Route not found: ${req.method} ${req.originalUrl}` });
+    });
+}
 
 // Error handling
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ message: 'Something went wrong!' });
+    console.error('Server Error:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
 });
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📍 API URL: http://localhost:${PORT}`);
-});
+// Only start the server if we're not running in a serverless environment
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+    });
+}
 
 module.exports = app;
