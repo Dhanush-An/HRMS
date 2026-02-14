@@ -20,8 +20,9 @@ const app = express();
 
 // Middleware
 // Middleware
+const frontendUrl = (process.env.FRONTEND_URL || '').trim();
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : true,
+    origin: process.env.NODE_ENV === 'production' ? (frontendUrl || true) : true,
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
