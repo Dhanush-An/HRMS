@@ -19,7 +19,11 @@ const reportRoutes = require('./routes/reports');
 const app = express();
 
 // Middleware
-app.use(cors());
+// Middleware
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : true,
+    credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -45,6 +49,7 @@ if (process.env.NODE_ENV !== 'production') {
 
     app.use((req: Request, res: Response, next: NextFunction) => {
         if (req.path.startsWith('/api')) {
+            console.log(`[Route Error] API 404: ${req.method} ${req.path}`);
             return res.status(404).json({ message: `API Route not found: ${req.method} ${req.path}` });
         }
         const indexPath = path.join(__dirname, '../../frontend/dist/index.html');
@@ -57,6 +62,7 @@ if (process.env.NODE_ENV !== 'production') {
 } else {
     // In production (Vercel/Render), just have a simple API 404
     app.use("/api", (req: Request, res: Response) => {
+        console.log(`[Route Error] API 404: ${req.method} ${req.originalUrl}`);
         res.status(404).json({ message: `API Route not found: ${req.method} ${req.originalUrl}` });
     });
 }
