@@ -1,13 +1,19 @@
 {
     "version": 2,
+    "functions": {
+        "backend/dist/index.js": {
+            "memory": 1024,
+            "maxDuration": 10
+        }
+    },
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/backend/$1"
+            "destination": "/backend/dist/index.js"
         },
         {
-            "source": "/(.*)",
-            "destination": "/frontend/dist/$1"
+            "source": "/assets/(.*)",
+            "destination": "/frontend/dist/assets/$1"
         },
         {
             "source": "/(.*)",
