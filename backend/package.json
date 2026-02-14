@@ -2,10 +2,10 @@
   "name": "hrms-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "src/utils/index.js",
+   "main": "dist/index.js",
   "scripts": {
-  "build": "tsc",
-  "start": "node dist/index.js",
+    "build": "tsc",
+    "start": "node dist/index.js",
   "dev": "nodemon src/utils/index.js",
   "seed": "node database/seed.js"
   },
