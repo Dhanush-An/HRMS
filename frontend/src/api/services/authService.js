@@ -2,7 +2,8 @@ import client from '../client';
 
 export const authService = {
     login: async (email, password, role) => {
-        const response = await client.post('/auth/login', { email: email.toLowerCase(), password, role: role.toLowerCase() });
+        const cleanEmail = (email || '').trim();
+        const response = await client.post('/auth/login', { email: cleanEmail, password, role });
         if (response.data.token) {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('role', response.data.role);
@@ -11,7 +12,8 @@ export const authService = {
         return response.data;
     },
     register: async (name, email, password, role) => {
-        const response = await client.post('/auth/register', { name, email: email.toLowerCase(), password, role });
+        const cleanEmail = (email || '').trim();
+        const response = await client.post('/auth/register', { name, email: cleanEmail, password, role });
         if (response.data.token) {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('role', response.data.role);

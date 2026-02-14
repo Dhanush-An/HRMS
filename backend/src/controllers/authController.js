@@ -6,8 +6,12 @@ const { readData, writeData } = require('../utils/storage');
 exports.login = async (req, res) => {
     try {
         let { email, password, role } = req.body;
-        if (email) email = email.toLowerCase();
-        if (role) role = role.toLowerCase();
+
+        // Sanitize inputs
+        email = (email || '').trim().toLowerCase();
+        role = (role || '').trim().toLowerCase();
+
+        console.log(`[Auth] Login Attempt - Email: "${email}", Role: "${role}"`);
 
         // Admin login
         if (role === 'admin') {
@@ -25,13 +29,12 @@ exports.login = async (req, res) => {
 
         // Find user by email or username first
         const user = employees.find(e =>
-            e.email === email || (e.username && e.username === email)
+            (e.email && e.email.toLowerCase() === email) ||
+            (e.username && e.username.toLowerCase() === email)
         );
 
-        console.log(`Login Request: ${email}, Role: ${role}`);
-
         if (!user) {
-            console.log('User not found');
+            console.log(`[Auth] User not found: "${email}"`);
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
