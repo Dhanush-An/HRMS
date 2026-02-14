@@ -55,11 +55,10 @@ if (process.env.NODE_ENV !== 'production') {
         });
     });
 } else {
-    // In production (Vercel), just have a simple API 404
-    app.use("/api/:path*",
-        (req: Request, res: Response) => {
-            res.status(404).json({ message: `API Route not found: ${req.method} ${req.originalUrl}` });
-        });
+    // In production (Vercel/Render), just have a simple API 404
+    app.use("/api", (req: Request, res: Response) => {
+        res.status(404).json({ message: `API Route not found: ${req.method} ${req.originalUrl}` });
+    });
 }
 
 // Error handling
