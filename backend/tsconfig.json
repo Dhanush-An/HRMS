@@ -12,7 +12,14 @@
         "strict": true,
         "skipLibCheck": true,
         "allowJs": true,
-        "noImplicitAny": false
+        "noImplicitAny": false,
+        "types": [
+            "node",
+            "express",
+            "cors",
+            "jsonwebtoken",
+            "dotenv"
+        ]
     },
     "include": [
         "src"

@@ -3,8 +3,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 
+// Load environment variables
 dotenv.config();
 
+// Import routes using dynamic imports or type them as any for now since they are .js files
+// Setting them to 'any' to avoid "missing module" errors while they remain .js
 const authRoutes = require('./routes/auth');
 const employeeRoutes = require('./routes/employees');
 const attendanceRoutes = require('./routes/attendance');
@@ -68,7 +71,7 @@ const PORT = process.env.PORT || 5000;
 
 // Only start the server if we're not running in a serverless environment
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL || process.env.RENDER) {
-    app.listen(PORT, () => {
+    app.listen(Number(PORT), () => {
         console.log(`🚀 Server running on port ${PORT}`);
     });
 }
