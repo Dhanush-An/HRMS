@@ -1,6 +1,9 @@
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config();
 
 const authRoutes = require('./routes/auth');
 const employeeRoutes = require('./routes/employees');
@@ -11,7 +14,6 @@ const announcementRoutes = require('./routes/announcements');
 const reportRoutes = require('./routes/reports');
 
 const app = express();
-const path = require('path');
 
 // Middleware
 app.use(cors());
@@ -19,7 +21,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Request Logger
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
     console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
     next();
 });
@@ -38,7 +40,7 @@ app.use('/api/reports', reportRoutes);
 if (process.env.NODE_ENV !== 'production') {
     app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 
-    app.use((req, res, next) => {
+    app.use((req: Request, res: Response, next: NextFunction) => {
         if (req.path.startsWith('/api')) {
             return res.status(404).json({ message: `API Route not found: ${req.method} ${req.path}` });
         }
@@ -51,13 +53,13 @@ if (process.env.NODE_ENV !== 'production') {
     });
 } else {
     // In production (Vercel), just have a simple API 404
-    app.use('/api/*', (req, res) => {
+    app.use('/api/*', (req: Request, res: Response) => {
         res.status(404).json({ message: `API Route not found: ${req.method} ${req.originalUrl}` });
     });
 }
 
 // Error handling
-app.use((err, req, res, next) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error('Server Error:', err);
     res.status(500).json({ message: 'Internal Server Error' });
 });
@@ -71,4 +73,4 @@ if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL || process.env.
     });
 }
 
-module.exports = app;
+export default app;
