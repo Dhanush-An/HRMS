@@ -30,5 +30,13 @@
     "color": "purple",
     "date": "2/12/2026",
     "time": "11:16 AM"
+  },
+  {
+    "id": 1771218840986,
+    "type": "Event",
+    "content": "Coming Friday is the fun Friday",
+    "color": "purple",
+    "date": "2/16/2026",
+    "time": "10:44 AM"
   }
 ]

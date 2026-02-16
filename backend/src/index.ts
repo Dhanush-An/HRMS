@@ -4,8 +4,11 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 
+
 // Load environment variables
 dotenv.config();
+
+
 
 // Import routes using dynamic imports or type them as any for now since they are .js files
 // Setting them to 'any' to avoid "missing module" errors while they remain .js
