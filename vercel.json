@@ -21,7 +21,7 @@
             "destination": "/frontend/dist/$1.$2"
         },
         {
-            "source": "/(.*)",
+            "source": "/((?!api/.*).*)",
             "destination": "/frontend/dist/index.html"
         }
     ]
