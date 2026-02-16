@@ -44,6 +44,11 @@ app.use('/api/payroll', payrollRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/reports', reportRoutes);
 
+// Health Check / Root Handler for Render
+app.get('/', (req: Request, res: Response) => {
+    res.send('HRMS Backend is running successfully!');
+});
+
 // Only serve static files and SPA catch-all in development
 // Vercel handles this via vercel.json rewrites
 if (process.env.NODE_ENV !== 'production') {
