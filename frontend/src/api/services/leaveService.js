@@ -15,10 +15,13 @@ const mapToFrontend = (data) => ({
     leaveType: data.leaveType || data.leave_type,
     startDate: data.startDate || data.start_date,
     endDate: data.endDate || data.end_date,
+    days: data.days,
+    reason: data.reason,
+    status: data.status,
     appliedOn: data.appliedOn || data.applied_on,
     approvedBy: data.approvedBy || data.approved_by,
     approvedOn: data.approvedOn || data.approved_on,
-    employeeName: data.employeeName || 'Unknown Employee'
+    employeeName: data.employeeName || data.employee_name || 'Unknown Employee'
 });
 
 export const leaveService = {

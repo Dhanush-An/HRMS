@@ -20,9 +20,10 @@ const mapToBackend = (data) => {
 
 const mapToFrontend = (data) => ({
     ...data,
-    joiningDate: data.joining_date,
-    employeeId: data.employee_id,
-    reportingTo: data.reporting_to
+    joiningDate: data.joining_date || data.joiningDate,
+    employeeId: data.employee_id || data.employeeId,
+    reportingTo: data.reporting_to || data.reportingTo,
+    // Ensure nested objects are handled if needed, but for now this fixes the overwrite
 });
 
 export const employeeService = {

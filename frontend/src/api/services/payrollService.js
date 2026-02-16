@@ -2,14 +2,14 @@ import client from '../client';
 
 const mapToFrontend = (data) => ({
     ...data,
-    employeeId: data.employee_id,
-    baseSalary: data.base_salary,
-    netPay: data.net_pay,
-    taxStatus: data.tax_status,
-    pfStatus: data.pf_status,
-    esiStatus: data.esi_status,
-    paymentDate: data.payment_date,
-    employeeName: data.employeeName
+    employeeId: data.employee_id || data.employeeId,
+    baseSalary: data.base_salary || data.baseSalary,
+    netPay: data.net_pay || data.netPay,
+    taxStatus: data.tax_status || data.taxStatus,
+    pfStatus: data.pf_status || data.pfStatus,
+    esiStatus: data.esi_status || data.esiStatus,
+    paymentDate: data.payment_date || data.paymentDate,
+    employeeName: data.employeeName || data.employee_name
 });
 
 export const payrollService = {

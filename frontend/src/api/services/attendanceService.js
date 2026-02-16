@@ -2,10 +2,10 @@ import client from '../client';
 
 const mapToFrontend = (data) => ({
     ...data,
-    employeeId: data.employee_id,
-    checkIn: data.check_in,
-    checkOut: data.check_out,
-    employeeName: data.employeeName
+    employeeId: data.employee_id || data.employeeId,
+    checkIn: data.check_in || data.checkIn,
+    checkOut: data.check_out || data.checkOut,
+    employeeName: data.employeeName || data.employee_name
 });
 
 export const attendanceService = {
