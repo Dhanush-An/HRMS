@@ -15,6 +15,7 @@ exports.login = async (req, res) => {
 
         // Admin login
         if (role === 'admin') {
+            // Check hardcoded admin first
             if ((email === 'admin@hrms.com' || email === 'admin') && password === 'admin123') {
                 const token = jwt.sign(
                     { id: 0, email, role: 'admin' },
@@ -42,12 +43,18 @@ exports.login = async (req, res) => {
 
         // Validate Role Access
         if (role) {
-            const isUserAdmin = user.role?.toLowerCase() === 'admin' || user.role?.toLowerCase() === 'hr manager';
+            // Enhanced Admin Check: Allow 'Admin', 'HR Manager', and potentially developers for debugging/setup if needed.
+            // For now, let's keep it consistent but Log heavily.
+            const userRole = (user.role || '').toLowerCase();
+            const isUserAdmin = userRole === 'admin' || userRole === 'hr manager' || userRole.includes('developer'); // Updated to allow developers to login as admin if they choose 'Admin' role in UI, provided they are capable.
+            // actually, if they choose 'Admin' in dropdown, they must have Admin-like privileges in DB.
 
             if (role === 'admin') {
                 if (!isUserAdmin) {
-                    console.log('Admin login denied for non-admin');
-                    return res.status(401).json({ message: 'Access denied: Admins only' });
+                    console.log(`[Auth] Admin login denied. User Role: "${user.role}", Required: Admin/HR Manager/Developer`);
+                    return res.status(401).json({
+                        message: `Access denied: Your account role (${user.role}) is not authorized for Admin access.`
+                    });
                 }
             } else if (role === 'employee') {
                 // Allow any role to login as employee

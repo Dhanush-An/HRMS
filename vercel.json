@@ -8,7 +8,6 @@
         }
     },
     "rewrites": [
-        { "source": "/(.*)", "destination": "/" },
         {
             "source": "/api/(.*)",
             "destination": "/backend/dist/index.js"
@@ -18,9 +17,8 @@
             "destination": "/frontend/dist/$1.$2"
         },
         {
-            "source": "/((?!api).*)",
+            "source": "/(.*)",
             "destination": "/frontend/dist/index.html"
         }
-        
     ]
 }
