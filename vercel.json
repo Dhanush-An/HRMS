@@ -1,7 +1,7 @@
 {
     "version": 2,
     "functions": {
-        "backend/dist/index.js": {
+        "api/index.js": {
             "memory": 1024,
             "maxDuration": 10,
             "includeFiles": "backend/data/**"
@@ -10,7 +10,7 @@
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/backend/dist/index.js"
+            "destination": "/api/index.js"
         },
         {
             "source": "/(.*)\\.(css|js|png|jpg|jpeg|svg|ico|json)",
