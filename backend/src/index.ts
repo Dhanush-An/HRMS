@@ -39,13 +39,21 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Routes
+console.log('Registering routes...');
 app.use('/api/auth', authRoutes);
+console.log(' - /api/auth registered');
 app.use('/api/employees', employeeRoutes);
+console.log(' - /api/employees registered');
 app.use('/api/attendance', attendanceRoutes);
+console.log(' - /api/attendance registered');
 app.use('/api/leaves', leaveRoutes);
+console.log(' - /api/leaves registered');
 app.use('/api/payroll', payrollRoutes);
+console.log(' - /api/payroll registered');
 app.use('/api/announcements', announcementRoutes);
+console.log(' - /api/announcements registered');
 app.use('/api/reports', reportRoutes);
+console.log(' - /api/reports registered');
 
 // Health Check / Root Handler for Render
 app.get('/', (req: Request, res: Response) => {
