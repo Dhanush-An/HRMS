@@ -140,19 +140,6 @@ const Employees = () => {
         }
     };
 
-    const toggleStatus = async (employee: Employee) => {
-        const newStatus = employee.status === 'Active' ? 'Inactive' : 'Active';
-        try {
-            await fetch(`http://localhost:5000/api/employees/${employee.id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...employee, status: newStatus })
-            });
-            fetchEmployees();
-        } catch (error) {
-            console.error('Error updating status:', error);
-        }
-    };
 
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
