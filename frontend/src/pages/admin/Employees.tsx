@@ -13,6 +13,7 @@ import {
     Filter
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { API_URL } from '../../config';
 
 interface Employee {
     id: string;
@@ -50,7 +51,7 @@ const Employees = () => {
 
     const fetchEmployees = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/employees');
+            const response = await fetch(`${API_URL}/api/employees`);
             const data = await response.json();
             setEmployees(data);
         } catch (error) {
@@ -108,7 +109,7 @@ const Employees = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this employee?')) {
             try {
-                await fetch(`http://localhost:5000/api/employees/${id}`, { method: 'DELETE' });
+                await fetch(`${API_URL}/api/employees/${id}`, { method: 'DELETE' });
                 fetchEmployees();
             } catch (error) {
                 console.error('Error deleting employee:', error);
@@ -120,8 +121,8 @@ const Employees = () => {
         e.preventDefault();
         try {
             const url = isEditing && selectedEmployee
-                ? `http://localhost:5000/api/employees/${selectedEmployee.id}`
-                : 'http://localhost:5000/api/employees';
+                ? `${API_URL}/api/employees/${selectedEmployee.id}`
+                : `${API_URL}/api/employees`;
 
             const method = isEditing ? 'PUT' : 'POST';
 

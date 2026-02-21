@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import {
     Calendar,
     Plus,
@@ -48,8 +49,8 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
         setLoading(true);
         try {
             const [taskRes, empRes] = await Promise.all([
-                fetch(`http://localhost:5000/api/tasks?date=${selectedDate}${selectedEmployee ? `&employeeId=${selectedEmployee}` : ''}`),
-                fetch('http://localhost:5000/api/employees')
+                fetch(`${API_URL}/api/tasks?date=${selectedDate}${selectedEmployee ? `&employeeId=${selectedEmployee}` : ''}`),
+                fetch(`${API_URL}/api/employees`)
             ]);
 
             setTasks(await taskRes.json());
@@ -64,7 +65,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:5000/api/tasks', {
+            const response = await fetch(`${API_URL}/api/tasks`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -80,7 +81,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                     priority: 'Medium',
                     status: 'Pending'
                 });
-                alert('Task assigned successfully');
+                // Removed localhost notification
             }
         } catch (error) {
             console.error("Error adding task:", error);

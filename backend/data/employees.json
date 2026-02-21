@@ -15,7 +15,13 @@
       "other": 2200
     },
     "username": "dhanush.antigraviity@gmail.com",
-    "password": "Dhanush12@"
+    "password": "Dhanush12@",
+    "leaveBalance": {
+      "sick": 12,
+      "casual": 12,
+      "paid": 12,
+      "wfh": 10
+    }
   },
   {
     "id": "EMP002",

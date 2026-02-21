@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, FileCheck, Shield, Upload, X, AlertCircle } from 'lucide-react';
+import { API_URL } from '../../config';
 
 interface DocumentParams {
     id: string;
@@ -47,7 +48,7 @@ const EmployeeDocuments = () => {
     const fetchDocuments = async () => {
         if (!user?.id) return;
         try {
-            const response = await fetch(`http://localhost:5000/api/documents?employeeId=${user.id}`);
+            const response = await fetch(`${API_URL}/api/documents?employeeId=${user.id}`);
             const apiDocs = await response.json();
 
             // Merge required docs with uploaded ones
@@ -84,7 +85,7 @@ const EmployeeDocuments = () => {
             link.click();
             document.body.removeChild(link);
         } else {
-            alert("Document URL not found.");
+            console.warn("Document URL not found.");
         }
     };
 
@@ -93,7 +94,7 @@ const EmployeeDocuments = () => {
         if (!user?.id) return;
 
         try {
-            const response = await fetch('http://localhost:5000/api/documents', {
+            const response = await fetch(`${API_URL}/api/documents`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -108,13 +109,13 @@ const EmployeeDocuments = () => {
             if (response.ok) {
                 await fetchDocuments();
                 setShowUploadModal(false);
-                alert(`${selectedDocType} uploaded successfully!`);
+                // Removed localhost notification
             } else {
-                alert('Failed to upload');
+                // Removed localhost notification
             }
         } catch (error) {
             console.error("Upload failed", error);
-            alert("Upload error occurred.");
+            // Removed localhost notification
         }
     };
 

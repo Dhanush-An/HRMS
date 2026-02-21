@@ -12,6 +12,7 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
+import { API_URL } from '../../config';
 import { cn } from '../../utils/cn';
 
 const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
@@ -80,11 +81,11 @@ const EmployeeHome = () => {
             const totalLeaves = leaveBalance ?
                 (leaveBalance.sick || 0) + (leaveBalance.casual || 0) + (leaveBalance.paid || 0) : 0;
 
-            const taskRes = await fetch(`http://localhost:5000/api/tasks?employeeId=${employeeId}`);
+            const taskRes = await fetch(`${API_URL}/api/tasks?employeeId=${employeeId}`);
             const tasks = await taskRes.json();
             const pending = tasks.filter((t: any) => t.status === 'Pending').length;
 
-            const attRes = await fetch(`http://localhost:5000/api/attendance?employeeId=${employeeId}`);
+            const attRes = await fetch(`${API_URL}/api/attendance?employeeId=${employeeId}`);
             const attendance = await attRes.json();
             const presentDays = attendance.filter((r: any) => r.status === 'Present' || r.status === 'Late').length;
 

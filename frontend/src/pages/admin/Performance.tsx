@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import { Star, MessageSquare, Plus } from 'lucide-react';
 
 interface PerformanceRecord {
@@ -39,8 +40,8 @@ const Performance = () => {
     const fetchData = async () => {
         try {
             const [perfRes, empRes] = await Promise.all([
-                fetch('http://localhost:5000/api/performance'),
-                fetch('http://localhost:5000/api/employees')
+                fetch(`${API_URL}/api/performance`),
+                fetch(`${API_URL}/api/employees`)
             ]);
             setRecords(await perfRes.json());
             setEmployees(await empRes.json());
@@ -60,7 +61,7 @@ const Performance = () => {
         if (!selectedEmployee) return;
 
         try {
-            const response = await fetch('http://localhost:5000/api/performance', {
+            const response = await fetch(`${API_URL}/api/performance`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -72,7 +73,7 @@ const Performance = () => {
             if (response.ok) {
                 setShowModal(false);
                 fetchData();
-                alert('Performance record saved successfully!');
+                // Removed localhost notification
             }
         } catch (error) {
             console.error("Error submitting:", error);

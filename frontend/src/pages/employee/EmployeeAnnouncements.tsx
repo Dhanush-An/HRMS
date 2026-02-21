@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import { Megaphone, Bell, Calendar, CheckCircle } from 'lucide-react';
 
 interface Announcement {
@@ -19,7 +20,7 @@ const EmployeeAnnouncements = () => {
     const fetchData = async () => {
         try {
             // Fetch company announcements
-            const response = await fetch('http://localhost:5000/api/announcements');
+            const response = await fetch(`${API_URL}/api/announcements`);
             const data = await response.json();
 
             // Mock Personal Notifications

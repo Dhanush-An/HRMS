@@ -11,6 +11,7 @@ import {
     Plus
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { API_URL } from '../../config';
 
 interface LeaveRequest {
     id: string;
@@ -82,8 +83,8 @@ const Leaves = () => {
     const fetchData = async () => {
         try {
             const [leavesRes, empRes] = await Promise.all([
-                fetch('http://localhost:5000/api/leaves'),
-                fetch('http://localhost:5000/api/employees')
+                fetch(`${API_URL}/api/leaves`),
+                fetch(`${API_URL}/api/employees`)
             ]);
 
             setLeaves(await leavesRes.json());
@@ -104,7 +105,7 @@ const Leaves = () => {
         if (!emp) return;
 
         try {
-            const response = await fetch('http://localhost:5000/api/leaves', {
+            const response = await fetch(`${API_URL}/api/leaves`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -125,7 +126,7 @@ const Leaves = () => {
                     endDate: '',
                     reason: ''
                 });
-                alert('Leave request submitted successfully');
+                // Removed localhost notification
             }
         } catch (error) {
             console.error("Error applying for leave:", error);
@@ -134,7 +135,7 @@ const Leaves = () => {
 
     const handleStatusUpdate = async (id: string, status: 'Approved' | 'Rejected') => {
         try {
-            const response = await fetch(`http://localhost:5000/api/leaves/${id}`, {
+            const response = await fetch(`${API_URL}/api/leaves/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status })
@@ -143,8 +144,7 @@ const Leaves = () => {
             if (response.ok) {
                 fetchData();
             } else {
-                const err = await response.json();
-                alert(err.message);
+                // Removed localhost notification
             }
         } catch (error) {
             console.error("Error updating status:", error);

@@ -1,5 +1,6 @@
 import React from 'react';
 import { TrendingUp, Award, Target, MessageSquare } from 'lucide-react';
+import { API_URL } from '../../config';
 
 const EmployeePerformance = () => {
     const [performanceData, setPerformanceData] = React.useState<any>({
@@ -16,7 +17,7 @@ const EmployeePerformance = () => {
             const user = JSON.parse(userStr);
 
             try {
-                const response = await fetch('http://localhost:5000/api/performance');
+                const response = await fetch(`${API_URL}/api/performance`);
                 const data = await response.json();
 
                 console.log("Performance data fetched:", data);

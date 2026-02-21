@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import {
     Calendar,
     Plus,
@@ -56,7 +57,7 @@ const EmployeeTasks = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/tasks?employeeId=${currentEmployeeId}`);
+            const response = await fetch(`${API_URL}/api/tasks?employeeId=${currentEmployeeId}`);
             const data = await response.json();
 
             const filteredTasks = data.filter((task: Task) =>
@@ -106,8 +107,8 @@ const EmployeeTasks = () => {
 
         try {
             const url = isEditing
-                ? `http://localhost:5000/api/tasks/${editingTaskId}`
-                : 'http://localhost:5000/api/tasks';
+                ? `${API_URL}/api/tasks/${editingTaskId}`
+                : `${API_URL}/api/tasks`;
 
             const method = isEditing ? 'PUT' : 'POST';
 

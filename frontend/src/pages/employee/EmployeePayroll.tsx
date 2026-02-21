@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import { IndianRupee, Download, ShieldCheck, Receipt } from 'lucide-react';
 
 const EmployeePayroll = () => {
@@ -18,12 +19,12 @@ const EmployeePayroll = () => {
         setLoading(true);
         try {
             // 1. Fetch Salary Structure from Employee record
-            const empRes = await fetch(`http://localhost:5000/api/employees`);
+            const empRes = await fetch(`${API_URL}/api/employees`);
             const employees = await empRes.json();
             const employee = employees.find((e: any) => e.id === employeeId);
 
             // 2. Fetch Payroll History
-            const payRes = await fetch(`http://localhost:5000/api/payroll`);
+            const payRes = await fetch(`${API_URL}/api/payroll`);
             const payrolls = await payRes.json();
 
             // Extract records for this employee

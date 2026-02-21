@@ -20,5 +20,27 @@
     "endDate": "2026-02-22",
     "reason": "Medical leaver\n",
     "name": "Dhanush Tamilarasan"
+  },
+  {
+    "id": "1771681751771",
+    "status": "Approved",
+    "appliedOn": "2026-02-21",
+    "employeeId": "EMP001",
+    "type": "Paid Leave",
+    "startDate": "2026-02-24",
+    "endDate": "2026-02-26",
+    "reason": "Going for Ooty",
+    "name": "Dhanush Tamilarasan"
+  },
+  {
+    "id": "1771681829399",
+    "status": "Rejected",
+    "appliedOn": "2026-02-21",
+    "employeeId": "EMP003",
+    "type": "Work From Home",
+    "startDate": "2026-02-23",
+    "endDate": "2026-02-28",
+    "reason": "PG issue",
+    "name": "Agila"
   }
 ]

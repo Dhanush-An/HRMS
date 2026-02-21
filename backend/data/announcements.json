@@ -5,5 +5,12 @@
     "title": "Leave",
     "message": "Saturday is Work from home for all",
     "type": "Company"
+  },
+  {
+    "id": "1771682112253",
+    "date": "2026-02-21",
+    "title": "Leave",
+    "message": "Tomorrow is holiday.\n\nEnjoy the weekend\n ",
+    "type": "Holiday"
   }
 ]

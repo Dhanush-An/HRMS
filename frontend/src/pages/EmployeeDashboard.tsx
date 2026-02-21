@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { API_URL } from '../config';
 import {
     LayoutDashboard,
     Calendar,
@@ -36,7 +37,7 @@ const EmployeeDashboard: React.FC = () => {
     const fetchTodayAttendance = async (employeeId: string) => {
         try {
             const today = new Date().toISOString().split('T')[0];
-            const res = await fetch(`http://localhost:5000/api/attendance?date=${today}`);
+            const res = await fetch(`${API_URL}/api/attendance?date=${today}`);
             const data = await res.json();
             const record = data.find((r: any) => r.employeeId === employeeId);
 
@@ -78,7 +79,7 @@ const EmployeeDashboard: React.FC = () => {
 
         try {
             const today = now.toISOString().split('T')[0];
-            const res = await fetch('http://localhost:5000/api/attendance', {
+            const res = await fetch(`${API_URL}/api/attendance`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -115,7 +116,7 @@ const EmployeeDashboard: React.FC = () => {
                 workHours = Number(((outH * 60 + outM - (inH * 60 + inM)) / 60).toFixed(2));
             }
 
-            await fetch(`http://localhost:5000/api/attendance/${attendanceId}`, {
+            await fetch(`${API_URL}/api/attendance/${attendanceId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

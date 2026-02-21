@@ -6,6 +6,7 @@ import {
     BadgeDollarSign
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { API_URL } from '../../config';
 
 interface SalaryStructure {
     base: number;
@@ -55,8 +56,8 @@ const Payroll = () => {
     const fetchData = async () => {
         try {
             const [historyRes, empRes] = await Promise.all([
-                fetch('http://localhost:5000/api/payroll'),
-                fetch('http://localhost:5000/api/employees')
+                fetch(`${API_URL}/api/payroll`),
+                fetch(`${API_URL}/api/employees`)
             ]);
             const historyData = await historyRes.json();
             const employeesData = await empRes.json();
@@ -88,7 +89,7 @@ const Payroll = () => {
         setEmployees(updatedEmployees);
 
         try {
-            await fetch(`http://localhost:5000/api/employees/${empId}/salary`, {
+            await fetch(`${API_URL}/api/employees/${empId}/salary`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedSalary)
@@ -132,7 +133,7 @@ const Payroll = () => {
         });
 
         try {
-            const response = await fetch('http://localhost:5000/api/payroll/generate', {
+            const response = await fetch(`${API_URL}/api/payroll/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -143,11 +144,10 @@ const Payroll = () => {
             });
 
             if (response.ok) {
-                alert('Payroll generated successfully!');
+                // Removed localhost notification
                 setActiveTab('history');
             } else {
-                const err = await response.json();
-                alert(`Error: ${err.message}`);
+                // Removed localhost notification
             }
         } catch (error) {
             console.error("Error generating payroll:", error);
@@ -370,7 +370,6 @@ const Payroll = () => {
                                                     <td className="px-4 py-4 text-sm text-right font-black text-status-approved">₹{record.netSalary.toLocaleString()}</td>
                                                     <td className="px-4 py-4 text-right">
                                                         <button
-                                                            onClick={() => alert(`Downloading payslip for ${record.name}...`)}
                                                             className="text-brand-primary hover:opacity-80 p-2 hover:bg-brand-primary-light rounded-lg transition-all"
                                                         >
                                                             <Download className="w-4 h-4" />

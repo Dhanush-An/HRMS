@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileText, Download, Search, File, ChevronRight } from 'lucide-react';
+import { API_URL } from '../../config';
 
 interface Document {
     id: string;
@@ -25,8 +26,8 @@ const Documents = () => {
     const fetchData = async () => {
         try {
             const [empRes, docRes] = await Promise.all([
-                fetch('http://localhost:5000/api/employees'),
-                fetch('http://localhost:5000/api/documents')
+                fetch(`${API_URL}/api/employees`),
+                fetch(`${API_URL}/api/documents`)
             ]);
             setEmployees(await empRes.json());
             setDocuments(await docRes.json());
@@ -182,7 +183,6 @@ const Documents = () => {
                                     <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mb-6">Uploaded: {doc.uploadDate}</p>
 
                                     <button
-                                        onClick={() => alert(`Downloading ${doc.title}...`)}
                                         className="w-full bg-brand-bg hover:bg-brand-primary text-brand-text hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 border border-brand-border group-hover:border-transparent transition-all shadow-sm active:scale-95"
                                     >
                                         <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />

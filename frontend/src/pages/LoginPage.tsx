@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { API_URL } from '../config';
 
 
 
@@ -19,7 +20,7 @@ const LoginPage: React.FC = () => {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:5000/api/login', {
+            const response = await fetch(`${API_URL}/api/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }) // email state captures "Email or Username" input

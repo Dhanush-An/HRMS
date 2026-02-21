@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../../config';
 import { Save, User, Lock, Search, Shield } from 'lucide-react';
 
 interface Employee {
@@ -22,7 +23,7 @@ const Settings = () => {
     const [showResults, setShowResults] = useState(false);
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/employees')
+        fetch(`${API_URL}/api/employees`)
             .then(res => res.json())
             .then(data => setEmployees(data))
             .catch(err => console.error(err));
@@ -45,7 +46,7 @@ const Settings = () => {
         setMessage('');
 
         try {
-            const response = await fetch(`http://localhost:5000/api/employees/${selectedEmp}`, {
+            const response = await fetch(`${API_URL}/api/employees/${selectedEmp}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

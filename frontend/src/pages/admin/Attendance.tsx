@@ -11,6 +11,7 @@ import {
     MapPin
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { API_URL } from '../../config';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -48,8 +49,8 @@ const Attendance = () => {
     const fetchData = async () => {
         try {
             const [empRes, attRes] = await Promise.all([
-                fetch('http://localhost:5000/api/employees'),
-                fetch(`http://localhost:5000/api/attendance?date=${selectedDate}`)
+                fetch(`${API_URL}/api/employees`),
+                fetch(`${API_URL}/api/attendance?date=${selectedDate}`)
             ]);
 
             const empData = await empRes.json();
@@ -73,7 +74,7 @@ const Attendance = () => {
     // Report Generation Logic
     const fetchMonthlyData = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/attendance');
+            const response = await fetch(`${API_URL}/api/attendance`);
             const allData: AttendanceRecord[] = await response.json();
             return allData.filter(r => r.date.startsWith(reportMonth));
         } catch (error) {
@@ -309,7 +310,7 @@ const Attendance = () => {
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-right">
                                             {record ? (
-                                                <button onClick={() => alert("Location: Head Office")} className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all" title="View Location">
+                                                <button className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all" title="View Location">
                                                     <MapPin className="w-4 h-4" />
                                                 </button>
                                             ) : (
