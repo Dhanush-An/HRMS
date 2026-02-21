@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { cn } from '../utils/cn';
 
-type Role = 'admin' | 'employee';
+
 
 const LoginPage: React.FC = () => {
 

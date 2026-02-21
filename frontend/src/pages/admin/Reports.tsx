@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     Calendar,
-    CheckCircle,
     Plus,
     Download,
     Search

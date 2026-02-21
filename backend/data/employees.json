@@ -1,6 +1,6 @@
 [
   {
-    "id": "EMP003",
+    "id": "EMP001",
     "name": "Dhanush Tamilarasan",
     "email": "dhanush.antigraviity@gmail.com",
     "role": "Full Stack Developer",
@@ -40,5 +40,27 @@
     },
     "username": "gowtham.antigraviity@gmail.com",
     "password": "gowtham123"
+  },
+  {
+    "id": "EMP003",
+    "name": "Agila",
+    "email": "agila.antigraviity@gmail.com",
+    "role": "Mern Stack Developer",
+    "department": "Developer",
+    "status": "Active",
+    "phone": "7867339988",
+    "joiningDate": "2026-02-21",
+    "salary": {
+      "base": 0,
+      "hra": 0,
+      "transport": 0,
+      "other": 0
+    },
+    "leaveBalance": {
+      "sick": 12,
+      "casual": 12,
+      "paid": 15,
+      "wfh": 10
+    }
   }
 ]

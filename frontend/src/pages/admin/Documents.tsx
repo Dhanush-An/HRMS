@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Download, Search, File, ChevronRight } from 'lucide-react';
 
 interface Document {
@@ -106,9 +106,9 @@ const Documents = () => {
                                     <div className="text-right hidden sm:block">
                                         <div className="text-brand-text font-black text-base leading-none">
                                             {documents
-                                                .filter(d => d.employeeId === emp.id)
-                                                .filter((doc, index, self) =>
-                                                    index === self.findIndex((t) => (
+                                                .filter((d: Document) => d.employeeId === emp.id)
+                                                .filter((doc: Document, index: number, self: Document[]) =>
+                                                    index === self.findIndex((t: Document) => (
                                                         t.title === doc.title && t.type === doc.type
                                                     ))
                                                 ).length}

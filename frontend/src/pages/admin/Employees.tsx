@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Plus,
     Search,
     Mail,
     Phone,
-    MapPin,
     Trash2,
     Edit2,
     Eye,
@@ -43,6 +42,7 @@ const Employees = () => {
         phone: '',
         joiningDate: ''
     });
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         fetchEmployees();
@@ -180,6 +180,8 @@ const Employees = () => {
                     <input
                         type="text"
                         placeholder="Search employees..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full bg-brand-surface border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all font-medium placeholder:text-brand-muted/50"
                     />
                 </div>

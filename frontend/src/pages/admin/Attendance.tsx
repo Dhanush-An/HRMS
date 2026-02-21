@@ -8,7 +8,6 @@ import {
     Download,
     Save,
     AlertCircle,
-    Filter,
     MapPin
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
@@ -36,8 +35,8 @@ const Attendance = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [editForm, setEditForm] = useState<Partial<AttendanceRecord>>({});
+    // Removed unused editingId
+    // Removed unused setEditForm
 
     // Report State
     const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
@@ -69,28 +68,7 @@ const Attendance = () => {
 
 
 
-    const handleSaveEdit = async () => {
-        if (!editingId) return;
-        try {
-            // Calculate work hours if checkIn and checkOut exist
-            let workHours = 0;
-            if (editForm.checkIn && editForm.checkOut) {
-                const start = new Date(`1970-01-01T${editForm.checkIn}:00`);
-                const end = new Date(`1970-01-01T${editForm.checkOut}:00`);
-                workHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-            }
-
-            await fetch(`http://localhost:5000/api/attendance/${editingId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...editForm, workHours: Number(workHours.toFixed(2)) })
-            });
-            setEditingId(null);
-            fetchData();
-        } catch (error) {
-            console.error("Error updating record:", error);
-        }
-    };
+    // Removed unused handleSaveEdit
 
     // Report Generation Logic
     const fetchMonthlyData = async () => {
@@ -288,8 +266,6 @@ const Attendance = () => {
                         <tbody className="divide-y divide-brand-border">
                             {employees.map((emp) => {
                                 const record = getAttendanceStatus(emp.id);
-                                const isEditingRow = editingId === record?.id;
-
                                 return (
                                     <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
                                         <td className="px-8 py-4 whitespace-nowrap">
