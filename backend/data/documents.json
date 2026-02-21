@@ -1,0 +1,54 @@
+[
+  {
+    "id": "1771496321947",
+    "uploadDate": "Feb 19, 2026",
+    "title": "10th Certificate",
+    "type": "10th Certificate",
+    "url": "http://example.com/file.pdf",
+    "uploadedBy": "Dhanush Tamilarasan"
+  },
+  {
+    "id": "1771496696392",
+    "uploadDate": "Feb 19, 2026",
+    "title": "10th Certificate",
+    "type": "10th Certificate",
+    "url": "http://example.com/file.pdf",
+    "uploadedBy": "Dhanush Tamilarasan"
+  },
+  {
+    "id": "1771501977012",
+    "uploadDate": "Feb 19, 2026",
+    "title": "10th Certificate",
+    "type": "10th Certificate",
+    "url": "http://example.com/file.pdf",
+    "employeeId": "EMP003",
+    "uploadedBy": "Dhanush Tamilarasan"
+  },
+  {
+    "id": "1771501984263",
+    "uploadDate": "Feb 19, 2026",
+    "title": "11th Certificate",
+    "type": "11th Certificate",
+    "url": "http://example.com/file.pdf",
+    "employeeId": "EMP003",
+    "uploadedBy": "Dhanush Tamilarasan"
+  },
+  {
+    "id": "1771502384493",
+    "uploadDate": "Feb 19, 2026",
+    "title": "10th Certificate",
+    "type": "10th Certificate",
+    "url": "http://example.com/file.pdf",
+    "employeeId": "EMP003",
+    "uploadedBy": "Dhanush Tamilarasan"
+  },
+  {
+    "id": "1771567194761",
+    "uploadDate": "2026-02-20",
+    "title": "12th Certificate",
+    "type": "12th Certificate",
+    "url": "http://example.com/file.pdf",
+    "employeeId": "EMP003",
+    "uploadedBy": "Dhanush Tamilarasan"
+  }
+]

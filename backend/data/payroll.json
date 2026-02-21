@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "id": "1771487083093",
+    "month": "February",
+    "year": 2026,
+    "dateGenerated": "2026-02-21T05:11:45.998Z",
+    "records": [
+      {
+        "employeeId": "EMP003",
+        "name": "Dhanush Tamilarasan",
+        "base": 25000,
+        "bonus": 0,
+        "deductions": 0,
+        "tax": 0,
+        "netSalary": 29400
+      },
+      {
+        "employeeId": "EMP002",
+        "name": "Gowtham",
+        "base": 0,
+        "bonus": 0,
+        "deductions": 0,
+        "tax": 0,
+        "netSalary": 0
+      }
+    ]
+  }
+]

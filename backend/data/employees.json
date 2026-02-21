@@ -1,64 +1,44 @@
 [
-    {
-        "id": 1,
-        "name": "Sarah Johnson",
-        "email": "sarah.j@company.com",
-        "phone": "+1 (555) 123-4567",
-        "role": "Senior Software Engineer",
-        "department": "Engineering",
-        "reporting_to": null,
-        "joining_date": "2022-01-15",
-        "status": "Active",
-        "employee_id": "EMP001",
-        "location": "New York, NY",
-        "salary": 120000,
-        "documents": [
-            "ID Proof",
-            "Educational Certificate",
-            "Offer Letter"
-        ],
-        "avatar": "SJ",
-        "password": "password123"
+  {
+    "id": "EMP003",
+    "name": "Dhanush Tamilarasan",
+    "email": "dhanush.antigraviity@gmail.com",
+    "role": "Full Stack Developer",
+    "department": "Developer",
+    "status": "Active",
+    "joiningDate": "2026-01-21",
+    "phone": "6379068721",
+    "salary": {
+      "base": 25000,
+      "hra": 500,
+      "transport": 1700,
+      "other": 2200
     },
-    {
-        "id": 2,
-        "name": "Michael Chen",
-        "email": "michael.c@company.com",
-        "phone": "+1 (555) 234-5678",
-        "role": "Product Manager",
-        "department": "Product",
-        "reporting_to": 1,
-        "joining_date": "2022-03-20",
-        "status": "Active",
-        "employee_id": "EMP002",
-        "location": "San Francisco, CA",
-        "salary": 110000,
-        "documents": [
-            "ID Proof",
-            "Educational Certificate"
-        ],
-        "avatar": "MC",
-        "password": "password123"
+    "username": "dhanush.antigraviity@gmail.com",
+    "password": "Dhanush12@"
+  },
+  {
+    "id": "EMP002",
+    "name": "Gowtham",
+    "email": "gowtham.antigraviity@gmailcom",
+    "role": "Cyber Security",
+    "department": "Testing",
+    "status": "Active",
+    "phone": "9677402775",
+    "joiningDate": "2026-02-09",
+    "salary": {
+      "base": 0,
+      "hra": 0,
+      "transport": 0,
+      "other": 0
     },
-    {
-        "id": 4,
-        "name": "David Kumar",
-        "email": "david.k@company.com",
-        "phone": "+1 (555) 456-7890",
-        "role": "HR Manager",
-        "department": "Human Resources",
-        "reporting_to": null,
-        "joining_date": "2020-06-01",
-        "status": "Active",
-        "employee_id": "EMP004",
-        "location": "Chicago, IL",
-        "salary": 105000,
-        "documents": [
-            "ID Proof",
-            "Educational Certificate",
-            "Experience Letter"
-        ],
-        "avatar": "DK",
-        "password": "password123"
-    }
+    "leaveBalance": {
+      "sick": 12,
+      "casual": 12,
+      "paid": 15,
+      "wfh": 10
+    },
+    "username": "gowtham.antigraviity@gmail.com",
+    "password": "gowtham123"
+  }
 ]

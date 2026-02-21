@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1771499908399",
+    "date": "Feb 19, 2026",
+    "type": "Review",
+    "title": "Employee of the Year",
+    "description": "Good. Keep it up.",
+    "rating": 5,
+    "employeeId": "EMP003"
+  },
+  {
+    "id": "1771655084653",
+    "date": "Feb 21, 2026",
+    "type": "Promotion",
+    "title": "Upskill",
+    "description": "Now you are Employee of Antigraviity technologies",
+    "rating": 5,
+    "employeeId": "EMP002"
+  }
+]

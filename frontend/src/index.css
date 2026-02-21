@@ -1,100 +1,105 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sora: 'Sora', sans-serif;
-  --font-dm-sans: 'DM Sans', sans-serif;
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-text: var(--brand-text);
+  --color-brand-border: var(--brand-border);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-primary-hover: var(--brand-primary-hover);
+  --color-brand-primary-light: var(--brand-primary-light);
+  --color-status-approved: var(--status-approved);
+  --color-status-pending: var(--status-pending);
+  --color-status-rejected: var(--status-rejected);
+  --color-status-info: var(--status-info);
+  --color-table-header: var(--table-header);
+}
+
+:root {
+  --brand-bg: #F9FAFB;
+  --brand-surface: #FFFFFF;
+  --brand-text: #111827;
+  --brand-muted: #6B7280;
+  --brand-border: #E5E7EB;
+  --brand-primary: #2563EB;
+  --brand-primary-hover: #1D4ED8;
+  --brand-primary-light: #DBEAFE;
+
+  --brand-sidebar-text: #1F2937;
+  --brand-sidebar-active: #DBEAFE;
+
+  --status-approved: #16A34A;
+  --status-pending: #F59E0B;
+  --status-rejected: #DC2626;
+  --status-info: #3B82F6;
+
+  --table-header: #F3F4F6;
+  --table-row-hover: #F9FAFB;
+}
+
+.dark {
+  --brand-bg: #030712;
+  --brand-surface: #111827;
+  --brand-text: #F9FAFB;
+  --brand-muted: #9CA3AF;
+  --brand-border: #1F2937;
+  --brand-primary: #3B82F6;
+  --brand-primary-hover: #2563EB;
+  --brand-primary-light: #1E3A8A;
+
+  --brand-sidebar-text: #F9FAFB;
+  --brand-sidebar-active: #1E3A8A;
+
+  --status-approved: #22C55E;
+  --status-pending: #F59E0B;
+  --status-rejected: #EF4444;
+  --status-info: #60A5FA;
+
+  --table-header: #1F2937;
+  --table-row-hover: #111827;
+}
+
+:root {
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  @apply bg-slate-50 text-slate-900 antialiased overflow-x-hidden;
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'Sora', sans-serif;
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in;
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
 }
 
-.animate-slide-in {
-  animation: slideIn 0.4s ease-out;
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-@keyframes slideIn {
-  from {
-    transform: translateX(-20px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-hover:hover {
-  transform: translateY(-4px);
-  @apply shadow-xl;
-}
-
-.gradient-border {
-  position: relative;
-  background: white;
-  border-radius: 12px;
-}
-
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  padding: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-}
-
-.status-badge {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.table-header {
-  @apply bg-gradient-to-r from-purple-600 to-indigo-600 text-white;
+/* Fix for Date Input Icon in Dark Mode */
+.dark ::-webkit-calendar-picker-indicator {
+  background-color: transparent;
+  padding: 5px;
+  cursor: pointer;
+  border-radius: 3px;
+  filter: invert(1);
 }
