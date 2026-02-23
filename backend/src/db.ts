@@ -16,6 +16,7 @@ export const connectDB = async () => {
         console.log('[DEBUG] Connected to MongoDB Atlas successfully');
     } catch (error: any) {
         console.error('[ERROR] MongoDB connection failed:', error.message);
-        process.exit(1);
+        console.error('[TIP] Make sure your IP is whitelisted in MongoDB Atlas and credentials are correct.');
+        // Do not exit, keep the server alive so we can see other logs
     }
 };
