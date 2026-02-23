@@ -52,20 +52,33 @@ const LOCATIONS_FILE = path.join(__dirname, '../data/locations.json');
 // Helper to read data
 const readData = () => {
     try {
+        if (!fs.existsSync(DATA_FILE)) {
+            console.warn(`[DEBUG] ${DATA_FILE} not found, returning empty array`);
+            return [];
+        }
         const data = fs.readFileSync(DATA_FILE, 'utf-8');
         const parsed = JSON.parse(data);
-        console.log(`[DEBUG] readData from ${DATA_FILE}: ${parsed.length} employees`);
+        console.log(`[DEBUG] readData Success from ${DATA_FILE}: ${parsed.length} employees`);
         return parsed;
-    } catch (error) {
-        console.error(`[DEBUG] readData ERROR from ${DATA_FILE}:`, error);
+    } catch (error: any) {
+        console.error(`[DEBUG] readData ERROR from ${DATA_FILE}:`, error.message);
         return [];
     }
 };
 
 // Helper to write data
 const writeData = (data: any) => {
-    console.log(`[DEBUG] writeData to ${DATA_FILE}: ${data.length} employees`);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    try {
+        const dir = path.dirname(DATA_FILE);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        console.log(`[DEBUG] Attempting writeData to ${DATA_FILE}: ${data.length} employees`);
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+        console.log(`[DEBUG] writeData Success`);
+    } catch (error: any) {
+        console.error(`[DEBUG] writeData ERROR:`, error.message);
+    }
 };
 
 // Helper for Attendance
@@ -253,25 +266,38 @@ app.post('/api/employees', (req, res) => {
     const employees = readData();
     const { id, name, email, role, department, status, phone, joiningDate } = req.body;
 
-    // Auto-generate ID if not provided
-    const newId = `EMP${String(employees.length + 1).padStart(3, '0')}`;
+    // Improved ID generation: Find the max existing ID and increment
+    let nextIdNumber = 1;
+    if (employees.length > 0) {
+        const idNumbers = employees
+            .map((e: any) => {
+                const match = e.id.match(/\d+/);
+                return match ? parseInt(match[0], 10) : 0;
+            })
+            .filter((num: number) => !isNaN(num));
+        if (idNumbers.length > 0) {
+            nextIdNumber = Math.max(...idNumbers) + 1;
+        }
+    }
+    const autoId = `EMP${String(nextIdNumber).padStart(3, '0')}`;
+    const finalId = id || autoId;
 
-    console.log(`[DEBUG] Adding new employee: ${req.body.name} (ID: ${req.body.id || newId})`);
+    console.log(`[DEBUG] Adding new employee: ${name} (Generated ID: ${autoId}, Final ID: ${finalId})`);
 
     // Extract password from body or use default
     const customPassword = req.body.password || 'Password123!';
 
     const newEmployee = {
-        id: req.body.id || `EMP${String(employees.length + 1).padStart(3, '0')}`,
-        name: req.body.name,
-        email: req.body.email,
-        username: req.body.username || req.body.email, // Default username to email
+        id: finalId,
+        name,
+        email,
+        username: req.body.username || email, // Default username to email
         password: customPassword, // Use the custom or default password
-        role: req.body.role,
-        department: req.body.department,
-        status: req.body.status || 'Active',
-        joiningDate: req.body.joiningDate || new Date().toISOString().split('T')[0],
-        phone: req.body.phone || '',
+        role,
+        department,
+        status: status || 'Active',
+        joiningDate: joiningDate || new Date().toISOString().split('T')[0],
+        phone: phone || '',
         salary: {
             base: 0,
             hra: 0,
