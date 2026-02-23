@@ -45,7 +45,7 @@ const EmployeeAttendance = () => {
             const data = await response.json();
 
             // Filter client-side if API doesn't support filtering
-            const userAttendance = data.filter((r: any) => r.employeeId === user.id || r.employeeName === user.name);
+            const userAttendance = Array.isArray(data) ? data.filter((r: any) => (r.employeeId === user.id || r.employeeName === user.name)) : [];
             setAttendance(userAttendance);
         } catch (error) {
             console.error("Error fetching attendance:", error);

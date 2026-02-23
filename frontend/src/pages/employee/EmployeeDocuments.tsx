@@ -53,7 +53,7 @@ const EmployeeDocuments = () => {
 
             // Merge required docs with uploaded ones
             const mergedDocs: DocumentParams[] = requiredDocs.map((title, index) => {
-                const uploaded = apiDocs.find((d: any) => d.type === title);
+                const uploaded = Array.isArray(apiDocs) ? apiDocs.find((d: any) => d.type === title) : null;
                 return {
                     id: uploaded?.id || `req-${index}`,
                     title: title,

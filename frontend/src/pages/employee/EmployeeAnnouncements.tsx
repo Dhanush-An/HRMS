@@ -86,7 +86,7 @@ const EmployeeAnnouncements = () => {
                         <p className="text-brand-muted font-black uppercase tracking-widest text-xs">No active announcements</p>
                     </div>
                 ) : (
-                    announcements.map((ann) => {
+                    Array.isArray(announcements) && announcements.map((ann) => {
                         const Icon = getTypeIcon(ann.type);
                         const styles = getTypeStyles(ann.type);
                         return (

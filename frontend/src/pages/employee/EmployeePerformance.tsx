@@ -22,7 +22,7 @@ const EmployeePerformance = () => {
 
                 console.log("Performance data fetched:", data);
                 // Filter for current user
-                const userRecords = data.filter((r: any) => r.employeeId === user.id);
+                const userRecords = Array.isArray(data) ? data.filter((r: any) => r.employeeId === user.id) : [];
                 console.log("Filtered user records:", userRecords);
 
                 setPerformanceData({

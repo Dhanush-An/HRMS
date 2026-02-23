@@ -60,10 +60,10 @@ const EmployeeTasks = () => {
             const response = await api.get(`/api/tasks?employeeId=${currentEmployeeId}`);
             const data = await response.json();
 
-            const filteredTasks = data.filter((task: Task) =>
+            const filteredTasks = Array.isArray(data) ? data.filter((task: Task) =>
                 (task.employeeId === currentEmployeeId) &&
                 (task.date === filterDate)
-            );
+            ) : [];
 
             setTasks(filteredTasks.reverse());
         } catch (error) {

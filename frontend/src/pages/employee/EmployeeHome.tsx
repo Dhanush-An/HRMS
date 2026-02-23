@@ -83,11 +83,11 @@ const EmployeeHome = () => {
 
             const taskRes = await api.get(`/api/tasks?employeeId=${employeeId}`);
             const tasks = await taskRes.json();
-            const pending = tasks.filter((t: any) => t.status === 'Pending').length;
+            const pending = Array.isArray(tasks) ? tasks.filter((t: any) => t.status === 'Pending').length : 0;
 
             const attRes = await api.get(`/api/attendance?employeeId=${employeeId}`);
             const attendance = await attRes.json();
-            const presentDays = attendance.filter((r: any) => r.status === 'Present' || r.status === 'Late').length;
+            const presentDays = Array.isArray(attendance) ? attendance.filter((r: any) => r.status === 'Present' || r.status === 'Late').length : 0;
 
             setStats({
                 leaveBalance: `${totalLeaves} Days`,

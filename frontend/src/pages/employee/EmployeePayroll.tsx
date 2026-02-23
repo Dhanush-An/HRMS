@@ -28,7 +28,7 @@ const EmployeePayroll = () => {
             const payrolls = await payRes.json();
 
             // Extract records for this employee
-            const history = payrolls.map((p: any) => {
+            const history = Array.isArray(payrolls) ? payrolls.map((p: any) => {
                 const record = p.records.find((r: any) => r.employeeId === employeeId);
                 if (record) {
                     return {
@@ -40,7 +40,7 @@ const EmployeePayroll = () => {
                     };
                 }
                 return null;
-            }).filter(Boolean);
+            }).filter(Boolean) : [];
 
             setPayrollHistory(history.reverse());
 
