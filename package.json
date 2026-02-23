@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "install:all": "concurrently \"npm install --prefix frontend\" \"npm install --prefix backend\"",
+    "build:backend": "npm install --prefix backend && npm run build --prefix backend",
     "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
     "dev:frontend": "npm run dev --prefix frontend",
     "dev:backend": "npm run dev --prefix backend"
   },
   "dependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "mongoose": "^9.2.1"
   }
 }
