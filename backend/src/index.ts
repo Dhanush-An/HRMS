@@ -1,16 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
-import { connectDB, lastConnectionError } from './db';
-import Employee from './models/Employee';
 
 dotenv.config();
-
-connectDB(); // Initialize MongoDB connection
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hrms_dev_secret_change_in_production';
 
@@ -223,185 +218,109 @@ app.get('/', (req, res) => {
 });
 
 // --- AUTH ROUTES (PUBLIC) ---
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
     const normalizedEmail = (email || '').trim().toLowerCase();
     const cleanPassword = (password || '').trim();
 
     // 1. Check Hardcoded Admin
     if (normalizedEmail === 'admin@hrms.com' && cleanPassword === 'admin123') {
-        console.log(`[DEBUG] Admin login successful`);
         const adminUser = { id: 'ADMIN', name: 'System Admin', role: 'admin', email: 'admin@hrms.com' };
         const token = jwt.sign(adminUser, JWT_SECRET, { expiresIn: '8h' });
         return res.json({ success: true, token, user: adminUser });
     }
 
-    // 2. Check Employees in MongoDB
-    try {
-        const dbState = mongoose.connection.readyState;
-        const stateMap: { [key: number]: string } = {
-            0: 'disconnected',
-            1: 'connected',
-            2: 'connecting',
-            3: 'disconnecting'
+    // 2. Check Employees in local storage
+    const employees = readData();
+    const user = employees.find((e: any) =>
+        (e.email === email || e.username === email) && e.password === password
+    );
+
+    if (user) {
+        const empUser = {
+            id: user.id,
+            name: user.name,
+            role: 'employee',
+            email: user.email,
+            department: user.department
         };
-
-        if (dbState !== 1) {
-            const hasUri = !!process.env.MONGODB_URI;
-            console.error('[ERROR] Database not connected. State:', stateMap[dbState] || dbState);
-            return res.status(503).json({
-                success: false,
-                message: `Database connection is ${stateMap[dbState] || 'not ready'}`,
-                error: lastConnectionError || (!hasUri
-                    ? 'MONGODB_URI is MISSING in Render Environment Variables. Please add it to Render dashboard Settings -> Environment.'
-                    : 'The server has the URI but cannot reach MongoDB. This is 99% an IP Whitelist issue. Please add 0.0.0.0/0 to MongoDB Atlas Network Access.')
-            });
-        }
-
-        const user = await Employee.findOne({
-            $or: [{ email: email }, { username: email }],
-            password: password
-        });
-
-        if (user) {
-            console.log(`[DEBUG] Employee login successful: ${user.name}`);
-            const empUser = {
-                id: user.id,
-                name: user.name,
-                role: 'employee',
-                email: user.email,
-                department: user.department
-            };
-            const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
-            res.json({ success: true, token, user: empUser });
-        } else {
-            console.log(`[DEBUG] Login failed for email: ${email}`);
-            res.status(401).json({ success: false, message: 'Invalid credentials' });
-        }
-    } catch (error: any) {
-        console.error(`[DEBUG] Login ERROR:`, error.message);
-        res.status(500).json({
-            success: false,
-            message: 'Database error',
-            error: error.message
-        });
+        const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
+        res.json({ success: true, token, user: empUser });
+    } else {
+        res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 });
 
 // --- PROTECTED ROUTES (require valid JWT) ---
 app.use(authMiddleware);
 
-app.get('/api/employees', async (req, res) => {
-    // Check if DB is connected
-    if (mongoose.connection.readyState !== 1) {
-        console.error('[ERROR] Database not connected. State:', mongoose.connection.readyState);
-        return res.status(503).json({
-            success: false,
-            message: 'Database connection is not ready',
-            error: 'The server is unable to reach MongoDB. Please check IP whitelisting.'
-        });
-    }
-
-    try {
-        const employees = await Employee.find();
-        res.json(employees);
-    } catch (error: any) {
-        res.status(500).json({ message: 'Error fetching employees', error: error.message });
-    }
+app.get('/api/employees', (req, res) => {
+    const employees = readData();
+    res.json(employees);
 });
 
 // POST new employee
-app.post('/api/employees', async (req, res) => {
-    // 1. Check if DB is connected immediately
-    if (mongoose.connection.readyState !== 1) {
-        console.error('[ERROR] Database not connected. readyState:', mongoose.connection.readyState);
-        return res.status(503).json({
-            success: false,
-            message: 'Database connection is not ready',
-            error: 'The server is unable to reach MongoDB. Please check IP whitelisting in MongoDB Atlas (add 0.0.0.0/0 for Render).'
-        });
-    }
+app.post('/api/employees', (req, res) => {
+    const employees = readData();
+    const { id, name, email, role, department, status, phone, joiningDate } = req.body;
 
-    try {
-        const { id, name, email, role, department, status, phone, joiningDate } = req.body;
-
-        // Improved ID generation by querying MongoDB
-        let finalId = id;
-        if (!finalId) {
-            const count = await Employee.countDocuments();
-            // This is a simple counter, for more robustness we should find max ID
-            const lastEmp = await Employee.findOne().sort({ createdAt: -1 });
-            let nextIdNumber = count + 1;
-            if (lastEmp) {
-                const match = lastEmp.id.match(/\d+/);
-                if (match) nextIdNumber = parseInt(match[0], 10) + 1;
+    let finalId = id;
+    if (!finalId) {
+        let maxId = 0;
+        employees.forEach((e: any) => {
+            const match = e.id.match(/\d+/);
+            if (match) {
+                const num = parseInt(match[0], 10);
+                if (num > maxId) maxId = num;
             }
-            finalId = `EMP${String(nextIdNumber).padStart(3, '0')}`;
-        }
-
-        console.log(`[DEBUG] Adding new employee to MongoDB: ${name} (ID: ${finalId})`);
-
-        const customPassword = req.body.password || 'Password123!';
-
-        const newEmployee = new Employee({
-            id: finalId,
-            name,
-            email,
-            username: req.body.username || email,
-            password: customPassword,
-            role,
-            department,
-            status: status || 'Active',
-            joiningDate: joiningDate || new Date().toISOString().split('T')[0],
-            phone: phone || '',
-            salary: { base: 0, hra: 0, transport: 0, other: 0 },
-            leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
         });
-
-        await newEmployee.save();
-        console.log(`[DEBUG] MongoDB Write successful for ${finalId}`);
-        res.status(201).json(newEmployee);
-    } catch (error: any) {
-        console.error(`[DEBUG] MongoDB Add Employee ERROR:`, error.message);
-        res.status(400).json({
-            success: false,
-            message: 'Error creating employee',
-            error: error.message
-        });
+        finalId = `EMP${String(maxId + 1).padStart(3, '0')}`;
     }
+
+    const newEmployee = {
+        id: finalId,
+        name,
+        email,
+        username: req.body.username || email,
+        password: req.body.password || 'Password123!',
+        role,
+        department,
+        status: status || 'Active',
+        joiningDate: joiningDate || new Date().toISOString().split('T')[0],
+        phone: phone || '',
+        salary: { base: 0, hra: 0, transport: 0, other: 0 },
+        leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
+    };
+
+    employees.push(newEmployee);
+    writeData(employees);
+    res.status(201).json(newEmployee);
 });
 
 // PUT update employee
-app.put('/api/employees/:id', async (req, res) => {
-    try {
-        const updatedEmployee = await Employee.findOneAndUpdate(
-            { id: req.params.id },
-            { $set: req.body },
-            { new: true }
-        );
+app.put('/api/employees/:id', (req, res) => {
+    const employees = readData();
+    const index = employees.findIndex((e: any) => e.id === req.params.id);
 
-        if (updatedEmployee) {
-            res.json(updatedEmployee);
-        } else {
-            res.status(404).json({ message: 'Employee not found' });
-        }
-    } catch (error: any) {
-        res.status(400).json({ message: 'Error updating employee', error: error.message });
+    if (index !== -1) {
+        employees[index] = { ...employees[index], ...req.body };
+        writeData(employees);
+        res.json(employees[index]);
+    } else {
+        res.status(404).json({ message: 'Employee not found' });
     }
 });
 
 // DELETE employee
-app.delete('/api/employees/:id', async (req, res) => {
-    try {
-        const result = await Employee.findOneAndDelete({ id: req.params.id });
+app.delete('/api/employees/:id', (req, res) => {
+    const employees = readData();
+    const filtered = employees.filter((e: any) => e.id !== req.params.id);
 
-        if (result) {
-            res.json({ message: 'Employee deleted' });
-        } else {
-            res.status(404).json({ message: 'Employee not found' });
-        }
-    } catch (error: any) {
-        res.status(400).json({ message: 'Error deleting employee', error: error.message });
+    if (filtered.length < employees.length) {
+        writeData(filtered);
+        res.json({ message: 'Employee deleted' });
+    } else {
+        res.status(404).json({ message: 'Employee not found' });
     }
 });
 
