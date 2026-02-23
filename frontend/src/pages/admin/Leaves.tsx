@@ -145,21 +145,21 @@ const Leaves = () => {
 
     // Filter leaves based on user role
     const visibleLeaves = isAdmin
-        ? leaves
-        : leaves.filter((l: LeaveRequest) => l.employeeId === user?.id);
+        ? (Array.isArray(leaves) ? leaves : [])
+        : (Array.isArray(leaves) ? leaves.filter((l: LeaveRequest) => l.employeeId === user?.id) : []);
 
     // Derived Data
-    const pendingRequests = visibleLeaves.filter((l: LeaveRequest) => l.status === 'Pending').length;
-    const approvedToday = visibleLeaves.filter((l: LeaveRequest) => l.status === 'Approved' &&
-        new Date(l.startDate) <= new Date() && new Date(l.endDate) >= new Date()).length;
+    const pendingRequests = Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === 'Pending').length : 0;
+    const approvedToday = Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === 'Approved' &&
+        new Date(l.startDate) <= new Date() && new Date(l.endDate) >= new Date()).length : 0;
 
     const filteredLeaves = statusFilter === 'All'
         ? visibleLeaves
-        : visibleLeaves.filter((l: LeaveRequest) => l.status === statusFilter);
+        : (Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === statusFilter) : []);
 
     const visibleEmployees = isAdmin
-        ? employees
-        : employees.filter((e: Employee) => e.id === user?.id);
+        ? (Array.isArray(employees) ? employees : [])
+        : (Array.isArray(employees) ? employees.filter((e: Employee) => e.id === user?.id) : []);
 
     return (
         <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

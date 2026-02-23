@@ -78,7 +78,7 @@ const Performance = () => {
 
     // Helper to get latest rating
     const getLatestRating = (empId: string) => {
-        const empRecords = records.filter(r => r.employeeId === empId && r.type === 'Review');
+        const empRecords = Array.isArray(records) ? records.filter(r => r.employeeId === empId && r.type === 'Review') : [];
         if (empRecords.length === 0) return 'N/A';
         return empRecords[empRecords.length - 1].rating + ' / 5';
     };
@@ -119,7 +119,7 @@ const Performance = () => {
                             <div className="text-right border-l border-brand-border border-dashed pl-8">
                                 <span className="block text-[10px] text-brand-muted uppercase font-black tracking-[0.2em] mb-1">Reviews</span>
                                 <span className="text-brand-text font-black text-lg">
-                                    {records.filter(r => r.employeeId === emp.id).length}
+                                    {Array.isArray(records) ? records.filter(r => r.employeeId === emp.id).length : 0}
                                 </span>
                             </div>
                             <button

@@ -75,8 +75,9 @@ const Attendance = () => {
     const fetchMonthlyData = async () => {
         try {
             const response = await api.get('/api/attendance');
-            const allData: AttendanceRecord[] = await response.json();
-            return allData.filter(r => r.date.startsWith(reportMonth));
+            const rawData = await response.json();
+            const allData: AttendanceRecord[] = Array.isArray(rawData) ? rawData : [];
+            return allData.filter(r => r && r.date && r.date.startsWith(reportMonth));
         } catch (error) {
             console.error("Error fetching report data:", error);
             return [];

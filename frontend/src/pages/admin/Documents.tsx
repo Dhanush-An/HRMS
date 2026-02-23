@@ -46,13 +46,11 @@ const Documents = () => {
         setView('list');
     };
 
-    const filteredDocuments = selectedEmployee
+    const filteredDocuments = selectedEmployee && Array.isArray(documents)
         ? documents
             .filter((d: Document) => d.employeeId === selectedEmployee.id)
             .filter((doc, index, self) =>
-                index === self.findIndex((t) => (
-                    t.title === doc.title && t.type === doc.type
-                ))
+                index === self.findIndex((t) => t.type === doc.type)
             )
         : [];
 

@@ -228,7 +228,7 @@ const EmployeeAttendance = () => {
                                         <span className="text-xs font-bold text-brand-text">Present</span>
                                     </div>
                                     <span className="text-2xl font-black text-status-approved">
-                                        {attendance.filter(r => r.status === 'Present').length}
+                                        {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Present') : []).length}
                                     </span>
                                 </div>
 
@@ -240,7 +240,7 @@ const EmployeeAttendance = () => {
                                         <span className="text-xs font-bold text-brand-text">Leaves</span>
                                     </div>
                                     <span className="text-2xl font-black text-status-rejected">
-                                        {attendance.filter(r => r.status === 'Absent' || r.status === 'Leave').length}
+                                        {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Absent' || r.status === 'Leave') : []).length}
                                     </span>
                                 </div>
 
@@ -252,7 +252,7 @@ const EmployeeAttendance = () => {
                                         <span className="text-xs font-bold text-brand-text">Late/Half</span>
                                     </div>
                                     <span className="text-2xl font-black text-status-pending">
-                                        {attendance.filter(r => r.status === 'Late' || r.status === 'Half Day').length}
+                                        {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late' || r.status === 'Half Day') : []).length}
                                     </span>
                                 </div>
                             </div>

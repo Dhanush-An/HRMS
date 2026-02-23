@@ -253,7 +253,7 @@ const EmployeeTasks = () => {
                                 <div className="p-6 bg-brand-bg rounded-3xl border border-brand-border flex flex-col items-center justify-center text-center shadow-inner group/stat relative overflow-hidden">
                                     <div className="absolute inset-0 bg-emerald-500 opacity-0 group-hover/stat:opacity-[0.02] transition-opacity"></div>
                                     <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
-                                        {tasks.filter(t => t.status === 'Completed').length}
+                                        {Array.isArray(tasks) ? tasks.filter(t => t.status === 'Completed').length : 0}
                                     </span>
                                     <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Closed</span>
                                 </div>
