@@ -17,7 +17,8 @@ export const connectDB = async () => {
     try {
         console.log('[DEBUG] Attempting to connect to MongoDB (URI length: ' + MONGODB_URI.length + ')...');
         await mongoose.connect(MONGODB_URI, {
-            serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of default 30s
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of default 30s
+            family: 4 // Force IPv4
         });
         console.log('[DEBUG] ✅ Connected to MongoDB Atlas successfully');
         lastConnectionError = null;
