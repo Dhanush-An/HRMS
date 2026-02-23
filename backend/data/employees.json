@@ -70,5 +70,29 @@
     },
     "username": "agila.antigraviity@gmail.com",
     "password": "Agila12@"
+  },
+  {
+    "id": "EMP004",
+    "name": "Pooja",
+    "email": "pooja.antigraviity@gmail.com",
+    "username": "pooja.antigraviity@gmail.com",
+    "password": "Pooja12@",
+    "role": "Junior developer",
+    "department": "Developer",
+    "status": "Active",
+    "joiningDate": "2026-01-21",
+    "phone": "7534653953",
+    "salary": {
+      "base": 0,
+      "hra": 0,
+      "transport": 0,
+      "other": 0
+    },
+    "leaveBalance": {
+      "sick": 10,
+      "casual": 12,
+      "earned": 15,
+      "wfh": 10
+    }
   }
 ]

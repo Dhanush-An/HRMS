@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api';
@@ -296,9 +296,7 @@ const EmployeeDashboard = () => {
                             <img
                                 src="/logo.jpg"
                                 alt="Logo"
-                                className="absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-500 opacity-0"
-                                onLoad={(e) => e.currentTarget.classList.replace('opacity-0', 'opacity-100')}
-                                onError={(e) => e.currentTarget.style.display = 'none'}
+                                className="absolute inset-0 w-full h-full object-cover z-10"
                             />
                         </div>
                         <span className="text-xl font-bold text-brand-text tracking-tight">Antigraviity</span>
