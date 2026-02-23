@@ -277,6 +277,16 @@ app.get('/api/employees', async (req, res) => {
 
 // POST new employee
 app.post('/api/employees', async (req, res) => {
+    // 1. Check if DB is connected immediately
+    if (mongoose.connection.readyState !== 1) {
+        console.error('[ERROR] Database not connected. readyState:', mongoose.connection.readyState);
+        return res.status(503).json({
+            success: false,
+            message: 'Database connection is not ready',
+            error: 'The server is unable to reach MongoDB. Please check IP whitelisting in MongoDB Atlas (add 0.0.0.0/0 for Render).'
+        });
+    }
+
     try {
         const { id, name, email, role, department, status, phone, joiningDate } = req.body;
 
@@ -313,24 +323,15 @@ app.post('/api/employees', async (req, res) => {
             leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
         });
 
-        // Check if DB is connected
-        if (mongoose.connection.readyState !== 1) {
-            console.error('[ERROR] Database not connected. readyState:', mongoose.connection.readyState);
-            return res.status(500).json({
-                message: 'Database connection is not ready',
-                error: 'The server is unable to reach MongoDB. Please check IP whitelisting in MongoDB Atlas.'
-            });
-        }
-
         await newEmployee.save();
         console.log(`[DEBUG] MongoDB Write successful for ${finalId}`);
         res.status(201).json(newEmployee);
     } catch (error: any) {
         console.error(`[DEBUG] MongoDB Add Employee ERROR:`, error.message);
         res.status(400).json({
+            success: false,
             message: 'Error creating employee',
-            error: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            error: error.message
         });
     }
 });
