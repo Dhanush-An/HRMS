@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Megaphone, Bell, Calendar, Send, Sparkles, Filter, MoreHorizontal } from 'lucide-react';
 import api from '../../api';
 
