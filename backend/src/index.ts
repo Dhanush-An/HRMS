@@ -237,13 +237,23 @@ app.post('/api/login', async (req, res) => {
 
     // 2. Check Employees in MongoDB
     try {
-        // Check if DB is connected
-        if (mongoose.connection.readyState !== 1) {
-            console.error('[ERROR] Database not connected. readyState:', mongoose.connection.readyState);
+        const dbState = mongoose.connection.readyState;
+        const stateMap: { [key: number]: string } = {
+            0: 'disconnected',
+            1: 'connected',
+            2: 'connecting',
+            3: 'disconnecting'
+        };
+
+        if (dbState !== 1) {
+            const hasUri = !!process.env.MONGODB_URI;
+            console.error('[ERROR] Database not connected. State:', stateMap[dbState] || dbState);
             return res.status(503).json({
                 success: false,
-                message: 'Database connection is not ready',
-                error: 'The server is unable to reach MongoDB. Please check IP whitelisting in MongoDB Atlas.'
+                message: `Database connection is ${stateMap[dbState] || 'not ready'}`,
+                error: !hasUri
+                    ? 'MONGODB_URI is MISSING in Render Environment Variables. Please add it to Render dashboard Settings -> Environment.'
+                    : 'The server has the URI but cannot reach MongoDB. This is 99% an IP Whitelist issue. Please add 0.0.0.0/0 to MongoDB Atlas Network Access.'
             });
         }
 
