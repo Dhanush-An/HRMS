@@ -3,16 +3,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
 export const connectDB = async () => {
+    const MONGODB_URI = process.env.MONGODB_URI;
+
     if (!MONGODB_URI) {
         console.error('[ERROR] MONGODB_URI is not defined in environment variables.');
+        console.log('[DEBUG] Current Working Directory:', process.cwd());
+        console.log('[DEBUG] Environment keys available:', Object.keys(process.env).filter(k => !k.startsWith('npm_')));
         return;
     }
 
     try {
-        console.log('[DEBUG] Attempting to connect to MongoDB...');
+        console.log('[DEBUG] Attempting to connect to MongoDB (URI length: ' + MONGODB_URI.length + ')...');
         await mongoose.connect(MONGODB_URI, {
             serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of default 30s
         });
