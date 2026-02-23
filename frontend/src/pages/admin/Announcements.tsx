@@ -146,7 +146,7 @@ const Announcements = () => {
                         </button>
                     </div>
 
-                    {announcements.length === 0 ? (
+                    {Array.isArray(announcements) && announcements.length === 0 ? (
                         <div className="text-center py-20 bg-brand-surface border border-brand-border rounded-[2.5rem] shadow-sm animate-in zoom-in-95 duration-500">
                             <div className="w-20 h-20 bg-brand-bg rounded-full flex items-center justify-center mx-auto mb-6">
                                 <Sparkles className="w-10 h-10 text-brand-muted opacity-20" />
@@ -156,7 +156,7 @@ const Announcements = () => {
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {announcements.map((ann, idx) => (
+                            {Array.isArray(announcements) && announcements.map((ann, idx) => (
                                 <div
                                     key={ann.id}
                                     className="bg-brand-surface border border-brand-border rounded-[2.5rem] p-8 relative overflow-hidden group hover:shadow-2xl hover:border-brand-primary/20 transition-all duration-500 animate-in slide-in-from-right-4"
