@@ -23,6 +23,12 @@ import EmployeePayroll from './pages/employee/EmployeePayroll';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import { ThemeProvider } from './context/ThemeContext';
 
+/** Redirects unauthenticated users to /login */
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const token = localStorage.getItem('token');
+  return token ? <>{children}</> : <Navigate to="/login" replace />;
+};
+
 function App() {
   return (
     <ThemeProvider>
@@ -31,7 +37,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* Admin Routes */}
-          <Route path="/admin-dashboard" element={<AdminDashboard />}>
+          <Route path="/admin-dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>}>
             <Route index element={<AdminHome />} />
             <Route path="employees" element={<Employees />} />
             <Route path="attendance" element={<Attendance />} />
@@ -44,7 +50,8 @@ function App() {
             <Route path="settings" element={<Settings />} />
           </Route>
 
-          <Route path="/employee-dashboard" element={<EmployeeDashboard />}>
+          {/* Employee Routes */}
+          <Route path="/employee-dashboard" element={<PrivateRoute><EmployeeDashboard /></PrivateRoute>}>
             <Route index element={<EmployeeHome />} />
             <Route path="tasks" element={<EmployeeTasks />} />
             <Route path="profile" element={<EmployeeProfile />} />
@@ -53,9 +60,10 @@ function App() {
             <Route path="documents" element={<EmployeeDocuments />} />
             <Route path="policies" element={<CompanyPolicies />} />
             <Route path="payroll" element={<EmployeePayroll />} />
-            <Route path="leaves" element={<Leaves />} /> {/* Reusing Admin component for now, or mock */}
+            <Route path="leaves" element={<Leaves />} />
             <Route path="attendance" element={<EmployeeAttendance />} />
           </Route>
+
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
