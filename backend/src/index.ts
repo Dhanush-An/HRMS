@@ -58,10 +58,10 @@ const readData = () => {
         }
         const data = fs.readFileSync(DATA_FILE, 'utf-8');
         const parsed = JSON.parse(data);
-        console.log(`[DEBUG] readData Success from ${DATA_FILE}: ${parsed.length} employees`);
+        console.log(`[DEBUG] readData SUCCESS | File: ${DATA_FILE} | Count: ${parsed.length}`);
         return parsed;
     } catch (error: any) {
-        console.error(`[DEBUG] readData ERROR from ${DATA_FILE}:`, error.message);
+        console.error(`[DEBUG] readData ERROR | File: ${DATA_FILE} | Msg: ${error.message}`);
         return [];
     }
 };
@@ -293,7 +293,9 @@ app.post('/api/employees', (req, res) => {
     };
 
     employees.push(newEmployee);
+    console.log(`[DEBUG] PRE-WRITE | New employee count: ${employees.length}`);
     writeData(employees);
+    console.log(`[DEBUG] POST-WRITE | Employee added: ${newEmployee.name} (ID: ${newEmployee.id})`);
     res.status(201).json(newEmployee);
 });
 
