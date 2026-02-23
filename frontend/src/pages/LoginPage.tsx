@@ -29,9 +29,22 @@ const LoginPage: React.FC = () => {
             const data = await response.json();
 
             if (data.success) {
+                // Validate data before storage
+                if (!data.token) {
+                    throw new Error('Server returned success but no token was provided');
+                }
+                if (!data.user || !data.user.role) {
+                    throw new Error('Server returned success but user data is incomplete');
+                }
+
                 // Store JWT token and user info
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
+
+                console.log(`[LOGIN] Storage successful for user: ${data.user.email} with role: ${data.user.role}`);
+                if (import.meta.env.DEV) {
+                    console.debug(`[LOGIN DEBUG] Token prefix: ${data.token.substring(0, 10)}...`);
+                }
 
                 if (data.user.role === 'admin') {
                     navigate('/admin-dashboard');

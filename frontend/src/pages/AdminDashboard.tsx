@@ -23,6 +23,16 @@ import { useTheme } from '../context/ThemeContext';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
+
+    React.useEffect(() => {
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('user');
+        console.log(`[ADMIN DASHBOARD] Mount check - Token: ${!!token}, User: ${!!user}`);
+        if (!token || !user) {
+            navigate('/login');
+        }
+    }, [navigate]);
+
     const location = useLocation();
     const [showProfile, setShowProfile] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);

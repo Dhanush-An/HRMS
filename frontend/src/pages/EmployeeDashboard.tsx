@@ -67,13 +67,25 @@ const EmployeeDashboard = () => {
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            fetchTodayAttendance(parsedUser.id);
-            startGlobalTracking(parsedUser.id);
+        const token = localStorage.getItem('token');
+
+        console.log(`[DASHBOARD] Mount check - User: ${!!storedUser}, Token: ${!!token}`);
+
+        if (storedUser && token) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                setUser(parsedUser);
+                fetchTodayAttendance(parsedUser.id);
+                startGlobalTracking(parsedUser.id);
+            } catch (err) {
+                console.error("[DASHBOARD] Failed to parse user data", err);
+                navigate('/login');
+            }
+        } else {
+            console.warn("[DASHBOARD] missing credentials, redirecting to login");
+            navigate('/login');
         }
-    }, []);
+    }, [navigate]);
 
     const startGlobalTracking = (userId: string) => {
         if (!navigator.geolocation) {
