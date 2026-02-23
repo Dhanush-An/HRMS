@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
-import { connectDB } from './db';
+import { connectDB, lastConnectionError } from './db';
 import Employee from './models/Employee';
 
 dotenv.config();
@@ -225,10 +225,11 @@ app.get('/', (req, res) => {
 // --- AUTH ROUTES (PUBLIC) ---
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
-    console.log(`[DEBUG] Login attempt for: ${email}`);
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const cleanPassword = (password || '').trim();
 
     // 1. Check Hardcoded Admin
-    if (email === 'admin@hrms.com' && password === 'admin123') {
+    if (normalizedEmail === 'admin@hrms.com' && cleanPassword === 'admin123') {
         console.log(`[DEBUG] Admin login successful`);
         const adminUser = { id: 'ADMIN', name: 'System Admin', role: 'admin', email: 'admin@hrms.com' };
         const token = jwt.sign(adminUser, JWT_SECRET, { expiresIn: '8h' });
@@ -251,9 +252,9 @@ app.post('/api/login', async (req, res) => {
             return res.status(503).json({
                 success: false,
                 message: `Database connection is ${stateMap[dbState] || 'not ready'}`,
-                error: !hasUri
+                error: lastConnectionError || (!hasUri
                     ? 'MONGODB_URI is MISSING in Render Environment Variables. Please add it to Render dashboard Settings -> Environment.'
-                    : 'The server has the URI but cannot reach MongoDB. This is 99% an IP Whitelist issue. Please add 0.0.0.0/0 to MongoDB Atlas Network Access.'
+                    : 'The server has the URI but cannot reach MongoDB. This is 99% an IP Whitelist issue. Please add 0.0.0.0/0 to MongoDB Atlas Network Access.')
             });
         }
 

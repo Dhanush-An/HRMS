@@ -3,13 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+export let lastConnectionError: string | null = null;
+
 export const connectDB = async () => {
     const MONGODB_URI = process.env.MONGODB_URI;
 
     if (!MONGODB_URI) {
+        lastConnectionError = 'MONGODB_URI is not defined';
         console.error('[ERROR] MONGODB_URI is not defined in environment variables.');
-        console.log('[DEBUG] Current Working Directory:', process.cwd());
-        console.log('[DEBUG] Environment keys available:', Object.keys(process.env).filter(k => !k.startsWith('npm_')));
         return;
     }
 
@@ -19,8 +20,11 @@ export const connectDB = async () => {
             serverSelectionTimeoutMS: 5000 // Timeout after 5s instead of default 30s
         });
         console.log('[DEBUG] ✅ Connected to MongoDB Atlas successfully');
+        lastConnectionError = null;
     } catch (error: any) {
+        lastConnectionError = error.message;
         console.error('[ERROR] ❌ MongoDB connection failed:', error.message);
+        // ... rest of logging ...
         console.error('\n' + '='.repeat(50));
         console.error('ACTION REQUIRED: IP WHITELISTING ERROR');
         console.error('1. Go to MongoDB Atlas -> Network Access');
