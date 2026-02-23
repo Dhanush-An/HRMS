@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { API_URL } from '../../config';
+import api from '../../api';
 import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Sparkles, Inbox } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -41,7 +41,7 @@ const EmployeeAttendance = () => {
         if (!user) return; // Should handle redirect if no user
 
         try {
-            const response = await fetch(`${API_URL}/api/attendance?employeeId=${user.id}`); // Assuming API supports filtering
+            const response = await api.get(`/api/attendance?employeeId=${user.id}`);
             const data = await response.json();
 
             // Filter client-side if API doesn't support filtering

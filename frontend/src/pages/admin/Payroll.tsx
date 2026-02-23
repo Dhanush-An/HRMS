@@ -6,7 +6,7 @@ import {
     BadgeDollarSign
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { API_URL } from '../../config';
+import api from '../../api';
 
 interface SalaryStructure {
     base: number;
@@ -56,8 +56,8 @@ const Payroll = () => {
     const fetchData = async () => {
         try {
             const [historyRes, empRes] = await Promise.all([
-                fetch(`${API_URL}/api/payroll`),
-                fetch(`${API_URL}/api/employees`)
+                api.get('/api/payroll'),
+                api.get('/api/employees')
             ]);
             const historyData = await historyRes.json();
             const employeesData = await empRes.json();
@@ -89,11 +89,7 @@ const Payroll = () => {
         setEmployees(updatedEmployees);
 
         try {
-            await fetch(`${API_URL}/api/employees/${empId}/salary`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedSalary)
-            });
+            await api.put(`/api/employees/${empId}/salary`, updatedSalary);
         } catch (error) {
             console.error("Error updating salary:", error);
             fetchData(); // Revert on error
@@ -133,14 +129,10 @@ const Payroll = () => {
         });
 
         try {
-            const response = await fetch(`${API_URL}/api/payroll/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    month: selectedMonth,
-                    year: selectedYear,
-                    records
-                })
+            const response = await api.post('/api/payroll/generate', {
+                month: selectedMonth,
+                year: selectedYear,
+                records
             });
 
             if (response.ok) {

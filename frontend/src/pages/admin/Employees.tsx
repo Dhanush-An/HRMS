@@ -13,7 +13,7 @@ import {
     Filter
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { API_URL } from '../../config';
+import api from '../../api';
 
 interface Employee {
     id: string;
@@ -51,7 +51,7 @@ const Employees = () => {
 
     const fetchEmployees = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/employees`);
+            const response = await api.get('/api/employees');
             const data = await response.json();
             setEmployees(data);
         } catch (error) {
@@ -109,7 +109,7 @@ const Employees = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this employee?')) {
             try {
-                await fetch(`${API_URL}/api/employees/${id}`, { method: 'DELETE' });
+                await api.delete(`/api/employees/${id}`);
                 fetchEmployees();
             } catch (error) {
                 console.error('Error deleting employee:', error);
@@ -120,17 +120,9 @@ const Employees = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const url = isEditing && selectedEmployee
-                ? `${API_URL}/api/employees/${selectedEmployee.id}`
-                : `${API_URL}/api/employees`;
-
-            const method = isEditing ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+            const response = isEditing && selectedEmployee
+                ? await api.put(`/api/employees/${selectedEmployee.id}`, formData)
+                : await api.post('/api/employees', formData);
 
             if (response.ok) {
                 setIsModalOpen(false);

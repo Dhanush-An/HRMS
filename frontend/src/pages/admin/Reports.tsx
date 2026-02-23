@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_URL } from '../../config';
+import api from '../../api';
 import {
     Calendar,
     Plus,
@@ -49,8 +49,8 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
         setLoading(true);
         try {
             const [taskRes, empRes] = await Promise.all([
-                fetch(`${API_URL}/api/tasks?date=${selectedDate}${selectedEmployee ? `&employeeId=${selectedEmployee}` : ''}`),
-                fetch(`${API_URL}/api/employees`)
+                api.get(`/api/tasks?date=${selectedDate}${selectedEmployee ? `&employeeId=${selectedEmployee}` : ''}`),
+                api.get('/api/employees')
             ]);
 
             setTasks(await taskRes.json());
@@ -65,11 +65,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch(`${API_URL}/api/tasks`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+            const response = await api.post('/api/tasks', formData);
 
             if (response.ok) {
                 setShowModal(false);

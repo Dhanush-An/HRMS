@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Users, DollarSign, Briefcase, FileText, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
-import { API_URL } from '../../config';
+import api from '../../api';
 
 const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
     <motion.div
@@ -34,10 +34,10 @@ const AdminHome = () => {
         const fetchStats = async () => {
             try {
                 const [empRes, payRes, leaveRes, taskRes] = await Promise.all([
-                    fetch(`${API_URL}/api/employees`),
-                    fetch(`${API_URL}/api/payroll`),
-                    fetch(`${API_URL}/api/leaves`),
-                    fetch(`${API_URL}/api/tasks`)
+                    api.get('/api/employees'),
+                    api.get('/api/payroll'),
+                    api.get('/api/leaves'),
+                    api.get('/api/tasks')
                 ]);
 
                 const [employees, payroll, leaves, tasks] = await Promise.all([

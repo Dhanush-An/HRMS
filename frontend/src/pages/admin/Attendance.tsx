@@ -11,7 +11,7 @@ import {
     MapPin
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { API_URL } from '../../config';
+import api from '../../api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -49,8 +49,8 @@ const Attendance = () => {
     const fetchData = async () => {
         try {
             const [empRes, attRes] = await Promise.all([
-                fetch(`${API_URL}/api/employees`),
-                fetch(`${API_URL}/api/attendance?date=${selectedDate}`)
+                api.get('/api/employees'),
+                api.get(`/api/attendance?date=${selectedDate}`)
             ]);
 
             const empData = await empRes.json();
@@ -74,7 +74,7 @@ const Attendance = () => {
     // Report Generation Logic
     const fetchMonthlyData = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/attendance`);
+            const response = await api.get('/api/attendance');
             const allData: AttendanceRecord[] = await response.json();
             return allData.filter(r => r.date.startsWith(reportMonth));
         } catch (error) {

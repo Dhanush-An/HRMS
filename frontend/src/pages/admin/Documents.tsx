@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FileText, Download, Search, File, ChevronRight } from 'lucide-react';
-import { API_URL } from '../../config';
+import api from '../../api';
 
 interface Document {
     id: string;
@@ -26,8 +26,8 @@ const Documents = () => {
     const fetchData = async () => {
         try {
             const [empRes, docRes] = await Promise.all([
-                fetch(`${API_URL}/api/employees`),
-                fetch(`${API_URL}/api/documents`)
+                api.get('/api/employees'),
+                api.get('/api/documents')
             ]);
             setEmployees(await empRes.json());
             setDocuments(await docRes.json());

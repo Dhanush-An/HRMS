@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, FileCheck, Shield, Upload, X, AlertCircle } from 'lucide-react';
-import { API_URL } from '../../config';
+import api from '../../api';
 
 interface DocumentParams {
     id: string;
@@ -48,7 +48,7 @@ const EmployeeDocuments = () => {
     const fetchDocuments = async () => {
         if (!user?.id) return;
         try {
-            const response = await fetch(`${API_URL}/api/documents?employeeId=${user.id}`);
+            const response = await api.get(`/api/documents?employeeId=${user.id}`);
             const apiDocs = await response.json();
 
             // Merge required docs with uploaded ones
@@ -94,16 +94,12 @@ const EmployeeDocuments = () => {
         if (!user?.id) return;
 
         try {
-            const response = await fetch(`${API_URL}/api/documents`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: selectedDocType,
-                    type: selectedDocType,
-                    url: 'http://example.com/file.pdf', // In a real app, this would be the actual file URL
-                    employeeId: user.id,
-                    uploadedBy: user.name,
-                })
+            const response = await api.post('/api/documents', {
+                title: selectedDocType,
+                type: selectedDocType,
+                url: 'http://example.com/file.pdf',
+                employeeId: user.id,
+                uploadedBy: user.name,
             });
 
             if (response.ok) {

@@ -1,10 +1,13 @@
-import express from 'express'; // Force restart
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import jwt from 'jsonwebtoken';
 
 dotenv.config();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'hrms_dev_secret_change_in_production';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -150,24 +153,38 @@ const writeTasks = (data: any) => {
     fs.writeFileSync(TASKS_FILE, JSON.stringify(data, null, 2));
 };
 
+// --- AUTH MIDDLEWARE ---
+const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+
+    if (!token) {
+        res.status(401).json({ success: false, message: 'Access denied. No token provided.' });
+        return;
+    }
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        (req as any).user = decoded;
+        next();
+    } catch (err) {
+        res.status(403).json({ success: false, message: 'Invalid or expired token.' });
+    }
+};
+
 app.get('/', (req, res) => {
     res.send('Antigraviity HRMS API is running...');
 });
-// --- AUTH ROUTES ---
+
+// --- AUTH ROUTES (PUBLIC) ---
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
 
     // 1. Check Hardcoded Admin
     if (email === 'admin@hrms.com' && password === 'admin123') {
-        return res.json({
-            success: true,
-            user: {
-                id: 'ADMIN',
-                name: 'System Admin',
-                role: 'admin',
-                email: 'admin@hrms.com'
-            }
-        });
+        const adminUser = { id: 'ADMIN', name: 'System Admin', role: 'admin', email: 'admin@hrms.com' };
+        const token = jwt.sign(adminUser, JWT_SECRET, { expiresIn: '8h' });
+        return res.json({ success: true, token, user: adminUser });
     }
 
     // 2. Check Employees
@@ -177,20 +194,22 @@ app.post('/api/login', (req, res) => {
     );
 
     if (user) {
-        res.json({
-            success: true,
-            user: {
-                id: user.id,
-                name: user.name,
-                role: 'employee', // Enforce employee role for now, or usage user.role if you have different employee tiers
-                email: user.email,
-                department: user.department
-            }
-        });
+        const empUser = {
+            id: user.id,
+            name: user.name,
+            role: 'employee',
+            email: user.email,
+            department: user.department
+        };
+        const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
+        res.json({ success: true, token, user: empUser });
     } else {
         res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 });
+
+// --- PROTECTED ROUTES (require valid JWT) ---
+app.use(authMiddleware);
 
 app.get('/api/employees', (req, res) => {
     const employees = readData();

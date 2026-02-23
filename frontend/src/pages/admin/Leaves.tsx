@@ -11,7 +11,7 @@ import {
     Plus
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { API_URL } from '../../config';
+import api from '../../api';
 
 interface LeaveRequest {
     id: string;
@@ -83,8 +83,8 @@ const Leaves = () => {
     const fetchData = async () => {
         try {
             const [leavesRes, empRes] = await Promise.all([
-                fetch(`${API_URL}/api/leaves`),
-                fetch(`${API_URL}/api/employees`)
+                api.get('/api/leaves'),
+                api.get('/api/employees')
             ]);
 
             setLeaves(await leavesRes.json());
@@ -105,14 +105,10 @@ const Leaves = () => {
         if (!emp) return;
 
         try {
-            const response = await fetch(`${API_URL}/api/leaves`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...formData,
-                    employeeId: targetEmployeeId,
-                    name: emp.name
-                })
+            const response = await api.post('/api/leaves', {
+                ...formData,
+                employeeId: targetEmployeeId,
+                name: emp.name
             });
 
             if (response.ok) {
@@ -135,11 +131,7 @@ const Leaves = () => {
 
     const handleStatusUpdate = async (id: string, status: 'Approved' | 'Rejected') => {
         try {
-            const response = await fetch(`${API_URL}/api/leaves/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status })
-            });
+            const response = await api.put(`/api/leaves/${id}`, { status });
 
             if (response.ok) {
                 fetchData();

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_URL } from '../../config';
+import api from '../../api';
 import { Star, MessageSquare, Plus } from 'lucide-react';
 
 interface PerformanceRecord {
@@ -40,8 +40,8 @@ const Performance = () => {
     const fetchData = async () => {
         try {
             const [perfRes, empRes] = await Promise.all([
-                fetch(`${API_URL}/api/performance`),
-                fetch(`${API_URL}/api/employees`)
+                api.get('/api/performance'),
+                api.get('/api/employees')
             ]);
             setRecords(await perfRes.json());
             setEmployees(await empRes.json());
@@ -61,14 +61,10 @@ const Performance = () => {
         if (!selectedEmployee) return;
 
         try {
-            const response = await fetch(`${API_URL}/api/performance`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...formData,
-                    employeeId: selectedEmployee.id,
-                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                })
+            const response = await api.post('/api/performance', {
+                ...formData,
+                employeeId: selectedEmployee.id,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
             });
             if (response.ok) {
                 setShowModal(false);

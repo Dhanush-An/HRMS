@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Megaphone, Bell, Calendar, Send, Sparkles, Filter, MoreHorizontal } from 'lucide-react';
-import { API_URL } from '../../config';
+import api from '../../api';
 
 interface Announcement {
     id: string;
@@ -24,7 +24,7 @@ const Announcements = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/announcements`);
+            const response = await api.get('/api/announcements');
             const data = await response.json();
             setAnnouncements(data.reverse()); // Show newest first
         } catch (error) {
@@ -35,11 +35,7 @@ const Announcements = () => {
     const handlePost = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch(`${API_URL}/api/announcements`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+            const response = await api.post('/api/announcements', formData);
 
             if (response.ok) {
                 fetchData();

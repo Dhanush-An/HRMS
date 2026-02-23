@@ -29,7 +29,8 @@ const LoginPage: React.FC = () => {
             const data = await response.json();
 
             if (data.success) {
-                // Store user info if needed
+                // Store JWT token and user info
+                localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
                 if (data.user.role === 'admin') {

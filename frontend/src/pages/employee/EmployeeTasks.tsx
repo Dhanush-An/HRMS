@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_URL } from '../../config';
+import api from '../../api';
 import {
     Calendar,
     Plus,
@@ -57,7 +57,7 @@ const EmployeeTasks = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_URL}/api/tasks?employeeId=${currentEmployeeId}`);
+            const response = await api.get(`/api/tasks?employeeId=${currentEmployeeId}`);
             const data = await response.json();
 
             const filteredTasks = data.filter((task: Task) =>
@@ -106,20 +106,9 @@ const EmployeeTasks = () => {
         if (!currentEmployeeId) return;
 
         try {
-            const url = isEditing
-                ? `${API_URL}/api/tasks/${editingTaskId}`
-                : `${API_URL}/api/tasks`;
-
-            const method = isEditing ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...formData,
-                    employeeId: currentEmployeeId
-                })
-            });
+            const response = isEditing
+                ? await api.put(`/api/tasks/${editingTaskId}`, { ...formData, employeeId: currentEmployeeId })
+                : await api.post('/api/tasks', { ...formData, employeeId: currentEmployeeId });
 
             if (response.ok) {
                 setShowModal(false);
