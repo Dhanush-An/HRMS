@@ -8,12 +8,20 @@ const getAuthHeaders = (): HeadersInit => ({
 });
 
 /** Handle 401/403 by clearing session and redirecting to login */
-const handleResponse = (response: Response): Response => {
+const handleResponse = async (response: Response): Promise<Response> => {
     if (response.status === 401 || response.status === 403) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';
+        // Return a pending promise that never resolves to stop execution
+        return new Promise(() => { });
     }
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `API Error: ${response.status}`);
+    }
+
     return response;
 };
 
