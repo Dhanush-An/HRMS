@@ -302,7 +302,7 @@ const Leaves = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-brand-border">
-                                        {filteredLeaves.map((leave) => (
+                                        {Array.isArray(filteredLeaves) && filteredLeaves.map((leave) => (
                                             <tr key={leave.id} className="hover:bg-brand-bg/30 transition-colors group">
                                                 <td className="px-8 py-6 whitespace-nowrap">
                                                     <div className="text-brand-text font-black text-sm">{leave.name}</div>
@@ -384,7 +384,7 @@ const Leaves = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-brand-border">
-                                    {visibleEmployees.map((emp) => (
+                                    {Array.isArray(visibleEmployees) && visibleEmployees.map((emp) => (
                                         <tr key={emp.id} className="hover:bg-brand-bg/30 transition-colors">
                                             <td className="px-8 py-6 whitespace-nowrap">
                                                 <div className="text-brand-text font-black text-sm">{emp.name}</div>

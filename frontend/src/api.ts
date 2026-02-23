@@ -12,9 +12,9 @@ const handleResponse = async (response: Response): Promise<Response> => {
     if (response.status === 401 || response.status === 403) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        // Use a slight delay or just redirect
         window.location.href = '/login';
-        // Return a pending promise that never resolves to stop execution
-        return new Promise(() => { });
+        throw new Error('Unauthorized');
     }
 
     if (!response.ok) {

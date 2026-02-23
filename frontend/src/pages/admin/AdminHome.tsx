@@ -48,25 +48,25 @@ const AdminHome = () => {
                 ]);
 
                 // Calculate Total Payroll
-                const totalPayroll = payroll.reduce((total: number, p: any) => {
+                const totalPayroll = Array.isArray(payroll) ? payroll.reduce((total: number, p: any) => {
                     return total + (p.records?.reduce((s: number, r: any) => s + (r.netSalary || 0), 0) || 0);
-                }, 0);
+                }, 0) : 0;
 
                 // Calculate Pending Requests
-                const pendingRequests = leaves.filter((l: any) => l.status === 'Pending').length;
+                // ... (logic moved into setStats)
 
                 // Calculate Active Projects
                 const activeProjects = new Set(
-                    tasks
+                    (Array.isArray(tasks) ? tasks : [])
                         .map((t: any) => t.projectName)
                         .filter((name: string) => name && name.trim() !== '')
                 ).size;
 
                 setStats({
-                    totalEmployees: employees.length,
+                    totalEmployees: Array.isArray(employees) ? employees.length : 0,
                     totalPayroll,
                     activeProjects,
-                    pendingRequests
+                    pendingRequests: Array.isArray(leaves) ? leaves.filter((l: any) => l.status === 'Pending').length : 0
                 });
             } catch (error) {
                 console.error("Error fetching admin stats:", error);

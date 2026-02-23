@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Calendar,
     Clock,
@@ -133,10 +133,10 @@ const Attendance = () => {
 
     // Stats Calculation
     const stats = {
-        present: attendance.filter(r => r.status === 'Present').length,
-        absent: attendance.filter(r => r.status === 'Absent').length,
-        late: attendance.filter(r => r.status === 'Late').length,
-        halfDay: attendance.filter(r => r.status === 'Half Day').length,
+        present: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Present').length : 0,
+        absent: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Absent').length : 0,
+        late: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late').length : 0,
+        halfDay: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Half Day').length : 0,
     };
 
     return (

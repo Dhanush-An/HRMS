@@ -187,7 +187,7 @@ const Payroll = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-brand-border">
-                                {employees.map((emp) => {
+                                {Array.isArray(employees) && employees.map((emp) => {
                                     const salary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
                                     const gross = salary.base + salary.hra + salary.transport + salary.other;
                                     return (
@@ -271,7 +271,7 @@ const Payroll = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-brand-border">
-                                {employees.map((emp) => {
+                                {Array.isArray(employees) && employees.map((emp) => {
                                     const { netSalary, tax } = calculateNetSalary(emp);
                                     return (
                                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
@@ -353,7 +353,7 @@ const Payroll = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-brand-border">
-                                            {payroll.records.map((record) => (
+                                            {Array.isArray(payroll.records) && payroll.records.map((record) => (
                                                 <tr key={record.employeeId} className="hover:bg-brand-bg transition-colors">
                                                     <td className="px-4 py-4 text-sm font-bold text-brand-text">{record.name}</td>
                                                     <td className="px-4 py-4 text-sm text-right font-medium text-brand-muted">₹{record.base.toLocaleString()}</td>

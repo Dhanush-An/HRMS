@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Plus,
     Search,
@@ -185,7 +185,7 @@ const Employees = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-border">
-                        {employees.map((emp) => (
+                        {Array.isArray(employees) && employees.map((emp) => (
                             <tr key={emp.id} className="hover:bg-brand-bg transition-colors group cursor-pointer" onClick={() => openProfile(emp)}>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
