@@ -23,7 +23,28 @@ import {
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 
-const EmployeeDashboard: React.FC = () => {
+// Geofencing Constants
+const BRANCH_LOCATIONS = {
+    'Bangalore': { lat: 12.9721667, lng: 77.509764 },
+    'Chennai': { lat: 13.0827, lng: 80.2707 } // Placeholder for Chennai
+};
+
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371e3; // metres
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+        Math.cos(φ1) * Math.cos(φ2) *
+        Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // in metres
+};
+
+const EmployeeDashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [user, setUser] = useState<any>(null);
@@ -119,7 +140,7 @@ const EmployeeDashboard: React.FC = () => {
         setIsSubmitting(true);
 
         // Capture Geolocation at Moment of Login
-        let loginLocation = { latitude: undefined, longitude: undefined };
+        let loginLocation: { latitude?: number; longitude?: number } = { latitude: undefined, longitude: undefined };
 
         try {
             const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -129,11 +150,42 @@ const EmployeeDashboard: React.FC = () => {
                 });
             });
             loginLocation = {
-                latitude: position.coords.latitude as any,
-                longitude: position.coords.longitude as any
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
             };
+
+            // GEOFENCING LOGIC
+            if (loginOptions.workMode === 'Work from Office') {
+                const branch = BRANCH_LOCATIONS[loginOptions.workLocation as keyof typeof BRANCH_LOCATIONS];
+                if (branch && loginLocation.latitude && loginLocation.longitude) {
+                    const distance = calculateDistance(
+                        loginLocation.latitude,
+                        loginLocation.longitude,
+                        branch.lat,
+                        branch.lng
+                    );
+
+                    console.log(`[GEOFENCE] Distance to ${loginOptions.workLocation} branch: ${distance.toFixed(2)}m`);
+
+                    if (distance > 200) {
+                        alert("Access Denied: You are not eligible for login from your current location. Please ensure you are within 200m of the office.");
+                        setIsSubmitting(false);
+                        return;
+                    }
+                } else if (!loginLocation.latitude) {
+                    alert("Location required: Please enable GPS and allow location access to check-in from the office.");
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
         } catch (err) {
             console.error("Could not capture login location:", err);
+            if (loginOptions.workMode === 'Work from Office') {
+                alert("Location Error: We could not verify your position. Office login requires GPS access.");
+                setIsSubmitting(false);
+                return;
+            }
         }
 
         const now = new Date();
