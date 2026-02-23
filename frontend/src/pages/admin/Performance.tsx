@@ -93,7 +93,7 @@ const Performance = () => {
             </div>
 
             <div className="space-y-4">
-                {employees.map((emp) => (
+                {Array.isArray(employees) && employees.map((emp) => (
                     <div key={emp.id} className="bg-brand-surface border border-brand-border rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between hover:shadow-lg hover:shadow-brand-primary/5 transition-all group">
                         <div className="flex items-center gap-5 w-full md:w-auto mb-4 md:mb-0">
                             <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-brand-primary to-blue-400 p-[2px] shadow-lg">

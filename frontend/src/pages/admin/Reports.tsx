@@ -156,7 +156,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                         className="bg-transparent text-brand-text text-sm font-bold focus:outline-none w-full cursor-pointer appearance-none uppercase tracking-widest text-[10px]"
                     >
                         <option value="">All Employees</option>
-                        {employees.map(e => (
+                        {Array.isArray(employees) && employees.map(e => (
                             <option key={e.id} value={e.id}>{e.name}</option>
                         ))}
                     </select>
@@ -181,7 +181,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                             ) : tasks.length === 0 ? (
                                 <tr><td colSpan={4} className="px-8 py-10 text-center text-brand-muted font-medium italic">No tasks found for this date.</td></tr>
                             ) : (
-                                tasks.map((task) => (
+                                Array.isArray(tasks) && tasks.map((task) => (
                                     <tr key={task.id} className="hover:bg-brand-bg/30 transition-colors group">
                                         <td className="px-8 py-6 whitespace-nowrap">
                                             <div className="text-brand-text font-black text-sm">{getEmployeeName(task.employeeId)}</div>

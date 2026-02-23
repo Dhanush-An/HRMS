@@ -101,7 +101,7 @@ const Settings = () => {
                             {/* Dropdown Results */}
                             {showResults && (searchQuery || employees.length > 0) && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-brand-surface border border-brand-border rounded-2xl shadow-2xl z-50 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 no-scrollbar">
-                                    {employees
+                                    {Array.isArray(employees) && employees
                                         .filter(e =>
                                             e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                             e.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
