@@ -237,6 +237,16 @@ app.post('/api/login', async (req, res) => {
 
     // 2. Check Employees in MongoDB
     try {
+        // Check if DB is connected
+        if (mongoose.connection.readyState !== 1) {
+            console.error('[ERROR] Database not connected. readyState:', mongoose.connection.readyState);
+            return res.status(503).json({
+                success: false,
+                message: 'Database connection is not ready',
+                error: 'The server is unable to reach MongoDB. Please check IP whitelisting in MongoDB Atlas.'
+            });
+        }
+
         const user = await Employee.findOne({
             $or: [{ email: email }, { username: email }],
             password: password
@@ -259,7 +269,11 @@ app.post('/api/login', async (req, res) => {
         }
     } catch (error: any) {
         console.error(`[DEBUG] Login ERROR:`, error.message);
-        res.status(500).json({ success: false, message: 'Database error' });
+        res.status(500).json({
+            success: false,
+            message: 'Database error',
+            error: error.message
+        });
     }
 });
 
