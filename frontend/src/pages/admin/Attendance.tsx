@@ -8,7 +8,9 @@ import {
     Download,
     Save,
     AlertCircle,
-    MapPin
+    MapPin,
+    X,
+    Maximize2
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -30,6 +32,10 @@ interface AttendanceRecord {
     checkIn?: string; // HH:mm
     checkOut?: string; // HH:mm
     workHours?: number;
+    latitude?: number;
+    longitude?: number;
+    workMode?: string;
+    workLocation?: string;
 }
 
 const Attendance = () => {
@@ -41,6 +47,14 @@ const Attendance = () => {
 
     // Report State
     const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+
+    // Map Modal State
+    const [mapModal, setMapModal] = useState<{ isOpen: boolean; empName: string; lat: number; lng: number }>({
+        isOpen: false,
+        empName: '',
+        lat: 0,
+        lng: 0
+    });
 
     useEffect(() => {
         fetchData();
@@ -70,6 +84,38 @@ const Attendance = () => {
 
 
     // Removed unused handleSaveEdit
+
+    const handleViewLocation = async (empId: string, empName: string, recordLocation?: { lat?: number; lng?: number }) => {
+        // 1. Check if record has a specific Login Location
+        if (recordLocation?.lat && recordLocation.lng) {
+            setMapModal({
+                isOpen: true,
+                empName: `${empName} (Login Location)`,
+                lat: recordLocation.lat,
+                lng: recordLocation.lng
+            });
+            return;
+        }
+
+        // 2. Fallback to Live Location
+        try {
+            const res = await api.get(`/api/employees/${empId}/location`);
+            if (res.ok) {
+                const data = await res.json();
+                setMapModal({
+                    isOpen: true,
+                    empName: `${empName} (Live)`,
+                    lat: data.latitude,
+                    lng: data.longitude
+                });
+            } else {
+                alert("Location not found for this employee for this specific session.");
+            }
+        } catch (error) {
+            console.error("Error fetching location:", error);
+            alert("Failed to fetch location. Please try again later.");
+        }
+    };
 
     // Report Generation Logic
     const fetchMonthlyData = async () => {
@@ -141,34 +187,34 @@ const Attendance = () => {
     };
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+        <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-text tracking-tight">Attendance Management</h1>
-                    <p className="text-brand-muted font-medium">Track and monitor employee presence in real-time.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-brand-text tracking-tight">Attendance Management</h1>
+                    <p className="text-brand-muted font-medium text-sm md:text-base">Track and monitor employee presence in real-time.</p>
                 </div>
 
-                <div className="flex items-center gap-4 bg-brand-surface p-2 rounded-2xl border border-brand-border shadow-sm backdrop-blur-md">
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-brand-surface p-2 rounded-2xl border border-brand-border shadow-sm backdrop-blur-md w-full lg:w-auto">
                     {/* Compact Date/Report Bar */}
-                    <div className="flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border border-brand-border group hover:border-brand-primary/30 transition-all cursor-pointer">
+                    <div className="flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border border-brand-border group hover:border-brand-primary/30 transition-all cursor-pointer w-full sm:w-auto">
                         <Calendar className="w-4 h-4 text-brand-muted group-hover:text-brand-primary transition-colors" />
                         <input
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            className="bg-transparent border-none text-brand-text focus:ring-0 text-sm font-black p-0 w-28 cursor-pointer"
+                            className="bg-transparent border-none text-brand-text focus:ring-0 text-sm font-black p-0 w-full sm:w-28 cursor-pointer"
                         />
                     </div>
 
-                    <div className="w-[1.5px] h-8 bg-brand-border" />
+                    <div className="hidden sm:block w-[1.5px] h-8 bg-brand-border" />
 
-                    <div className="flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border border-brand-border group hover:border-brand-primary/30 transition-all cursor-pointer">
+                    <div className="flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border border-brand-border group hover:border-brand-primary/30 transition-all cursor-pointer w-full sm:w-auto">
                         <span className="text-[10px] text-brand-muted font-black uppercase tracking-widest mr-1">Monthly</span>
                         <input
                             type="month"
                             value={reportMonth}
                             onChange={(e) => setReportMonth(e.target.value)}
-                            className="bg-transparent border-none text-brand-text focus:ring-0 text-sm font-black p-0 w-28 cursor-pointer"
+                            className="bg-transparent border-none text-brand-text focus:ring-0 text-sm font-black p-0 w-full sm:w-28 cursor-pointer"
                         />
                         <div className="flex items-center gap-2 ml-2 border-l border-brand-border pl-3">
                             <button
@@ -191,7 +237,7 @@ const Attendance = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-brand-surface border border-brand-border p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group">
                     <div className="flex justify-between items-start">
                         <div>
@@ -254,15 +300,16 @@ const Attendance = () => {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                {/* Main Table */}
+                <div className="bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
-                            <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-[0.2em]">
-                                <th className="px-8 py-4">Employee</th>
-                                <th className="px-8 py-4">Status</th>
-                                <th className="px-8 py-4">Check In</th>
-                                <th className="px-8 py-4">Check Out</th>
-                                <th className="px-8 py-4 text-right">Actions</th>
+                            <tr className="bg-table-header border-b border-brand-border">
+                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
+                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check In</th>
+                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check Out</th>
+                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-border">
@@ -304,14 +351,37 @@ const Attendance = () => {
                                             </div>
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
-                                            {record?.checkIn || '--:--'}
+                                            <div className="flex flex-col gap-1">
+                                                <span>{record?.checkIn || '--:--'}</span>
+                                                {record?.workMode && (
+                                                    <span className={cn(
+                                                        "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border w-fit",
+                                                        record.workMode === 'Work from Office'
+                                                            ? "bg-brand-primary-light text-brand-primary border-brand-primary/20"
+                                                            : "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
+                                                    )}>
+                                                        {record.workMode === 'Work from Office' ? 'Office' : 'Remote'}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
-                                            {record?.checkOut || '--:--'}
+                                            <div className="flex flex-col gap-1">
+                                                <span>{record?.checkOut || '--:--'}</span>
+                                                {record?.workLocation && (
+                                                    <span className="text-[9px] font-black uppercase tracking-widest text-brand-muted opacity-60">
+                                                        {record.workLocation}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-right">
                                             {record ? (
-                                                <button className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all" title="View Location">
+                                                <button
+                                                    onClick={() => handleViewLocation(emp.id, emp.name, { lat: record.latitude, lng: record.longitude })}
+                                                    className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all"
+                                                    title="View Location"
+                                                >
                                                     <MapPin className="w-4 h-4" />
                                                 </button>
                                             ) : (
@@ -325,6 +395,69 @@ const Attendance = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Map Modal */}
+            {mapModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setMapModal(prev => ({ ...prev, isOpen: false }))}
+                    />
+                    <div className="relative bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="p-8 border-b border-brand-border flex justify-between items-center bg-brand-surface/80 backdrop-blur-xl">
+                            <div className="flex items-center gap-4">
+                                <div className="p-4 bg-brand-primary rounded-2xl shadow-lg shadow-brand-primary/20">
+                                    <MapPin className="w-6 h-6 text-white" />
+                                </div>
+                                <div className="text-left">
+                                    <h3 className="text-[10px] font-black text-brand-muted uppercase tracking-[0.2em] mb-1">Employee Location</h3>
+                                    <p className="text-2xl font-black text-brand-text tracking-tighter">{mapModal.empName}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setMapModal(prev => ({ ...prev, isOpen: false }))}
+                                className="p-3 hover:bg-brand-bg rounded-2xl transition-colors group"
+                            >
+                                <X className="w-6 h-6 text-brand-muted group-hover:text-brand-text" />
+                            </button>
+                        </div>
+
+                        <div className="p-2 bg-brand-bg">
+                            <div className="relative rounded-[1.5rem] overflow-hidden border border-brand-border shadow-inner bg-brand-surface aspect-video">
+                                <iframe
+                                    title="Employee Location"
+                                    width="100%"
+                                    height="100%"
+                                    frameBorder="0"
+                                    src={`https://maps.google.com/maps?q=${mapModal.lat},${mapModal.lng}&z=15&output=embed`}
+                                    className="grayscale-[0.2] contrast-[1.1]"
+                                />
+                                <div className="absolute bottom-6 left-6 p-4 bg-brand-surface/90 backdrop-blur-md border border-brand-primary/20 rounded-2xl shadow-xl">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 bg-brand-primary rounded-full animate-pulse" />
+                                        <p className="font-mono text-sm font-black text-brand-text">
+                                            {mapModal.lat.toFixed(6)}, {mapModal.lng.toFixed(6)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 bg-brand-surface border-t border-brand-border flex justify-between items-center">
+                            <p className="text-sm font-medium text-brand-muted italic">
+                                Real-time telemetry data synced successfully.
+                            </p>
+                            <button
+                                onClick={() => window.open(`https://www.google.com/maps?q=${mapModal.lat},${mapModal.lng}`, '_blank')}
+                                className="flex items-center gap-3 px-8 py-4 bg-brand-primary text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:scale-[1.03] active:scale-95 transition-all"
+                            >
+                                <Maximize2 className="w-4 h-4" />
+                                Open in Full Maps
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -19,14 +19,14 @@ const EmployeeProfile = () => {
     }, []);
 
     if (!user) return (
-        <div className="flex flex-col justify-center items-center h-screen gap-4">
+        <div className="flex flex-col justify-center items-center min-h-[60vh] gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary shadow-lg"></div>
             <p className="text-brand-muted text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Synchronizing Identity...</p>
         </div>
     );
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header Section */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>

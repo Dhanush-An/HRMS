@@ -40,19 +40,24 @@ const PERFORMANCE_FILE = path.join(__dirname, '../data/performance.json');
 const DOCUMENTS_FILE = path.join(__dirname, '../data/documents.json');
 const ANNOUNCEMENTS_FILE = path.join(__dirname, '../data/announcements.json');
 const TASKS_FILE = path.join(__dirname, '../data/tasks.json');
+const LOCATIONS_FILE = path.join(__dirname, '../data/locations.json');
 
 // Helper to read data
 const readData = () => {
     try {
         const data = fs.readFileSync(DATA_FILE, 'utf-8');
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        console.log(`[DEBUG] readData from ${DATA_FILE}: ${parsed.length} employees`);
+        return parsed;
     } catch (error) {
+        console.error(`[DEBUG] readData ERROR from ${DATA_FILE}:`, error);
         return [];
     }
 };
 
 // Helper to write data
 const writeData = (data: any) => {
+    console.log(`[DEBUG] writeData to ${DATA_FILE}: ${data.length} employees`);
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 };
 
@@ -154,6 +159,21 @@ const writeTasks = (data: any) => {
     fs.writeFileSync(TASKS_FILE, JSON.stringify(data, null, 2));
 };
 
+// Helper for Locations
+const readLocations = () => {
+    try {
+        if (!fs.existsSync(LOCATIONS_FILE)) return {};
+        const data = fs.readFileSync(LOCATIONS_FILE, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        return {};
+    }
+};
+
+const writeLocations = (data: any) => {
+    fs.writeFileSync(LOCATIONS_FILE, JSON.stringify(data, null, 2));
+};
+
 // --- AUTH MIDDLEWARE ---
 const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const authHeader = req.headers['authorization'];
@@ -225,10 +245,14 @@ app.post('/api/employees', (req, res) => {
     // Auto-generate ID if not provided
     const newId = id || `EMP${String(employees.length + 1).padStart(3, '0')}`;
 
+    console.log(`[DEBUG] Adding new employee: ${name} (ID: ${newId})`);
+
     const newEmployee = {
         id: newId,
         name,
         email,
+        username: email, // Default username to email
+        password: 'Password123!', // Default password
         role,
         department,
         status: status || 'Active',
@@ -249,7 +273,9 @@ app.post('/api/employees', (req, res) => {
     };
 
     employees.push(newEmployee);
+    console.log(`[DEBUG] Employees count before write: ${employees.length}`);
     writeData(employees);
+    console.log(`[DEBUG] Write successful to ${DATA_FILE}`);
     res.status(201).json(newEmployee);
 });
 
@@ -277,6 +303,40 @@ app.delete('/api/employees/:id', (req, res) => {
         res.json({ message: 'Employee deleted' });
     } else {
         res.status(404).json({ message: 'Employee not found' });
+    }
+});
+
+// Update Employee Location
+app.put('/api/employees/:id/location', (req, res) => {
+    const { id } = req.params;
+    const { latitude, longitude } = req.body;
+    console.log(`[Location Update] Employee: ${id}, Lat: ${latitude}, Lng: ${longitude}`);
+
+    if (latitude === undefined || longitude === undefined) {
+        return res.status(400).json({ message: 'Latitude and Longitude are required' });
+    }
+
+    const locations = readLocations();
+    locations[id] = {
+        latitude,
+        longitude,
+        lastUpdated: new Date().toISOString()
+    };
+
+    writeLocations(locations);
+    res.json({ success: true, location: locations[id] });
+});
+
+// Get Employee Location
+app.get('/api/employees/:id/location', (req, res) => {
+    const { id } = req.params;
+    const locations = readLocations();
+    const location = locations[id];
+
+    if (location) {
+        res.json(location);
+    } else {
+        res.status(404).json({ message: 'Location not found' });
     }
 });
 

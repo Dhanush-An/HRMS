@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
-import { Save, User, Lock, Search, Shield } from 'lucide-react';
+import { Save, User, Lock, Search, Shield, Eye, EyeOff } from 'lucide-react';
 
 interface Employee {
     id: string;
@@ -21,6 +21,7 @@ const Settings = () => {
     const [message, setMessage] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [showResults, setShowResults] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         api.get('/api/employees')
@@ -164,13 +165,21 @@ const Settings = () => {
                                     <div className="relative group">
                                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
                                         <input
-                                            type="password"
-                                            className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                            type={showPassword ? "text" : "password"}
+                                            className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-12 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
                                             value={formData.password}
                                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                             placeholder="••••••••••••"
                                             required
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 text-brand-muted hover:text-brand-primary transition-colors h-10 w-10 flex items-center justify-center rounded-lg hover:bg-brand-surface border border-transparent hover:border-brand-border/50"
+                                            title={showPassword ? "Hide Password" : "Show Password"}
+                                        >
+                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>

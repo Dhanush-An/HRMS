@@ -65,5 +65,13 @@
     "date": "2026-02-23",
     "status": "Present",
     "checkIn": "09:24"
+  },
+  {
+    "id": "1771838537766",
+    "employeeId": "EMP001",
+    "employeeName": "Dhanush Tamilarasan",
+    "date": "2026-02-23",
+    "status": "Half Day",
+    "checkIn": "14:52"
   }
 ]

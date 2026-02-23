@@ -9,7 +9,7 @@ const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="bg-brand-surface border border-brand-border p-6 rounded-3xl hover:shadow-lg transition-all group"
+        className="bg-brand-surface border border-brand-border p-4 md:p-6 rounded-2xl md:rounded-3xl hover:shadow-lg transition-all group"
     >
         <div className="flex justify-between items-start mb-4">
             <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-sm", color)}>
@@ -95,12 +95,12 @@ const AdminHome = () => {
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col gap-1">
-                <h1 className="text-3xl font-black text-brand-text tracking-tight">Dashboard Overview</h1>
-                <p className="text-brand-muted font-medium">Welcome back! Here's what's happening today.</p>
+            <div className="flex flex-col gap-1 px-2 md:px-0">
+                <h1 className="text-2xl md:text-3xl font-black text-brand-text tracking-tight">Dashboard Overview</h1>
+                <p className="text-brand-muted font-medium text-sm md:text-base">Welcome back! Here's what's happening today.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <StatCard
                     title="Total Employees"
                     value={stats.totalEmployees.toString()}

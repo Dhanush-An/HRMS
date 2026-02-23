@@ -1,0 +1,17 @@
+{
+    "EMP001": {
+        "latitude": 13.0827,
+        "longitude": 80.2707,
+        "lastUpdated": "2026-02-23T15:15:00.000Z"
+    },
+    "EMP002": {
+        "latitude": 12.9716,
+        "longitude": 77.5946,
+        "lastUpdated": "2026-02-23T15:15:00.000Z"
+    },
+    "EMP003": {
+        "latitude": 11.0168,
+        "longitude": 76.9558,
+        "lastUpdated": "2026-02-23T15:15:00.000Z"
+    }
+}

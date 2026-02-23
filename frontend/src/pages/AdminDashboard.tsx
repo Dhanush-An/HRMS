@@ -14,6 +14,8 @@ import {
     Bell,
     Sun,
     Moon,
+    Menu,
+    X,
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -23,6 +25,7 @@ const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [showProfile, setShowProfile] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const { theme, toggleTheme } = useTheme();
 
     const menuItems = [
@@ -39,32 +42,52 @@ const AdminDashboard: React.FC = () => {
     ];
 
     return (
-        <div className="h-screen bg-brand-bg text-brand-text flex overflow-hidden font-sans">
+        <div className="h-screen bg-brand-bg text-brand-text flex overflow-hidden font-sans relative">
+            {/* Mobile Sidebar Backdrop */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={() => setIsSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className="w-72 border-r border-brand-border bg-brand-surface flex flex-col p-6 hidden lg:flex sticky top-0 h-screen">
-                <div className="flex items-center gap-3 mb-10 px-2">
-                    <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20 relative overflow-hidden">
-                        {/* Fallback Branding */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-brand-primary to-blue-600">
-                            <span className="text-white font-black italic text-lg tracking-tighter">aG</span>
+            <aside className={cn(
+                "fixed inset-y-0 left-0 w-72 border-r border-brand-border bg-brand-surface flex flex-col p-6 z-50 transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen lg:flex",
+                isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            )}>
+                <div className="flex items-center justify-between mb-10 px-2">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20 relative overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-brand-primary to-blue-600">
+                                <span className="text-white font-black italic text-lg tracking-tighter">aG</span>
+                            </div>
+                            <img
+                                src="/logo.png"
+                                alt="Logo"
+                                className="absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-500 opacity-0"
+                                onLoad={(e) => e.currentTarget.classList.replace('opacity-0', 'opacity-100')}
+                                onError={(e) => e.currentTarget.style.display = 'none'}
+                            />
                         </div>
-                        {/* Dynamic Logo Image */}
-                        <img
-                            src="/logo.png"
-                            alt="Logo"
-                            className="absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-500 opacity-0"
-                            onLoad={(e) => e.currentTarget.classList.replace('opacity-0', 'opacity-100')}
-                            onError={(e) => e.currentTarget.style.display = 'none'}
-                        />
+                        <span className="text-xl font-bold text-brand-text tracking-tight">Antigraviity</span>
                     </div>
-                    <span className="text-xl font-bold text-brand-text tracking-tight">Antigraviity</span>
+                    <button
+                        className="lg:hidden p-2 hover:bg-brand-bg rounded-lg transition-colors"
+                        onClick={() => setIsSidebarOpen(false)}
+                    >
+                        <X className="w-6 h-6 text-brand-muted" />
+                    </button>
                 </div>
 
                 <nav className="flex-1 space-y-1 overflow-y-auto pr-2 no-scrollbar">
                     {menuItems.map((item) => (
                         <button
                             key={item.label}
-                            onClick={() => navigate(item.path)}
+                            onClick={() => {
+                                navigate(item.path);
+                                setIsSidebarOpen(false);
+                            }}
                             className={cn(
                                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group",
                                 location.pathname === item.path
@@ -87,7 +110,10 @@ const AdminDashboard: React.FC = () => {
                     <div className="w-full flex items-center justify-between p-3 rounded-2xl bg-brand-bg border border-brand-border group">
                         <div
                             className="flex items-center gap-3 cursor-pointer"
-                            onClick={() => setShowProfile(true)}
+                            onClick={() => {
+                                setShowProfile(true);
+                                setIsSidebarOpen(false);
+                            }}
                         >
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-primary to-blue-400 p-[2px]">
                                 <div className="w-full h-full rounded-[10px] bg-brand-surface flex items-center justify-center overflow-hidden">
@@ -95,8 +121,8 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <div className="text-left">
-                                <p className="text-sm font-semibold text-brand-text group-hover:text-brand-primary transition-colors">Admin User</p>
-                                <p className="text-xs text-brand-muted">Administrator</p>
+                                <p className="text-sm font-semibold text-brand-text group-hover:text-brand-primary transition-colors">Admin</p>
+                                <p className="text-xs text-brand-muted italic">Admin</p>
                             </div>
                         </div>
                         <button
@@ -110,10 +136,28 @@ const AdminDashboard: React.FC = () => {
                 </div>
             </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 p-8 overflow-y-auto h-screen relative bg-brand-bg">
-                <Outlet />
-            </main>
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                {/* Mobile Top Nav */}
+                <header className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-brand-border bg-brand-surface sticky top-0 z-30">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20">
+                            <span className="text-white font-black italic text-xs tracking-tighter">aG</span>
+                        </div>
+                        <span className="text-lg font-bold text-brand-text tracking-tight">Antigraviity</span>
+                    </div>
+                    <button
+                        onClick={() => setIsSidebarOpen(true)}
+                        className="p-2 hover:bg-brand-bg rounded-lg transition-colors ring-1 ring-brand-border shadow-sm bg-brand-surface"
+                    >
+                        <Menu className="w-6 h-6 text-brand-primary" />
+                    </button>
+                </header>
+
+                <main className="flex-1 p-4 md:p-8 overflow-y-auto relative bg-brand-bg no-scrollbar">
+                    <Outlet />
+                </main>
+            </div>
 
             {/* Profile Modal */}
             {showProfile && (

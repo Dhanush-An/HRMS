@@ -162,12 +162,11 @@ const Leaves = () => {
         : (Array.isArray(employees) ? employees.filter((e: Employee) => e.id === user?.id) : []);
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
+        <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-4">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-text tracking-tight">Leave Management</h1>
-                    <p className="text-brand-muted font-medium">Coordinate time off, monitor presence, and manage balances.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-brand-text tracking-tight">Leave Management</h1>
+                    <p className="text-brand-muted font-medium text-sm md:text-base leading-relaxed">Coordinate time off, monitor presence, and manage balances.</p>
                 </div>
                 {!isAdmin && (
                     <div className="flex gap-4">
@@ -289,16 +288,17 @@ const Leaves = () => {
                                 ))}
                             </div>
 
-                            <div className="overflow-x-auto rounded-2xl border border-brand-border shadow-sm">
-                                <table className="w-full">
-                                    <thead className="bg-brand-bg/50">
-                                        <tr>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Employee</th>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Category</th>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Timeline</th>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Justification</th>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Status</th>
-                                            <th className="px-8 py-5 text-right text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Actions</th>
+                            {/* Content Table */}
+                            <div className="bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden overflow-x-auto no-scrollbar">
+                                <table className="w-full text-left border-collapse min-w-[1000px]">
+                                    <thead>
+                                        <tr className="bg-table-header border-b border-brand-border">
+                                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
+                                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Type</th>
+                                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Duration</th>
+                                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Reason</th>
+                                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
+                                            {isAdmin && <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest text-right">Actions</th>}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-brand-border">

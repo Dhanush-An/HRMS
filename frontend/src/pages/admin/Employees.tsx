@@ -128,25 +128,26 @@ const Employees = () => {
                 setIsModalOpen(false);
                 fetchEmployees();
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving employee:', error);
+            alert(`Error saving employee: ${error.message || 'Unknown error'}`);
         }
     };
 
 
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-text tracking-tight">Employee Management</h1>
-                    <p className="text-brand-muted font-medium">Manage and monitor your workforce efficiently.</p>
+                    <h1 className="text-2xl md:text-3xl font-black text-brand-text tracking-tight">Employee Management</h1>
+                    <p className="text-brand-muted font-medium text-sm md:text-base">Manage and monitor your workforce efficiently.</p>
                 </div>
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
                         openAddModal();
                     }}
-                    className="bg-brand-primary hover:opacity-90 text-white px-6 py-3 rounded-2xl flex items-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-primary/20 font-bold text-sm"
+                    className="w-full sm:w-auto bg-brand-primary hover:opacity-90 text-white px-6 py-3 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-brand-primary/20 font-bold text-sm"
                 >
                     <Plus className="w-5 h-5" />
                     Add Employee
@@ -154,7 +155,7 @@ const Employees = () => {
             </div>
 
             {/* Filters & Search */}
-            <div className="flex gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
                     <input
@@ -162,25 +163,25 @@ const Employees = () => {
                         placeholder="Search employees..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-brand-surface border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all font-medium placeholder:text-brand-muted/50"
+                        className="w-full bg-brand-surface border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all font-medium placeholder:text-brand-muted/50 text-sm"
                     />
                 </div>
-                <button className="bg-brand-surface border border-brand-border text-brand-text px-6 py-3 rounded-2xl flex items-center gap-2 hover:bg-brand-bg transition-colors font-bold text-sm shadow-sm">
+                <button className="bg-brand-surface border border-brand-border text-brand-text px-6 py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-brand-bg transition-colors font-bold text-sm shadow-sm sm:w-auto">
                     <Filter className="w-4 h-4" />
                     Filter
                 </button>
             </div>
 
             {/* Employee List - Table View */}
-            <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm overflow-x-auto no-scrollbar">
+                <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr className="bg-table-header border-b border-brand-border">
                             <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
                             <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Role & Dept</th>
                             <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Contact</th>
                             <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
-                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Joined</th>
+                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Joined Date</th>
                             <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest text-right">Actions</th>
                         </tr>
                     </thead>

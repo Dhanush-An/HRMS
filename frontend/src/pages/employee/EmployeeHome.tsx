@@ -9,7 +9,10 @@ import {
     Zap,
     MessageSquare,
     Target,
-    ShieldCheck
+    ShieldCheck,
+    MapPin,
+    Navigation,
+    Globe
 } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import api from '../../api';
@@ -40,6 +43,74 @@ const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
     </motion.div>
 );
 
+const LiveLocationCard = () => {
+    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchCurrentLocation = () => {
+            if (!navigator.geolocation) {
+                setError("Geolocation is not supported");
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                },
+                (err) => setError(err.message)
+            );
+        };
+        fetchCurrentLocation();
+    }, []);
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-brand-surface border border-brand-border rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group"
+        >
+            <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:rotate-12 transition-transform duration-700">
+                <Globe className="w-40 h-40" />
+            </div>
+
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                    <div className="p-4 bg-brand-primary rounded-2xl shadow-lg shadow-brand-primary/20">
+                        <MapPin className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h3 className="text-[10px] font-black text-brand-text uppercase tracking-widest opacity-60">Live Presence</h3>
+                        <p className="text-xl font-black text-brand-text tracking-tighter">Current Location</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 bg-brand-primary/10 text-brand-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-brand-primary/20 animate-pulse">
+                    <Activity className="w-3 h-3" />
+                    <span>Live</span>
+                </div>
+            </div>
+
+            <div className="space-y-4 relative z-10">
+                <div className="p-6 bg-brand-bg rounded-2xl border border-brand-border shadow-inner">
+                    <p className="text-sm font-medium text-brand-muted mb-1 uppercase tracking-tighter opacity-60">Geospatial Coordinates</p>
+                    <p className="text-2xl font-black text-brand-primary tracking-tighter font-mono">
+                        {error ? <span className="text-rose-500 text-sm italic">{error}</span> :
+                            location ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : "Locating..."}
+                    </p>
+                </div>
+
+                <button
+                    onClick={() => location && window.open(`https://www.google.com/maps?q=${location.lat},${location.lng}`, '_blank')}
+                    disabled={!location}
+                    className="w-full h-14 bg-brand-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                >
+                    <Navigation className="w-4 h-4" />
+                    Transcend to Map
+                </button>
+            </div>
+        </motion.div>
+    );
+};
+
 const INSPIRATIONAL_QUOTES = [
     { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
     { text: "Quality is not an act, it is a habit.", author: "Aristotle" },
@@ -61,6 +132,7 @@ const EmployeeHome = () => {
         attendanceRate: '0%',
         pendingTasks: '0 Tasks'
     });
+    const [user, setUser] = useState<any>(null);
 
     const dailyQuote = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
@@ -72,6 +144,7 @@ const EmployeeHome = () => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
             fetchStats(parsedUser.id, parsedUser.leaveBalance);
         }
     }, []);
@@ -100,17 +173,17 @@ const EmployeeHome = () => {
     };
 
     return (
-        <div className="p-8 space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="p-4 md:p-8 space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Greeting */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <p className="text-brand-muted font-medium italic text-lg leading-relaxed max-w-2xl">"{dailyQuote.text}"</p>
+                    <p className="text-brand-muted font-medium italic text-base md:text-lg leading-relaxed max-w-2xl">"{dailyQuote.text}"</p>
                     <p className="text-brand-primary font-black uppercase tracking-widest text-[10px] mt-2">— {dailyQuote.author}</p>
                 </div>
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
                 <StatCard title="Entitled Leave" value={stats.leaveBalance} icon={Calendar} color="bg-brand-primary" delay={0.1} />
                 <StatCard title="Compliance Rate" value={stats.attendanceRate} icon={ShieldCheck} color="bg-emerald-500" delay={0.2} />
                 <StatCard title="Current Status" value="Online" icon={Activity} color="bg-indigo-500" delay={0.3} />
@@ -118,16 +191,16 @@ const EmployeeHome = () => {
             </div>
 
             {/* Content Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
                 {/* Recent Activity */}
-                <div className="lg:col-span-2 bg-brand-surface border border-brand-border rounded-[3rem] p-10 shadow-2xl relative overflow-hidden">
+                <div className="lg:col-span-2 bg-brand-surface border border-brand-border rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
                         <Activity className="w-48 h-48" />
                     </div>
-                    <div className="flex justify-between items-center mb-10">
-                        <h2 className="text-xl font-black text-brand-text uppercase tracking-widest flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
+                        <h2 className="text-lg md:text-xl font-black text-brand-text uppercase tracking-widest flex items-center gap-4">
                             Recent Events
-                            <div className="h-px w-20 bg-brand-primary opacity-20"></div>
+                            <div className="hidden sm:block h-px w-20 bg-brand-primary opacity-20"></div>
                         </h2>
                         <button className="text-[10px] font-black text-brand-primary uppercase tracking-[0.2em] hover:tracking-[0.3em] transition-all flex items-center gap-2">
                             Access Full Logs <ArrowUpRight className="w-3 h-3" />
@@ -158,8 +231,9 @@ const EmployeeHome = () => {
                 </div>
 
                 {/* Quick Actions / Summary */}
-                <div className="space-y-10">
-                    <div className="bg-brand-primary rounded-[3rem] p-10 text-white relative overflow-hidden group shadow-[0_32px_64px_-16px_rgba(99,102,241,0.5)] border border-brand-primary/20">
+                <div className="space-y-8 md:space-y-10">
+                    {user && <LiveLocationCard />}
+                    <div className="bg-brand-primary rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 text-white relative overflow-hidden group shadow-[0_32px_64px_-16px_rgba(99,102,241,0.5)] border border-brand-primary/20">
                         <div className="absolute -top-12 -right-12 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-45 transition-all duration-700">
                             <Clock className="w-48 h-48" />
                         </div>
@@ -174,7 +248,7 @@ const EmployeeHome = () => {
                         </div>
                     </div>
 
-                    <div className="bg-brand-surface border border-brand-border rounded-[3rem] p-10 shadow-xl group relative overflow-hidden">
+                    <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-xl group relative overflow-hidden">
                         <div className="absolute bottom-0 right-0 p-6 opacity-5">
                             <MessageSquare className="w-20 h-20" />
                         </div>
