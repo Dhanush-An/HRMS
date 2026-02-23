@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Environment files (local only - do NOT commit these)
+frontend/.env
+frontend/.env.local
+backend/.env
+backend/.env.local
+
+# Build outputs
+frontend/dist/
+backend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
