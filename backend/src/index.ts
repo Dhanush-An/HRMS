@@ -291,6 +291,16 @@ app.post('/api/login', async (req, res) => {
 app.use(authMiddleware);
 
 app.get('/api/employees', async (req, res) => {
+    // Check if DB is connected
+    if (mongoose.connection.readyState !== 1) {
+        console.error('[ERROR] Database not connected. State:', mongoose.connection.readyState);
+        return res.status(503).json({
+            success: false,
+            message: 'Database connection is not ready',
+            error: 'The server is unable to reach MongoDB. Please check IP whitelisting.'
+        });
+    }
+
     try {
         const employees = await Employee.find();
         res.json(employees);
