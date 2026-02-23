@@ -41,9 +41,12 @@ const LoginPage: React.FC = () => {
             } else {
                 setError(data.message || 'Invalid credentials');
             }
-        } catch (err) {
-            console.error(err);
-            setError('Login failed. Please try again.');
+        } catch (err: any) {
+            console.error("[LOGIN DEBUG] Fetch attempt to:", `${API_URL}/api/login`);
+            console.error("[LOGIN DEBUG] Error message:", err.message);
+            console.error("[LOGIN DEBUG] Full error object:", err);
+            setError(`Network Error: ${err.message || 'Check connection to backend'}`);
+            alert(`Login Network Error!\nTarget: ${API_URL}/api/login\nError: ${err.message}`);
         }
     };
 
@@ -71,7 +74,7 @@ const LoginPage: React.FC = () => {
                             Email or Username
                         </label>
                         <input
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="Enter your email"
@@ -94,9 +97,9 @@ const LoginPage: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 text-[#6366f1]/60 hover:text-[#6366f1] transition-all z-10 rounded-xl hover:bg-[#6366f1]/5"
                             >
-                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
                             </button>
                         </div>
                     </div>

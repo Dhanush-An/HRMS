@@ -7,10 +7,13 @@ import {
     Trash2,
     Edit2,
     Eye,
+    EyeOff,
     XCircle,
     FileText,
     Calendar,
-    Filter
+    Filter,
+    Lock,
+    User
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -41,9 +44,12 @@ const Employees = () => {
         department: '',
         status: 'Active',
         phone: '',
-        joiningDate: ''
+        joiningDate: '',
+        username: '',
+        password: ''
     });
     const [searchQuery, setSearchQuery] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
         fetchEmployees();
@@ -80,7 +86,9 @@ const Employees = () => {
             department: '',
             status: 'Active',
             phone: '',
-            joiningDate: new Date().toISOString().split('T')[0]
+            joiningDate: new Date().toISOString().split('T')[0],
+            username: '',
+            password: ''
         });
         setIsModalOpen(true);
     };
@@ -96,7 +104,9 @@ const Employees = () => {
             department: employee.department,
             status: employee.status,
             phone: employee.phone || '',
-            joiningDate: employee.joiningDate
+            joiningDate: employee.joiningDate,
+            username: (employee as any).username || employee.email,
+            password: '' // Don't show password during edit
         });
         setIsModalOpen(true);
     };
@@ -299,6 +309,45 @@ const Employees = () => {
                                     />
                                 </div>
                             </div>
+
+                            {!isEditing && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Username</label>
+                                        <div className="relative group/field">
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within/field:text-brand-primary transition-colors" />
+                                            <input
+                                                name="username"
+                                                value={formData.username}
+                                                onChange={handleInputChange}
+                                                placeholder="Custom username"
+                                                className="w-full bg-brand-bg border border-brand-border rounded-2xl py-4 pl-12 pr-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Initial Password</label>
+                                        <div className="relative group/field">
+                                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within/field:text-brand-primary transition-colors" />
+                                            <input
+                                                name="password"
+                                                type={showPassword ? "text" : "password"}
+                                                value={formData.password}
+                                                onChange={handleInputChange}
+                                                placeholder="••••••••"
+                                                className="w-full bg-brand-bg border border-brand-border rounded-2xl py-4 pl-12 pr-12 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-brand-primary/60 hover:text-brand-primary transition-all z-10 flex items-center justify-center rounded-lg hover:bg-brand-primary/5"
+                                            >
+                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>

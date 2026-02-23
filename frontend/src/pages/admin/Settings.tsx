@@ -175,10 +175,10 @@ const Settings = () => {
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-4 top-1/2 -translate-y-1/2 p-1.5 text-brand-muted hover:text-brand-primary transition-colors h-10 w-10 flex items-center justify-center rounded-lg hover:bg-brand-surface border border-transparent hover:border-brand-border/50"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-brand-primary/60 hover:text-brand-primary transition-all z-10 flex items-center justify-center rounded-lg hover:bg-brand-primary/5"
                                             title={showPassword ? "Hide Password" : "Show Password"}
                                         >
-                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                         </button>
                                     </div>
                                 </div>

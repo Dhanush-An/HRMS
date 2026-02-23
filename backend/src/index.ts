@@ -14,18 +14,23 @@ const PORT = process.env.PORT || 5000;
 
 const allowedOrigins = [
     'http://localhost:5173',
+    'http://127.0.0.1:5173',
     'http://localhost:3000',
+    'http://127.0.0.1:3000',
     process.env.FRONTEND_URL || '',
 ].filter(Boolean);
 
 app.use(cors({
     origin: (origin, callback) => {
+        console.log(`[DEBUG] CORS Request from origin: ${origin}`);
         // Allow requests with no origin (Postman, curl, mobile apps)
         if (!origin) return callback(null, true);
         // Allow explicitly configured origins
         if (allowedOrigins.includes(origin)) return callback(null, true);
         // Allow any vercel.app subdomain as a safety fallback
-        if (origin.endsWith('.vercel.app')) return callback(null, true);
+        if (origin?.endsWith('.vercel.app')) return callback(null, true);
+
+        console.warn(`[DEBUG] CORS Rejected Origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
@@ -200,9 +205,11 @@ app.get('/', (req, res) => {
 // --- AUTH ROUTES (PUBLIC) ---
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
+    console.log(`[DEBUG] Login attempt for: ${email}`);
 
     // 1. Check Hardcoded Admin
     if (email === 'admin@hrms.com' && password === 'admin123') {
+        console.log(`[DEBUG] Admin login successful`);
         const adminUser = { id: 'ADMIN', name: 'System Admin', role: 'admin', email: 'admin@hrms.com' };
         const token = jwt.sign(adminUser, JWT_SECRET, { expiresIn: '8h' });
         return res.json({ success: true, token, user: adminUser });
@@ -215,6 +222,7 @@ app.post('/api/login', (req, res) => {
     );
 
     if (user) {
+        console.log(`[DEBUG] Employee login successful: ${user.name}`);
         const empUser = {
             id: user.id,
             name: user.name,
@@ -225,6 +233,7 @@ app.post('/api/login', (req, res) => {
         const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
         res.json({ success: true, token, user: empUser });
     } else {
+        console.log(`[DEBUG] Login failed for email: ${email}`);
         res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 });
@@ -243,21 +252,24 @@ app.post('/api/employees', (req, res) => {
     const { id, name, email, role, department, status, phone, joiningDate } = req.body;
 
     // Auto-generate ID if not provided
-    const newId = id || `EMP${String(employees.length + 1).padStart(3, '0')}`;
+    const newId = `EMP${String(employees.length + 1).padStart(3, '0')}`;
 
-    console.log(`[DEBUG] Adding new employee: ${name} (ID: ${newId})`);
+    console.log(`[DEBUG] Adding new employee: ${req.body.name} (ID: ${req.body.id || newId})`);
+
+    // Extract password from body or use default
+    const customPassword = req.body.password || 'Password123!';
 
     const newEmployee = {
-        id: newId,
-        name,
-        email,
-        username: email, // Default username to email
-        password: 'Password123!', // Default password
-        role,
-        department,
-        status: status || 'Active',
-        phone: phone || '',
-        joiningDate: joiningDate || new Date().toISOString().split('T')[0],
+        id: req.body.id || `EMP${String(employees.length + 1).padStart(3, '0')}`,
+        name: req.body.name,
+        email: req.body.email,
+        username: req.body.username || req.body.email, // Default username to email
+        password: customPassword, // Use the custom or default password
+        role: req.body.role,
+        department: req.body.department,
+        status: req.body.status || 'Active',
+        joiningDate: req.body.joiningDate || new Date().toISOString().split('T')[0],
+        phone: req.body.phone || '',
         salary: {
             base: 0,
             hra: 0,
@@ -265,9 +277,9 @@ app.post('/api/employees', (req, res) => {
             other: 0
         },
         leaveBalance: {
-            sick: 12,
+            sick: 10,
             casual: 12,
-            paid: 15,
+            earned: 15,
             wfh: 10
         }
     };
