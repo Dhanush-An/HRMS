@@ -57,7 +57,14 @@ const LoginPage: React.FC = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full max-w-[450px] bg-white rounded-[32px] p-8 shadow-2xl"
             >
-                <div className="text-center mb-6">
+                <div className="text-center mb-6 flex flex-col items-center">
+                    <div className="w-16 h-16 bg-[#6366f1] rounded-2xl flex items-center justify-center shadow-lg shadow-[#6366f1]/20 mb-4 overflow-hidden">
+                        <img
+                            src="/logo.jpg"
+                            alt="Logo"
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
                     <h1 className="text-4xl font-bold text-[#6366f1] mb-2 tracking-tight">
                         Antigraviity
                     </h1>

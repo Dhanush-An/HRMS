@@ -294,7 +294,7 @@ const EmployeeDashboard = () => {
                                 <span className="text-white font-black italic text-lg tracking-tighter">aG</span>
                             </div>
                             <img
-                                src="/logo.png"
+                                src="/logo.jpg"
                                 alt="Logo"
                                 className="absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-500 opacity-0"
                                 onLoad={(e) => e.currentTarget.classList.replace('opacity-0', 'opacity-100')}
