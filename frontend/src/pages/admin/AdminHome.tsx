@@ -49,24 +49,23 @@ const AdminHome = () => {
 
                 // Calculate Total Payroll
                 const totalPayroll = Array.isArray(payroll) ? payroll.reduce((total: number, p: any) => {
-                    return total + (p.records?.reduce((s: number, r: any) => s + (r.netSalary || 0), 0) || 0);
+                    if (!p || !Array.isArray(p.records)) return total;
+                    return total + p.records.reduce((s: number, r: any) => s + (Number(r.netSalary) || 0), 0);
                 }, 0) : 0;
-
-                // Calculate Pending Requests
-                // ... (logic moved into setStats)
 
                 // Calculate Active Projects
                 const activeProjects = new Set(
                     (Array.isArray(tasks) ? tasks : [])
-                        .map((t: any) => t.projectName)
-                        .filter((name: string) => name && name.trim() !== '')
+                        .filter((t: any) => t && typeof t.projectName === 'string')
+                        .map((t: any) => t.projectName.trim())
+                        .filter(Boolean)
                 ).size;
 
                 setStats({
                     totalEmployees: Array.isArray(employees) ? employees.length : 0,
                     totalPayroll,
                     activeProjects,
-                    pendingRequests: Array.isArray(leaves) ? leaves.filter((l: any) => l.status === 'Pending').length : 0
+                    pendingRequests: Array.isArray(leaves) ? leaves.filter((l: any) => l && l.status === 'Pending').length : 0
                 });
             } catch (error) {
                 console.error("Error fetching admin stats:", error);

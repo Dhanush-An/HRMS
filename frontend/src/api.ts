@@ -28,7 +28,7 @@ const handleResponse = async (response: Response): Promise<Response> => {
 /** Wrapper around fetch that automatically attaches the JWT Bearer token */
 const api = {
     get: (path: string) =>
-        fetch(`${API_URL}${path}`, {
+        fetch(`${API_URL}${path}${path.includes('?') ? '&' : '?'}_cb=${Date.now()}`, {
             method: 'GET',
             headers: getAuthHeaders(),
         }).then(handleResponse),
