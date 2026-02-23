@@ -39,7 +39,8 @@ const LoginPage: React.FC = () => {
                     navigate('/employee-dashboard');
                 }
             } else {
-                setError(data.message || 'Invalid credentials');
+                const detail = data.error ? ` - ${data.error}` : '';
+                setError((data.message || 'Invalid credentials') + detail);
             }
         } catch (err: any) {
             console.error("[LOGIN DEBUG] Fetch attempt to:", `${API_URL}/api/login`);
