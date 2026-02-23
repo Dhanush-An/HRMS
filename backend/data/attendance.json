@@ -54,6 +54,16 @@
     "employeeName": "Dhanush Tamilarasan",
     "date": "2026-02-21",
     "status": "Half Day",
-    "checkIn": "11:01"
+    "checkIn": "11:01",
+    "checkOut": "19:54",
+    "workHours": 8.88
+  },
+  {
+    "id": "1771818841903",
+    "employeeId": "EMP003",
+    "employeeName": "Agila",
+    "date": "2026-02-23",
+    "status": "Present",
+    "checkIn": "09:24"
   }
 ]

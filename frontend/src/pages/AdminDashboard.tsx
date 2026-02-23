@@ -43,8 +43,19 @@ const AdminDashboard: React.FC = () => {
             {/* Sidebar */}
             <aside className="w-72 border-r border-brand-border bg-brand-surface flex flex-col p-6 hidden lg:flex sticky top-0 h-screen">
                 <div className="flex items-center gap-3 mb-10 px-2">
-                    <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20">
-                        <LayoutDashboard className="text-white w-6 h-6" />
+                    <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg shadow-brand-primary/20 relative overflow-hidden">
+                        {/* Fallback Branding */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-brand-primary to-blue-600">
+                            <span className="text-white font-black italic text-lg tracking-tighter">aG</span>
+                        </div>
+                        {/* Dynamic Logo Image */}
+                        <img
+                            src="/logo.png"
+                            alt="Logo"
+                            className="absolute inset-0 w-full h-full object-cover z-10 transition-opacity duration-500 opacity-0"
+                            onLoad={(e) => e.currentTarget.classList.replace('opacity-0', 'opacity-100')}
+                            onError={(e) => e.currentTarget.style.display = 'none'}
+                        />
                     </div>
                     <span className="text-xl font-bold text-brand-text tracking-tight">Antigraviity</span>
                 </div>
