@@ -19,7 +19,8 @@ const handleResponse = async (response: Response): Promise<Response> => {
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `API Error: ${response.status}`);
+        const detailedError = errorData.error ? `: ${errorData.error}` : '';
+        throw new Error((errorData.message || `API Error: ${response.status}`) + detailedError);
     }
 
     return response;

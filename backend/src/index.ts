@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import fs from 'fs';
@@ -312,12 +313,25 @@ app.post('/api/employees', async (req, res) => {
             leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
         });
 
+        // Check if DB is connected
+        if (mongoose.connection.readyState !== 1) {
+            console.error('[ERROR] Database not connected. readyState:', mongoose.connection.readyState);
+            return res.status(500).json({
+                message: 'Database connection is not ready',
+                error: 'The server is unable to reach MongoDB. Please check IP whitelisting in MongoDB Atlas.'
+            });
+        }
+
         await newEmployee.save();
         console.log(`[DEBUG] MongoDB Write successful for ${finalId}`);
         res.status(201).json(newEmployee);
     } catch (error: any) {
         console.error(`[DEBUG] MongoDB Add Employee ERROR:`, error.message);
-        res.status(400).json({ message: 'Error creating employee', error: error.message });
+        res.status(400).json({
+            message: 'Error creating employee',
+            error: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
