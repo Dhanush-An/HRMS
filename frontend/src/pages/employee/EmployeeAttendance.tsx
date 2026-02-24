@@ -98,7 +98,7 @@ const EmployeeAttendance = () => {
 
         // Empty cells for previous month
         for (let i = 0; i < firstDay; i++) {
-            days.push(<div key={`empty-${i}`} className="h-28 bg-brand-bg/20 border border-brand-border/10 opacity-30"></div>);
+            days.push(<div key={`empty-${i}`} className="h-16 md:h-24 lg:h-28 bg-brand-bg/20 border border-brand-border/10 opacity-30"></div>);
         }
 
         // Days of current month
@@ -135,43 +135,43 @@ const EmployeeAttendance = () => {
                     key={day}
                     onClick={() => handleDayClick(record)}
                     className={cn(
-                        "h-28 p-3 border rounded-xl transition-all cursor-pointer relative group",
+                        "h-16 md:h-24 lg:h-28 p-1 md:p-3 border rounded-xl transition-all cursor-pointer relative group",
                         statusStyles,
                         todayStyles
                     )}
                 >
                     <div className="flex justify-between items-start">
                         <span className={cn(
-                            "text-xs font-black p-1 rounded-lg flex items-center justify-center w-6 h-6",
+                            "text-[10px] md:text-xs font-black p-0.5 md:p-1 rounded-lg flex items-center justify-center w-5 h-5 md:w-6 md:h-6",
                             isToday ? "bg-brand-primary text-white" : "text-brand-muted group-hover:text-brand-text"
                         )}>{day}</span>
                         {record && (
-                            <div className="bg-brand-surface/50 p-1 rounded-lg">
-                                {record.status === 'Present' && <CheckCircle className="w-3.5 h-3.5 text-status-approved" />}
+                            <div className="bg-brand-surface/50 p-0.5 md:p-1 rounded-lg">
+                                {record.status === 'Present' && <CheckCircle className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-status-approved" />}
                                 {record.status === 'Leave' && (
                                     (record as any).isWeeklyOff
-                                        ? <Clock className="w-3.5 h-3.5 text-brand-primary opacity-60" />
-                                        : <XCircle className="w-3.5 h-3.5 text-status-status-rejected" />
+                                        ? <Clock className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-brand-primary opacity-60" />
+                                        : <XCircle className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-status-status-rejected" />
                                 )}
-                                {record.status === 'Absent' && <XCircle className="w-3.5 h-3.5 text-status-rejected" />}
-                                {record.status === 'Late' && <Clock className="w-3.5 h-3.5 text-brand-primary" />}
-                                {record.status === 'Half Day' && <Clock className="w-3.5 h-3.5 text-status-pending" />}
+                                {record.status === 'Absent' && <XCircle className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-status-rejected" />}
+                                {record.status === 'Late' && <Clock className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-brand-primary" />}
+                                {record.status === 'Half Day' && <Clock className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-status-pending" />}
                             </div>
                         )}
                     </div>
 
                     {record && (record as any).isWeeklyOff && (
-                        <div className="mt-2 text-center">
-                            <span className="text-[10px] font-black uppercase tracking-tighter text-brand-primary opacity-60">Weekly Off</span>
+                        <div className="mt-1 md:mt-2 text-center">
+                            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-tighter text-brand-primary opacity-60">Off</span>
                         </div>
                     )}
 
                     {record && (
-                        <div className="mt-auto absolute bottom-3 left-3 right-3 space-y-1.5">
-                            <span className="text-[9px] font-black uppercase tracking-widest text-brand-muted">
+                        <div className="mt-auto absolute bottom-1 md:bottom-3 left-1 md:left-3 right-1 md:right-3 space-y-0.5 md:space-y-1.5">
+                            <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-brand-muted">
                                 {record.checkIn || '--:--'}
                             </span>
-                            <div className="h-1 w-full bg-brand-border rounded-full overflow-hidden">
+                            <div className="h-0.5 md:h-1 w-full bg-brand-border rounded-full overflow-hidden">
                                 <div
                                     className={cn("h-full",
                                         record.status === 'Present' ? "bg-status-approved" :
@@ -190,7 +190,7 @@ const EmployeeAttendance = () => {
     };
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="p-4 md:p-8 space-y-4 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
@@ -225,13 +225,13 @@ const EmployeeAttendance = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Calendar Main View */}
                     <div className="lg:col-span-3">
-                        <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm overflow-hidden group">
-                            <div className="grid grid-cols-7 mb-4 text-center">
+                        <div className="bg-brand-surface border border-brand-border rounded-2xl p-2 md:p-6 shadow-sm overflow-hidden group">
+                            <div className="grid grid-cols-7 mb-2 md:mb-4 text-center">
                                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                                    <div key={day} className="text-brand-muted text-[10px] font-black uppercase tracking-widest py-2">{day}</div>
+                                    <div key={day} className="text-brand-muted text-[8px] md:text-[10px] font-black uppercase tracking-widest py-1 md:py-2">{day}</div>
                                 ))}
                             </div>
-                            <div className="grid grid-cols-7 gap-2">
+                            <div className="grid grid-cols-7 gap-1 md:gap-2">
                                 {renderCalendar()}
                             </div>
                         </div>
