@@ -221,16 +221,16 @@ const EmployeeDashboard = () => {
         const now = new Date();
         const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-        const nineThirty = new Date();
-        nineThirty.setHours(9, 30, 0, 0);
+        const tenThirty = new Date();
+        tenThirty.setHours(10, 30, 0, 0);
 
-        const ten = new Date();
-        ten.setHours(10, 0, 0, 0);
+        const onePM = new Date();
+        onePM.setHours(13, 0, 0, 0);
 
         let status = 'Present';
-        if (now > ten) {
+        if (now > onePM) {
             status = 'Half Day';
-        } else if (now > nineThirty) {
+        } else if (now > tenThirty) {
             status = 'Late';
         }
 
