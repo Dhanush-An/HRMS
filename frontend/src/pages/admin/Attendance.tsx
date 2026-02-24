@@ -79,7 +79,20 @@ const Attendance = () => {
     };
 
     const getAttendanceStatus = (empId: string) => {
-        return attendance.find(r => r.employeeId === empId && r.date === selectedDate);
+        const record = attendance.find(r => r.employeeId === empId && r.date === selectedDate);
+        if (!record) {
+            const date = new Date(selectedDate);
+            if (date.getDay() === 0) { // Sunday
+                return {
+                    id: `sunday-${empId}-${selectedDate}`,
+                    employeeId: empId,
+                    date: selectedDate,
+                    status: 'Leave' as any,
+                    isWeeklyOff: true
+                } as any;
+            }
+        }
+        return record;
     };
 
 
@@ -275,11 +288,15 @@ const Attendance = () => {
                 <div className="bg-brand-surface border border-brand-border p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-status-info text-[10px] font-black uppercase tracking-widest mb-2">Half Day</p>
-                            <h3 className="text-3xl font-black text-brand-text leading-none">{stats.halfDay}</h3>
+                            <p className="text-brand-primary text-[10px] font-black uppercase tracking-widest mb-2">
+                                {new Date(selectedDate).getDay() === 0 ? 'Status' : 'Half Day'}
+                            </p>
+                            <h3 className="text-3xl font-black text-brand-text leading-none">
+                                {new Date(selectedDate).getDay() === 0 ? 'OFF' : stats.halfDay}
+                            </h3>
                         </div>
-                        <div className="p-3 bg-status-info/10 rounded-xl">
-                            <AlertCircle className="w-5 h-5 text-status-info" />
+                        <div className="p-3 bg-brand-primary/10 rounded-xl">
+                            {new Date(selectedDate).getDay() === 0 ? <Calendar className="w-5 h-5 text-brand-primary" /> : <AlertCircle className="w-5 h-5 text-status-info" />}
                         </div>
                     </div>
                 </div>
@@ -342,7 +359,8 @@ const Attendance = () => {
                                                         record?.status === 'Absent' ? "bg-status-rejected" :
                                                             record?.status === 'Late' ? "bg-status-pending" :
                                                                 record?.status === 'Half Day' ? "bg-status-info" :
-                                                                    "bg-brand-muted/30"
+                                                                    (record as any)?.isWeeklyOff ? "bg-brand-primary" :
+                                                                        "bg-brand-muted/30"
                                                 )} />
                                                 <span className={cn(
                                                     "text-xs font-bold",
@@ -350,9 +368,10 @@ const Attendance = () => {
                                                         record?.status === 'Absent' ? "text-status-rejected" :
                                                             record?.status === 'Late' ? "text-status-pending" :
                                                                 record?.status === 'Half Day' ? "text-status-info" :
-                                                                    "text-brand-muted"
+                                                                    (record as any)?.isWeeklyOff ? "text-brand-primary" :
+                                                                        "text-brand-muted"
                                                 )}>
-                                                    {record?.status || 'Not Marked'}
+                                                    {(record as any)?.isWeeklyOff ? 'Weekly Off' : (record?.status || 'Not Marked')}
                                                 </span>
                                             </div>
                                         </td>
