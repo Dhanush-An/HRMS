@@ -4,7 +4,8 @@ import {
     Calendar,
     Plus,
     Download,
-    Search
+    Search,
+    Users
 } from 'lucide-react';
 
 interface Task {
@@ -31,6 +32,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
     // Filters
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [selectedEmployee, setSelectedEmployee] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Form
     const [formData, setFormData] = useState({
@@ -150,6 +152,17 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
 
                 <div className="flex items-center gap-3 bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 flex-1 focus-within:ring-2 focus-within:ring-brand-primary/20 transition-all">
                     <Search className="w-4 h-4 text-brand-muted" />
+                    <input
+                        type="text"
+                        placeholder="Search by description or name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="bg-transparent text-brand-text text-sm font-bold focus:outline-none w-full"
+                    />
+                </div>
+
+                <div className="flex items-center gap-3 bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 md:w-64 focus-within:ring-2 focus-within:ring-brand-primary/20 transition-all">
+                    <Users className="w-4 h-4 text-brand-muted" />
                     <select
                         value={selectedEmployee}
                         onChange={(e) => setSelectedEmployee(e.target.value)}
@@ -181,37 +194,42 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                             ) : tasks.length === 0 ? (
                                 <tr><td colSpan={4} className="px-8 py-10 text-center text-brand-muted font-medium italic">No tasks found for this date.</td></tr>
                             ) : (
-                                Array.isArray(tasks) && tasks.map((task) => (
-                                    <tr key={task.id} className="hover:bg-brand-bg/30 transition-colors group">
-                                        <td className="px-8 py-6 whitespace-nowrap">
-                                            <div className="text-brand-text font-black text-sm">{getEmployeeName(task.employeeId)}</div>
-                                            <div className="text-[9px] text-brand-muted font-bold uppercase tracking-widest mt-0.5">Assigned: {task.date}</div>
-                                        </td>
-                                        <td className="px-8 py-6 text-brand-text font-medium text-sm max-w-md italic">
-                                            "{task.description}"
-                                        </td>
-                                        <td className="px-8 py-6 whitespace-nowrap">
-                                            <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${task.priority === 'High' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
-                                                task.priority === 'Medium' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                                                    'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
-                                                }`}>
-                                                {task.priority}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-6 whitespace-nowrap">
-                                            <span className={`flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-2xl border ${task.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
-                                                task.status === 'In Progress' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
-                                                    'bg-brand-muted/10 text-brand-muted border-brand-border'
-                                                }`}>
-                                                <span className={`w-2 h-2 rounded-full ${task.status === 'Completed' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' :
-                                                    task.status === 'In Progress' ? 'bg-indigo-500 animate-pulse' :
-                                                        'bg-brand-muted'
-                                                    }`}></span>
-                                                {task.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))
+                                Array.isArray(tasks) && tasks
+                                    .filter(task =>
+                                        task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                        getEmployeeName(task.employeeId).toLowerCase().includes(searchQuery.toLowerCase())
+                                    )
+                                    .map((task) => (
+                                        <tr key={task.id} className="hover:bg-brand-bg/30 transition-colors group">
+                                            <td className="px-8 py-6 whitespace-nowrap">
+                                                <div className="text-brand-text font-black text-sm">{getEmployeeName(task.employeeId)}</div>
+                                                <div className="text-[9px] text-brand-muted font-bold uppercase tracking-widest mt-0.5">Assigned: {task.date}</div>
+                                            </td>
+                                            <td className="px-8 py-6 text-brand-text font-medium text-sm max-w-md italic">
+                                                "{task.description}"
+                                            </td>
+                                            <td className="px-8 py-6 whitespace-nowrap">
+                                                <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${task.priority === 'High' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                                                    task.priority === 'Medium' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                                        'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
+                                                    }`}>
+                                                    {task.priority}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-6 whitespace-nowrap">
+                                                <span className={`flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-2xl border ${task.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                                    task.status === 'In Progress' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
+                                                        'bg-brand-muted/10 text-brand-muted border-brand-border'
+                                                    }`}>
+                                                    <span className={`w-2 h-2 rounded-full ${task.status === 'Completed' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' :
+                                                        task.status === 'In Progress' ? 'bg-indigo-500 animate-pulse' :
+                                                            'bg-brand-muted'
+                                                        }`}></span>
+                                                    {task.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
                             )}
                         </tbody>
                     </table>

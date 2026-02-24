@@ -81,7 +81,11 @@ const Documents = () => {
                     </div>
 
                     <div className="space-y-4">
-                        {Array.isArray(employees) && employees.filter((e: any) => e.name.toLowerCase().includes(searchQuery.toLowerCase())).map((emp: any) => (
+                        {Array.isArray(employees) && employees.filter((e: any) =>
+                            e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            e.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            e.role.toLowerCase().includes(searchQuery.toLowerCase())
+                        ).map((emp: any) => (
                             <div
                                 key={emp.id}
                                 onClick={() => handleEmployeeSelect(emp)}

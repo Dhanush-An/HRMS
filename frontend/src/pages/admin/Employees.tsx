@@ -143,6 +143,11 @@ const Employees = () => {
             alert(`Error saving employee: ${error.message || 'Unknown error'}`);
         }
     };
+    const filteredEmployees = employees.filter(emp =>
+        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        emp.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        emp.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
 
     return (
@@ -196,7 +201,7 @@ const Employees = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-border">
-                        {Array.isArray(employees) && employees.map((emp) => (
+                        {Array.isArray(filteredEmployees) && filteredEmployees.map((emp) => (
                             <tr key={emp.id} className="hover:bg-brand-bg transition-colors group cursor-pointer" onClick={() => openProfile(emp)}>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">

@@ -53,6 +53,7 @@ const Leaves = () => {
 
     // Filter State
     const [statusFilter, setStatusFilter] = useState('All');
+    const [searchQuery, setSearchQuery] = useState('');
 
     // New Leave Form
     const [formData, setFormData] = useState({
@@ -153,9 +154,13 @@ const Leaves = () => {
     const approvedToday = Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === 'Approved' &&
         new Date(l.startDate) <= new Date() && new Date(l.endDate) >= new Date()).length : 0;
 
-    const filteredLeaves = statusFilter === 'All'
+    const filteredLeaves = (statusFilter === 'All'
         ? visibleLeaves
-        : (Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === statusFilter) : []);
+        : (Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === statusFilter) : [])
+    ).filter((l: LeaveRequest) =>
+        l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        l.reason.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     const visibleEmployees = isAdmin
         ? (Array.isArray(employees) ? employees : [])
@@ -243,6 +248,8 @@ const Leaves = () => {
                             <input
                                 type="text"
                                 placeholder="Search records..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full bg-brand-bg border border-brand-border rounded-xl py-2 pl-10 pr-4 text-brand-text placeholder-brand-muted text-sm font-medium focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all"
                             />
                         </div>
@@ -263,6 +270,8 @@ const Leaves = () => {
                                         <input
                                             type="text"
                                             placeholder="Search by name or reason..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
                                             className="w-full bg-brand-bg border border-brand-border rounded-xl py-2.5 pl-10 pr-4 text-brand-text placeholder-brand-muted text-xs font-medium focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all shadow-sm"
                                         />
                                     </div>

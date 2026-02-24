@@ -47,6 +47,7 @@ const Attendance = () => {
 
     // Report State
     const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Map Modal State
     const [mapModal, setMapModal] = useState<{ isOpen: boolean; empName: string; lat: number; lng: number }>({
@@ -294,6 +295,8 @@ const Attendance = () => {
                             <input
                                 type="text"
                                 placeholder="Search employee..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="bg-brand-bg border border-brand-border rounded-xl py-2 pl-12 pr-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/50 text-xs font-medium w-full transition-all"
                             />
                         </div>
@@ -313,7 +316,10 @@ const Attendance = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-border">
-                            {employees.map((emp) => {
+                            {employees.filter(emp =>
+                                emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                emp.department.toLowerCase().includes(searchQuery.toLowerCase())
+                            ).map((emp) => {
                                 const record = getAttendanceStatus(emp.id);
                                 return (
                                     <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">

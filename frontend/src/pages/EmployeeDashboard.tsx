@@ -55,6 +55,7 @@ const EmployeeDashboard = () => {
     const [clockedOutTime, setClockedOutTime] = useState('--:--');
     const [attendanceId, setAttendanceId] = useState<string | null>(null);
     const [locationStatus, setLocationStatus] = useState<'active' | 'denied' | 'error' | 'idle'>('idle');
+    const [lastPosition, setLastPosition] = useState<{ latitude: number, longitude: number } | null>(null);
 
     // Login Options Modal State
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -102,6 +103,7 @@ const EmployeeDashboard = () => {
                         latitude,
                         longitude
                     });
+                    setLastPosition({ latitude, longitude });
                     console.log(`[Location Sync] Success: ${latitude}, ${longitude}`);
                     setLocationStatus('active');
                 } catch (err) {
@@ -158,46 +160,62 @@ const EmployeeDashboard = () => {
             const position = await new Promise<GeolocationPosition>((resolve, reject) => {
                 navigator.geolocation.getCurrentPosition(resolve, reject, {
                     enableHighAccuracy: true,
-                    timeout: 5000
+                    timeout: 10000 // Increased timeout to 10s
                 });
             });
             loginLocation = {
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude
             };
+        } catch (err: any) {
+            console.warn("Could not capture immediate login location, trying cache:", err);
 
-            // GEOFENCING LOGIC
-            if (loginOptions.workMode === 'Work from Office') {
-                const branch = BRANCH_LOCATIONS[loginOptions.workLocation as keyof typeof BRANCH_LOCATIONS];
-                if (branch && loginLocation.latitude && loginLocation.longitude) {
-                    const distance = calculateDistance(
-                        loginLocation.latitude,
-                        loginLocation.longitude,
-                        branch.lat,
-                        branch.lng
-                    );
+            // Fallback to last known position if available
+            if (lastPosition) {
+                console.log("[GEOFENCE] Using cached position as fallback");
+                loginLocation = {
+                    latitude: lastPosition.latitude,
+                    longitude: lastPosition.longitude
+                };
+            } else if (loginOptions.workMode === 'Work from Office') {
+                let errorMessage = "Location Error: We could not verify your position.";
+                if (err.code === 1) { // PERMISSION_DENIED
+                    errorMessage = "Location Denied: Please enable GPS and allow location access in your browser settings to check-in from the office.";
+                } else if (err.code === 3) { // TIMEOUT
+                    errorMessage = "Location Timeout: GPS signal is weak. Please try again or move to an area with better reception.";
+                } else {
+                    errorMessage = "Location Error: Office login requires GPS access. Please ensure your location is enabled.";
+                }
+                alert(errorMessage);
+                setIsSubmitting(false);
+                return;
+            }
+        }
 
-                    console.log(`[GEOFENCE] Distance to ${loginOptions.workLocation} branch: ${distance.toFixed(2)}m`);
+        // GEOFENCING LOGIC (Using either direct or fallback location)
+        if (loginOptions.workMode === 'Work from Office' && loginLocation.latitude && loginLocation.longitude) {
+            const branch = BRANCH_LOCATIONS[loginOptions.workLocation as keyof typeof BRANCH_LOCATIONS];
+            if (branch) {
+                const distance = calculateDistance(
+                    loginLocation.latitude,
+                    loginLocation.longitude,
+                    branch.lat,
+                    branch.lng
+                );
 
-                    if (distance > 200) {
-                        alert("Access Denied: You are not eligible for login from your current location. Please ensure you are within 200m of the office.");
-                        setIsSubmitting(false);
-                        return;
-                    }
-                } else if (!loginLocation.latitude) {
-                    alert("Location required: Please enable GPS and allow location access to check-in from the office.");
+                console.log(`[GEOFENCE] Distance to ${loginOptions.workLocation} branch: ${distance.toFixed(2)}m`);
+
+                if (distance > 200) {
+                    alert(`Access Denied: You are ${distance.toFixed(0)}m away. You must be within 200m of the office to check-in.`);
                     setIsSubmitting(false);
                     return;
                 }
             }
-
-        } catch (err) {
-            console.error("Could not capture login location:", err);
-            if (loginOptions.workMode === 'Work from Office') {
-                alert("Location Error: We could not verify your position. Office login requires GPS access.");
-                setIsSubmitting(false);
-                return;
-            }
+        } else if (loginOptions.workMode === 'Work from Office' && !loginLocation.latitude) {
+            // This case should be handled by the catch block above, but as a safety measure:
+            alert("Location required: Please enable GPS to check-in from the office.");
+            setIsSubmitting(false);
+            return;
         }
 
         const now = new Date();
