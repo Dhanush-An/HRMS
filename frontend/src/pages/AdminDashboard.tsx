@@ -47,6 +47,7 @@ const AdminDashboard: React.FC = () => {
         { icon: TrendingUp, label: 'Performance', path: '/admin-dashboard/performance' },
         { icon: File, label: 'Documents', path: '/admin-dashboard/documents' },
         { icon: Bell, label: 'Announcements', path: '/admin-dashboard/announcements' },
+        { icon: ShieldCheck, label: 'Policies', path: '/admin-dashboard/policies' },
         { icon: BarChart2, label: 'Reports', path: '/admin-dashboard/reports' },
         { icon: Settings, label: 'Settings', path: '/admin-dashboard/settings' },
     ];

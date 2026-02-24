@@ -13,6 +13,7 @@ import Documents from './pages/admin/Documents';
 import Settings from './pages/admin/Settings';
 import Reports from './pages/admin/Reports';
 import Announcements from './pages/admin/Announcements';
+import AdminPolicies from './pages/admin/AdminPolicies';
 import EmployeeHome from './pages/employee/EmployeeHome';
 import EmployeeTasks from './pages/employee/EmployeeTasks';
 import EmployeeProfile from './pages/employee/EmployeeProfile';
@@ -47,6 +48,7 @@ function App() {
             <Route path="performance" element={<Performance />} />
             <Route path="documents" element={<Documents />} />
             <Route path="announcements" element={<Announcements />} />
+            <Route path="policies" element={<AdminPolicies />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
           </Route>

@@ -48,6 +48,7 @@ const DOCUMENTS_FILE = path.join(__dirname, '../data/documents.json');
 const ANNOUNCEMENTS_FILE = path.join(__dirname, '../data/announcements.json');
 const TASKS_FILE = path.join(__dirname, '../data/tasks.json');
 const LOCATIONS_FILE = path.join(__dirname, '../data/locations.json');
+const POLICIES_FILE = path.join(__dirname, '../data/policies.json');
 
 // Helper to read data
 const readData = () => {
@@ -192,6 +193,21 @@ const readLocations = () => {
 
 const writeLocations = (data: any) => {
     fs.writeFileSync(LOCATIONS_FILE, JSON.stringify(data, null, 2));
+};
+
+// Helper for Policies
+const readPolicies = () => {
+    try {
+        if (!fs.existsSync(POLICIES_FILE)) return [];
+        const data = fs.readFileSync(POLICIES_FILE, 'utf-8');
+        return JSON.parse(data);
+    } catch (error) {
+        return [];
+    }
+};
+
+const writePolicies = (data: any) => {
+    fs.writeFileSync(POLICIES_FILE, JSON.stringify(data, null, 2));
 };
 
 // --- AUTH MIDDLEWARE ---
@@ -612,6 +628,54 @@ app.put('/api/tasks/:id', (req, res) => {
         res.json(tasks[index]);
     } else {
         res.status(404).json({ message: 'Task not found' });
+    }
+});
+
+// --- POLICIES ROUTES ---
+
+app.get('/api/policies', (req, res) => {
+    const policies = readPolicies();
+    res.json(policies);
+});
+
+app.post('/api/policies', (req, res) => {
+    const policies = readPolicies();
+    const newPolicy = {
+        id: Date.now(),
+        lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        ...req.body
+    };
+    policies.push(newPolicy);
+    writePolicies(policies);
+    res.status(201).json(newPolicy);
+});
+
+app.put('/api/policies/:id', (req, res) => {
+    const policies = readPolicies();
+    const index = policies.findIndex((p: any) => p.id === parseInt(req.params.id));
+
+    if (index !== -1) {
+        policies[index] = {
+            ...policies[index],
+            ...req.body,
+            lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        };
+        writePolicies(policies);
+        res.json(policies[index]);
+    } else {
+        res.status(404).json({ message: 'Policy not found' });
+    }
+});
+
+app.delete('/api/policies/:id', (req, res) => {
+    const policies = readPolicies();
+    const filtered = policies.filter((p: any) => p.id !== parseInt(req.params.id));
+
+    if (filtered.length < policies.length) {
+        writePolicies(filtered);
+        res.json({ message: 'Policy deleted' });
+    } else {
+        res.status(404).json({ message: 'Policy not found' });
     }
 });
 
