@@ -240,21 +240,21 @@ const EmployeeAttendance = () => {
                     {/* Stats & Insights Side Panel */}
                     <div className="space-y-6">
                         {/* Summary Insights */}
-                        <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm">
-                            <div className="flex items-center gap-3 mb-6">
+                        <div className="bg-brand-surface border border-brand-border rounded-2xl p-4 md:p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-4 md:mb-6">
                                 <Sparkles className="w-4 h-4 text-brand-primary" />
                                 <h3 className="text-sm font-black text-brand-text tracking-widest uppercase">Monthly Vita</h3>
                             </div>
 
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center p-4 bg-status-approved/5 rounded-xl border border-status-approved/10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-status-approved/10 rounded-lg">
-                                            <CheckCircle className="w-4 h-4 text-status-approved" />
+                                <div className="flex justify-between items-center p-3 md:p-4 bg-status-approved/5 rounded-xl border border-status-approved/10">
+                                    <div className="flex items-center gap-2 md:gap-3">
+                                        <div className="p-1.5 md:p-2 bg-status-approved/10 rounded-lg">
+                                            <CheckCircle className="w-3.5 h-3.5 md:w-4 h-4 text-status-approved" />
                                         </div>
-                                        <span className="text-xs font-bold text-brand-text">Present</span>
+                                        <span className="text-[10px] md:text-xs font-bold text-brand-text">Present</span>
                                     </div>
-                                    <span className="text-2xl font-black text-status-approved">
+                                    <span className="text-xl md:text-2xl font-black text-status-approved">
                                         {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Present') : []).length}
                                     </span>
                                 </div>
@@ -306,7 +306,7 @@ const EmployeeAttendance = () => {
 
                         {/* Selected Day Expanded Details */}
                         {selectedDayStats ? (
-                            <div className="bg-brand-surface border border-brand-primary/30 rounded-2xl p-6 shadow-md relative overflow-hidden">
+                            <div className="bg-brand-surface border border-brand-primary/30 rounded-2xl p-4 md:p-6 shadow-md relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary"></div>
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="h-12 w-12 rounded-xl bg-brand-bg border border-brand-border flex flex-col items-center justify-center">

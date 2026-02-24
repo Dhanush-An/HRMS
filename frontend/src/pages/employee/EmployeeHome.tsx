@@ -23,7 +23,7 @@ const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="bg-brand-surface border border-brand-border p-8 rounded-[2.5rem] hover:shadow-2xl transition-all group relative overflow-hidden"
+        className="bg-brand-surface border border-brand-border p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] hover:shadow-2xl transition-all group relative overflow-hidden"
     >
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-primary/5 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-brand-primary/10 transition-all duration-700"></div>
 
@@ -67,7 +67,7 @@ const LiveLocationCard = () => {
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-brand-surface border border-brand-border rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden group"
+            className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[2.5rem] p-5 md:p-8 shadow-2xl relative overflow-hidden group"
         >
             <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:rotate-12 transition-transform duration-700">
                 <Globe className="w-40 h-40" />
@@ -173,7 +173,7 @@ const EmployeeHome = () => {
     };
 
     return (
-        <div className="p-4 md:p-8 space-y-8 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="p-4 md:p-8 space-y-6 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Greeting */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
@@ -191,9 +191,9 @@ const EmployeeHome = () => {
             </div>
 
             {/* Content Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10">
                 {/* Recent Activity */}
-                <div className="lg:col-span-2 bg-brand-surface border border-brand-border rounded-[2.5rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl relative overflow-hidden">
+                <div className="lg:col-span-2 bg-brand-surface border border-brand-border rounded-2xl md:rounded-[3rem] p-5 md:p-10 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
                         <Activity className="w-48 h-48" />
                     </div>
@@ -231,9 +231,9 @@ const EmployeeHome = () => {
                 </div>
 
                 {/* Quick Actions / Summary */}
-                <div className="space-y-8 md:space-y-10">
+                <div className="space-y-6 md:space-y-10">
                     {user && <LiveLocationCard />}
-                    <div className="bg-brand-primary rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 text-white relative overflow-hidden group shadow-[0_32px_64px_-16px_rgba(99,102,241,0.5)] border border-brand-primary/20">
+                    <div className="bg-brand-primary rounded-2xl md:rounded-[3rem] p-6 md:p-10 text-white relative overflow-hidden group shadow-[0_32px_64px_-16px_rgba(99,102,241,0.5)] border border-brand-primary/20">
                         <div className="absolute -top-12 -right-12 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-45 transition-all duration-700">
                             <Clock className="w-48 h-48" />
                         </div>
@@ -248,7 +248,7 @@ const EmployeeHome = () => {
                         </div>
                     </div>
 
-                    <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] md:rounded-[3rem] p-8 md:p-10 shadow-xl group relative overflow-hidden">
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[3rem] p-6 md:p-10 shadow-xl group relative overflow-hidden">
                         <div className="absolute bottom-0 right-0 p-6 opacity-5">
                             <MessageSquare className="w-20 h-20" />
                         </div>

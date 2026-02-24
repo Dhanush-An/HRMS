@@ -20,6 +20,7 @@ import {
 import { cn } from '../utils/cn';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import logo from '../assets/antigraviity logo 2.jpg';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -74,7 +75,7 @@ const AdminDashboard: React.FC = () => {
                                 <span className="text-white font-black italic text-lg tracking-tighter">aG</span>
                             </div>
                             <img
-                                src="/logo.jpg"
+                                src={logo}
                                 alt="Logo"
                                 className="absolute inset-0 w-full h-full object-cover z-10"
                             />
@@ -155,7 +156,7 @@ const AdminDashboard: React.FC = () => {
                                 <span className="text-white font-black italic text-xs tracking-tighter">aG</span>
                             </div>
                             <img
-                                src="/logo.jpg"
+                                src={logo}
                                 alt="Logo"
                                 className="absolute inset-0 w-full h-full object-cover z-10"
                             />

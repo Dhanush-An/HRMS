@@ -22,6 +22,7 @@ import {
     Loader2
 } from 'lucide-react';
 import { cn } from '../utils/cn';
+import logo from '../assets/antigraviity logo 2.jpg';
 
 // Geofencing Constants
 const BRANCH_LOCATIONS = {
@@ -324,7 +325,7 @@ const EmployeeDashboard = () => {
                                 <span className="text-white font-black italic text-lg tracking-tighter">aG</span>
                             </div>
                             <img
-                                src="/logo.jpg"
+                                src={logo}
                                 alt="Logo"
                                 className="absolute inset-0 w-full h-full object-cover z-10"
                             />
@@ -407,7 +408,7 @@ const EmployeeDashboard = () => {
                                 <span className="text-white font-black italic text-xs tracking-tighter">aG</span>
                             </div>
                             <img
-                                src="/logo.jpg"
+                                src={logo}
                                 alt="Logo"
                                 className="absolute inset-0 w-full h-full object-cover z-10"
                             />
@@ -425,9 +426,9 @@ const EmployeeDashboard = () => {
                 <main className="flex-1 overflow-y-auto relative no-scrollbar bg-brand-bg">
                     {/* Header */}
                     {(location.pathname === '/employee-dashboard' || location.pathname === '/employee-dashboard/') && (
-                        <header className="sticky top-0 z-30 flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 border-b border-brand-border bg-brand-bg/80 backdrop-blur-xl gap-4">
-                            <div>
-                                <h2 className="text-lg font-bold text-brand-text leading-none mb-1">Welcome, {user.name}</h2>
+                        <header className="sticky top-0 z-30 flex flex-col items-stretch p-4 md:p-6 border-b border-brand-border bg-brand-bg/80 backdrop-blur-xl gap-4 md:flex-row md:items-center md:justify-between">
+                            <div className="text-left">
+                                <h2 className="text-lg font-bold text-brand-text leading-tight mb-1">Welcome, {user.name}</h2>
                                 <div className="flex items-center gap-3">
                                     <p className="text-xs text-brand-muted uppercase font-bold tracking-widest">{user.role}</p>
                                     <div className="w-1 h-1 bg-brand-border rounded-full" />
@@ -443,7 +444,7 @@ const EmployeeDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                                 <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-4 px-4 py-2 bg-brand-surface border border-brand-border rounded-xl shadow-sm">
                                     <div className="flex flex-col">
                                         <span className="text-[10px] text-brand-muted uppercase font-bold tracking-wider">Login</span>
