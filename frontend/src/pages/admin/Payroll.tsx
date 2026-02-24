@@ -230,23 +230,27 @@ const Payroll = () => {
                 <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                     <div className="flex flex-col md:flex-row gap-6 items-stretch md:items-center bg-brand-surface p-6 rounded-2xl border border-brand-border shadow-sm">
                         <div className="flex gap-2">
-                            <select
-                                value={selectedMonth}
-                                onChange={(e) => setSelectedMonth(e.target.value)}
-                                className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2 text-brand-text font-bold text-sm focus:ring-2 focus:ring-brand-primary outline-none transition-all"
-                            >
-                                {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
-                                    <option key={m} value={m}>{m}</option>
-                                ))}
-                            </select>
-                            <select
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(Number(e.target.value))}
-                                className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2 text-brand-text font-bold text-sm focus:ring-2 focus:ring-brand-primary outline-none transition-all"
-                            >
-                                <option value={2026}>2026</option>
-                                <option value={2025}>2025</option>
-                            </select>
+                            <div className="custom-select-container">
+                                <select
+                                    value={selectedMonth}
+                                    onChange={(e) => setSelectedMonth(e.target.value)}
+                                    className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2 text-brand-text font-bold text-sm focus:ring-2 focus:ring-brand-primary outline-none transition-all appearance-none pr-8"
+                                >
+                                    {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
+                                        <option key={m} value={m} className="bg-brand-surface text-brand-text">{m}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="custom-select-container">
+                                <select
+                                    value={selectedYear}
+                                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                                    className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2 text-brand-text font-bold text-sm focus:ring-2 focus:ring-brand-primary outline-none transition-all appearance-none pr-8"
+                                >
+                                    <option value={2026} className="bg-brand-surface text-brand-text">2026</option>
+                                    <option value={2025} className="bg-brand-surface text-brand-text">2025</option>
+                                </select>
+                            </div>
                         </div>
                         <div className="flex-1"></div>
                         <button

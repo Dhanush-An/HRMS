@@ -445,17 +445,19 @@ const Leaves = () => {
                                 <div>
                                     <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-2 pl-1">Assign Employee</label>
                                     {isAdmin ? (
-                                        <select
-                                            className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-text font-black text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner cursor-pointer"
-                                            value={formData.employeeId}
-                                            onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
-                                            required
-                                        >
-                                            <option value="">Select Target Employee</option>
-                                            {employees.map(emp => (
-                                                <option key={emp.id} value={emp.id}>{emp.name}</option>
-                                            ))}
-                                        </select>
+                                        <div className="custom-select-container">
+                                            <select
+                                                className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-text font-black text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner cursor-pointer appearance-none"
+                                                value={formData.employeeId}
+                                                onChange={(e) => setFormData({ ...formData, employeeId: e.target.value })}
+                                                required
+                                            >
+                                                <option value="" className="bg-brand-surface text-brand-text">Select Target Employee</option>
+                                                {employees.map(emp => (
+                                                    <option key={emp.id} value={emp.id} className="bg-brand-surface text-brand-text">{emp.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     ) : (
                                         <div className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-muted font-bold text-sm italic shadow-inner">
                                             {user?.name}
@@ -464,16 +466,19 @@ const Leaves = () => {
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-2 pl-1">Type of Leave</label>
-                                    <select
-                                        className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-text font-black text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner cursor-pointer"
-                                        value={formData.type}
-                                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                    >
-                                        <option value="Sick Leave">Sick Leave (Medical)</option>
-                                        <option value="Casual Leave">Casual Leave (Personal)</option>
-                                        <option value="Paid Leave">Paid Leave (Vacation)</option>
-                                        <option value="Work From Home">Work From Home (Remote)</option>
-                                    </select>
+                                    <div className="custom-select-container">
+                                        <select
+                                            className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-text font-black text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner cursor-pointer appearance-none"
+                                            value={formData.type}
+                                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                            required
+                                        >
+                                            <option value="Casual" className="bg-brand-surface text-brand-text">Casual Leave</option>
+                                            <option value="Sick" className="bg-brand-surface text-brand-text">Sick Leave</option>
+                                            <option value="Emergency" className="bg-brand-surface text-brand-text">Emergency Leave</option>
+                                            <option value="Vacation" className="bg-brand-surface text-brand-text">Vacation</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 

@@ -102,16 +102,18 @@ const Announcements = () => {
                             </div>
                             <div>
                                 <label className="text-[10px] font-black text-brand-muted uppercase tracking-widest mb-3 ml-1 block">Broadcast Category</label>
-                                <select
-                                    className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text font-black text-sm focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all shadow-sm cursor-pointer"
-                                    value={formData.type}
-                                    onChange={e => setFormData({ ...formData, type: e.target.value })}
-                                >
-                                    <option value="Company">General Company</option>
-                                    <option value="HR">Human Resources</option>
-                                    <option value="Salary">Finance & Payroll</option>
-                                    <option value="Holiday">Vacation & Holidays</option>
-                                </select>
+                                <div className="custom-select-container">
+                                    <select
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text font-black text-sm focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all shadow-sm cursor-pointer appearance-none"
+                                        value={formData.type}
+                                        onChange={e => setFormData({ ...formData, type: e.target.value })}
+                                    >
+                                        <option value="Company" className="bg-brand-surface text-brand-text">General Company</option>
+                                        <option value="HR" className="bg-brand-surface text-brand-text">Human Resources</option>
+                                        <option value="Salary" className="bg-brand-surface text-brand-text">Finance & Payroll</option>
+                                        <option value="Holiday" className="bg-brand-surface text-brand-text">Vacation & Holidays</option>
+                                    </select>
+                                </div>
                             </div>
                             <div>
                                 <label className="text-[10px] font-black text-brand-muted uppercase tracking-widest mb-3 ml-1 block">Detailed Message</label>

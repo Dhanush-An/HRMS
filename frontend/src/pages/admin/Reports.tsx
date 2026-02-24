@@ -161,7 +161,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                     />
                 </div>
 
-                <div className="flex items-center gap-3 bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 md:w-64 focus-within:ring-2 focus-within:ring-brand-primary/20 transition-all">
+                <div className="flex items-center gap-3 bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 md:w-64 focus-within:ring-2 focus-within:ring-brand-primary/20 transition-all custom-select-container">
                     <Users className="w-4 h-4 text-brand-muted" />
                     <select
                         value={selectedEmployee}
@@ -170,7 +170,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                     >
                         <option value="">All Employees</option>
                         {Array.isArray(employees) && employees.map(e => (
-                            <option key={e.id} value={e.id}>{e.name}</option>
+                            <option key={e.id} value={e.id} className="bg-brand-surface text-brand-text">{e.name}</option>
                         ))}
                     </select>
                 </div>

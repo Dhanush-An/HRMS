@@ -103,3 +103,32 @@ body {
   border-radius: 3px;
   filter: invert(1);
 }
+
+/* Global Select/Option fix for Dark Mode */
+.dark select,
+.dark option {
+  background-color: var(--brand-surface) !important;
+  color: var(--brand-text) !important;
+}
+
+.dark select:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+
+/* Custom dropdown arrow for selects with appearance-none */
+.custom-select-container {
+  position: relative;
+}
+
+.custom-select-container::after {
+  content: '▼';
+  font-size: 10px;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--brand-muted);
+}
