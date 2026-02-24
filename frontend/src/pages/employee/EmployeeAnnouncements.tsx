@@ -17,6 +17,23 @@ const EmployeeAnnouncements = () => {
         fetchData();
     }, []);
 
+    const parseDate = (dateStr: string) => {
+        if (dateStr.toLowerCase().includes('today')) {
+            const now = new Date();
+            const timeMatch = dateStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (timeMatch) {
+                let [_, hours, minutes, period] = timeMatch;
+                let h = parseInt(hours);
+                if (period.toUpperCase() === 'PM' && h < 12) h += 12;
+                if (period.toUpperCase() === 'AM' && h === 12) h = 0;
+                now.setHours(h, parseInt(minutes), 0, 0);
+            }
+            return now.getTime();
+        }
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+    };
+
     const fetchData = async () => {
         try {
             // Fetch company announcements
@@ -41,8 +58,11 @@ const EmployeeAnnouncements = () => {
                 }
             ];
 
-            // Merge and Sort (Mock sorting for now)
-            setAnnouncements([...personalNotifications, ...data.reverse()]);
+            // Merge and Sort by Date (Latest First)
+            const combined = [...personalNotifications, ...data];
+            const sorted = combined.sort((a, b) => parseDate(b.date) - parseDate(a.date));
+
+            setAnnouncements(sorted);
         } catch (error) {
             console.error("Error fetching announcements:", error);
             // Fallback mock if API fails
