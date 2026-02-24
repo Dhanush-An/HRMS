@@ -149,8 +149,15 @@ const AdminDashboard: React.FC = () => {
                 {/* Mobile Top Nav */}
                 <header className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-brand-border bg-brand-surface sticky top-0 z-30">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20">
-                            <span className="text-white font-black italic text-xs tracking-tighter">aG</span>
+                        <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20 relative overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-brand-primary to-blue-600">
+                                <span className="text-white font-black italic text-xs tracking-tighter">aG</span>
+                            </div>
+                            <img
+                                src="/logo.jpg"
+                                alt="Logo"
+                                className="absolute inset-0 w-full h-full object-cover z-10"
+                            />
                         </div>
                         <span className="text-lg font-bold text-brand-text tracking-tight">Antigraviity</span>
                     </div>
