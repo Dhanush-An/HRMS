@@ -271,91 +271,97 @@ const EmployeeAttendance = () => {
                                     </span>
                                 </div>
 
-                                <span className="text-2xl font-black text-status-pending">
-                                    {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late' || r.status === 'Half Day') : []).length}
-                                </span>
-                            </div>
-
-                            <div className="flex justify-between items-center p-4 bg-brand-primary/5 rounded-xl border border-brand-primary/10">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-brand-primary/10 rounded-lg">
-                                        <Clock className="w-4 h-4 text-brand-primary" />
+                                <div className="flex justify-between items-center p-4 bg-status-pending/5 rounded-xl border border-status-pending/10">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-status-pending/10 rounded-lg">
+                                            <Clock className="w-4 h-4 text-status-pending" />
+                                        </div>
+                                        <span className="text-xs font-bold text-brand-text">Late/Half</span>
                                     </div>
-                                    <span className="text-xs font-bold text-brand-text">Weekly Off</span>
+                                    <span className="text-2xl font-black text-status-pending">
+                                        {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late' || r.status === 'Half Day') : []).length}
+                                    </span>
                                 </div>
-                                <span className="text-2xl font-black text-brand-primary">
-                                    {(() => {
-                                        const daysInMonth = getDaysInMonth(currentDate);
-                                        let sundays = 0;
-                                        for (let i = 1; i <= daysInMonth; i++) {
-                                            if (new Date(currentDate.getFullYear(), currentDate.getMonth(), i).getDay() === 0) sundays++;
-                                        }
-                                        return sundays;
-                                    })()}
-                                </span>
+
+                                <div className="flex justify-between items-center p-4 bg-brand-primary/5 rounded-xl border border-brand-primary/10">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-brand-primary/10 rounded-lg">
+                                            <Clock className="w-4 h-4 text-brand-primary" />
+                                        </div>
+                                        <span className="text-xs font-bold text-brand-text">Weekly Off</span>
+                                    </div>
+                                    <span className="text-2xl font-black text-brand-primary">
+                                        {(() => {
+                                            const daysInMonth = getDaysInMonth(currentDate);
+                                            let sundays = 0;
+                                            for (let i = 1; i <= daysInMonth; i++) {
+                                                if (new Date(currentDate.getFullYear(), currentDate.getMonth(), i).getDay() === 0) sundays++;
+                                            }
+                                            return sundays;
+                                        })()}
+                                    </span>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Selected Day Expanded Details */}
+                        {selectedDayStats ? (
+                            <div className="bg-brand-surface border border-brand-primary/30 rounded-2xl p-6 shadow-md relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary"></div>
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className="h-12 w-12 rounded-xl bg-brand-bg border border-brand-border flex flex-col items-center justify-center">
+                                        <span className="text-xs font-black text-brand-primary leading-none">{new Date(selectedDayStats.date).getDate()}</span>
+                                        <span className="text-[8px] font-black uppercase text-brand-muted">{new Date(selectedDayStats.date).toLocaleString('default', { month: 'short' })}</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-black text-brand-text tracking-tight uppercase">Day Details</h3>
+                                        <p className="text-brand-muted text-[10px] font-bold uppercase">{new Date(selectedDayStats.date).toLocaleDateString('en-US', { weekday: 'long' })}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center bg-brand-bg p-3 rounded-xl border border-brand-border">
+                                        <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest">Status</span>
+                                        <span className={cn(
+                                            "text-[10px] font-black uppercase tracking-widest",
+                                            selectedDayStats.status === 'Present' ? "text-status-approved" :
+                                                selectedDayStats.status === 'Absent' ? "text-status-rejected" :
+                                                    (selectedDayStats as any).isWeeklyOff ? "text-brand-primary" :
+                                                        "text-status-pending"
+                                        )}>{(selectedDayStats as any).isWeeklyOff ? 'Weekly Off' : selectedDayStats.status}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="bg-brand-bg p-3 rounded-xl border border-brand-border text-center">
+                                            <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest block mb-1">In</span>
+                                            <span className="text-xs font-black text-brand-text block">{selectedDayStats.checkIn || '--:--'}</span>
+                                        </div>
+                                        <div className="bg-brand-bg p-3 rounded-xl border border-brand-border text-center">
+                                            <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest block mb-1">Out</span>
+                                            <span className="text-xs font-black text-brand-text block">{selectedDayStats.checkOut || '--:--'}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-brand-primary/5 p-4 rounded-xl border border-brand-primary/10 flex flex-col items-center justify-center">
+                                        <span className="text-[9px] font-black text-brand-primary uppercase tracking-widest mb-1">Work Hours</span>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-3xl font-black text-brand-primary tabular-nums">{selectedDayStats.workHours || '-'}</span>
+                                            <span className="text-[10px] font-black text-brand-primary/60 uppercase">hrs</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="bg-brand-surface border border-brand-border border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center h-64">
+                                <Inbox className="w-8 h-8 text-brand-muted opacity-20 mb-3" />
+                                <h4 className="text-brand-text font-black uppercase text-xs mb-1">No Selection</h4>
+                                <p className="text-brand-muted text-[10px] font-medium leading-relaxed italic">Select a date to view detailed records.</p>
+                            </div>
+                        )}
                     </div>
-
-                    {/* Selected Day Expanded Details */}
-                    {selectedDayStats ? (
-                        <div className="bg-brand-surface border border-brand-primary/30 rounded-2xl p-6 shadow-md relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-brand-primary"></div>
-                            <div className="flex items-center gap-4 mb-6">
-                                <div className="h-12 w-12 rounded-xl bg-brand-bg border border-brand-border flex flex-col items-center justify-center">
-                                    <span className="text-xs font-black text-brand-primary leading-none">{new Date(selectedDayStats.date).getDate()}</span>
-                                    <span className="text-[8px] font-black uppercase text-brand-muted">{new Date(selectedDayStats.date).toLocaleString('default', { month: 'short' })}</span>
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-black text-brand-text tracking-tight uppercase">Day Details</h3>
-                                    <p className="text-brand-muted text-[10px] font-bold uppercase">{new Date(selectedDayStats.date).toLocaleDateString('en-US', { weekday: 'long' })}</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center bg-brand-bg p-3 rounded-xl border border-brand-border">
-                                    <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest">Status</span>
-                                    <span className={cn(
-                                        "text-[10px] font-black uppercase tracking-widest",
-                                        selectedDayStats.status === 'Present' ? "text-status-approved" :
-                                            selectedDayStats.status === 'Absent' ? "text-status-rejected" :
-                                                (selectedDayStats as any).isWeeklyOff ? "text-brand-primary" :
-                                                    "text-status-pending"
-                                    )}>{(selectedDayStats as any).isWeeklyOff ? 'Weekly Off' : selectedDayStats.status}</span>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-brand-bg p-3 rounded-xl border border-brand-border text-center">
-                                        <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest block mb-1">In</span>
-                                        <span className="text-xs font-black text-brand-text block">{selectedDayStats.checkIn || '--:--'}</span>
-                                    </div>
-                                    <div className="bg-brand-bg p-3 rounded-xl border border-brand-border text-center">
-                                        <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest block mb-1">Out</span>
-                                        <span className="text-xs font-black text-brand-text block">{selectedDayStats.checkOut || '--:--'}</span>
-                                    </div>
-                                </div>
-
-                                <div className="bg-brand-primary/5 p-4 rounded-xl border border-brand-primary/10 flex flex-col items-center justify-center">
-                                    <span className="text-[9px] font-black text-brand-primary uppercase tracking-widest mb-1">Work Hours</span>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-3xl font-black text-brand-primary tabular-nums">{selectedDayStats.workHours || '-'}</span>
-                                        <span className="text-[10px] font-black text-brand-primary/60 uppercase">hrs</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="bg-brand-surface border border-brand-border border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-center h-64">
-                            <Inbox className="w-8 h-8 text-brand-muted opacity-20 mb-3" />
-                            <h4 className="text-brand-text font-black uppercase text-xs mb-1">No Selection</h4>
-                            <p className="text-brand-muted text-[10px] font-medium leading-relaxed italic">Select a date to view detailed records.</p>
-                        </div>
-                    )}
                 </div>
-                </div>
-    )
-}
-        </div >
+            )}
+        </div>
     );
 };
 
