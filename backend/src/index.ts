@@ -644,6 +644,43 @@ app.delete('/api/policies/:id', async (req, res) => {
     }
 });
 
+// --- PERFORMANCE ROUTES ---
+
+// GET all performance records
+app.get('/api/performance', async (req, res) => {
+    try {
+        const records = await Performance.find();
+        res.json(records);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST new performance record
+app.post('/api/performance', async (req, res) => {
+    try {
+        const record = new Performance(req.body);
+        await record.save();
+        res.status(201).json(record);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE performance record
+app.delete('/api/performance/:id', async (req, res) => {
+    try {
+        const result = await Performance.findByIdAndDelete(req.params.id);
+        if (result) {
+            res.json({ message: 'Performance record deleted' });
+        } else {
+            res.status(404).json({ message: 'Record not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

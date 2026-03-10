@@ -69,10 +69,14 @@ const Performance = () => {
             if (response.ok) {
                 setShowModal(false);
                 fetchData();
-                // Removed localhost notification
+                alert('Performance record saved successfully!');
+            } else {
+                const errData = await response.json().catch(() => ({}));
+                alert('Failed to save record: ' + (errData.message || response.statusText));
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error submitting:", error);
+            alert('Error saving record: ' + (error.message || 'Network error'));
         }
     };
 
@@ -136,7 +140,7 @@ const Performance = () => {
 
             {showModal && selectedEmployee && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-3xl w-full max-w-md p-8 shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="bg-brand-surface border border-brand-border rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-8 shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-8">
                             <div>
                                 <h2 className="text-xl font-black text-brand-text uppercase tracking-tight">Post Review</h2>

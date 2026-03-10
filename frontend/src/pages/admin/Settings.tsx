@@ -52,9 +52,9 @@ const Settings = () => {
             if (response.ok) {
                 setMessage('Credentials updated successfully!');
                 // Update local state
-                const updatedEmps = employees.map(e =>
+                const updatedEmps = Array.isArray(employees) ? employees.map(e =>
                     e.id === selectedEmp ? { ...e, username: formData.username } : e
-                );
+                ) : [];
                 setEmployees(updatedEmps);
                 setFormData(prev => ({ ...prev, password: '' })); // Clear password field
             } else {
@@ -103,11 +103,14 @@ const Settings = () => {
                             {showResults && (searchQuery || employees.length > 0) && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-brand-surface border border-brand-border rounded-2xl shadow-2xl z-50 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 no-scrollbar">
                                     {Array.isArray(employees) && employees
-                                        .filter(e =>
-                                            e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                            e.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                            e.role.toLowerCase().includes(searchQuery.toLowerCase())
-                                        )
+                                        .filter(e => {
+                                            const nameStr = e.name || '';
+                                            const idStr = e.id || '';
+                                            const roleStr = e.role || '';
+                                            return nameStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                                idStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                                roleStr.toLowerCase().includes(searchQuery.toLowerCase());
+                                        })
                                         .map((emp) => (
                                             <button
                                                 key={emp.id}
@@ -127,10 +130,12 @@ const Settings = () => {
                                                 </div>
                                             </button>
                                         ))}
-                                    {employees.filter(e =>
-                                        e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                        e.id.toLowerCase().includes(searchQuery.toLowerCase())
-                                    ).length === 0 && (
+                                    {Array.isArray(employees) && employees.filter(e => {
+                                        const nameStr = e.name || '';
+                                        const idStr = e.id || '';
+                                        return nameStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                            idStr.toLowerCase().includes(searchQuery.toLowerCase());
+                                    }).length === 0 && (
                                             <div className="p-8 text-center text-brand-muted text-[10px] font-black uppercase tracking-widest italic">
                                                 No results found.
                                             </div>
