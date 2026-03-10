@@ -22,6 +22,16 @@ const AttendanceSchema: Schema = new Schema({
         lat: { type: Number },
         lng: { type: Number }
     }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+        transform: (_doc, ret) => {
+            ret.id = ret._id;
+            return ret;
+        }
+    },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model<IAttendance>('Attendance', AttendanceSchema);

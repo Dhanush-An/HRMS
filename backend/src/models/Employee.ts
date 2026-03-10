@@ -50,6 +50,16 @@ const EmployeeSchema: Schema = new Schema({
         wfh: { type: Number, default: 10 },
         paid: { type: Number, default: 15 },
     }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: {
+        virtuals: true,
+        transform: (_doc, ret) => {
+            ret.id = ret.employeeId;
+            return ret;
+        }
+    },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model<IEmployee>('Employee', EmployeeSchema);
