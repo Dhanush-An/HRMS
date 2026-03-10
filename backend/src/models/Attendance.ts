@@ -26,7 +26,7 @@ const AttendanceSchema: Schema = new Schema({
     timestamps: true,
     toJSON: {
         virtuals: true,
-        transform: (_doc, ret) => {
+        transform: (_doc, ret: any) => {
             ret.id = ret._id;
             return ret;
         }

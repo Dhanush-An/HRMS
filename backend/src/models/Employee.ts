@@ -54,7 +54,7 @@ const EmployeeSchema: Schema = new Schema({
     timestamps: true,
     toJSON: {
         virtuals: true,
-        transform: (_doc, ret) => {
+        transform: (_doc, ret: any) => {
             ret.id = ret.employeeId;
             return ret;
         }
