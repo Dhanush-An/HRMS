@@ -9,10 +9,7 @@ import {
     Zap,
     MessageSquare,
     Target,
-    ShieldCheck,
-    MapPin,
-    Navigation,
-    Globe
+    ShieldCheck
 } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
 import api from '../../api';
@@ -66,7 +63,6 @@ const EmployeeHome = () => {
         attendanceRate: '0%',
         pendingTasks: '0 Tasks'
     });
-    const [user, setUser] = useState<any>(null);
 
     const dailyQuote = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
@@ -90,7 +86,6 @@ const EmployeeHome = () => {
                 const employees = await res.json();
                 const updatedUser = employees.find((e: any) => e.id === userId || e.employeeId === userId);
                 if (updatedUser) {
-                    setUser(updatedUser);
                     fetchStats(userId, updatedUser.leaveBalance);
                 }
             }
