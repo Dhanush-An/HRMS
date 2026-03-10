@@ -245,7 +245,10 @@ const EmployeeDashboard = () => {
                 checkIn: timeString,
                 workMode: loginOptions.workMode,
                 workLocation: loginOptions.workLocation,
-                ...loginLocation
+                location: {
+                    lat: loginLocation.latitude,
+                    lng: loginLocation.longitude
+                }
             });
             const data = await res.json();
 

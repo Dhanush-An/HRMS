@@ -22,6 +22,8 @@ interface Employee {
     id: string;
     name: string;
     department: string;
+    email?: string;
+    username?: string;
 }
 
 interface AttendanceRecord {
@@ -34,6 +36,10 @@ interface AttendanceRecord {
     workHours?: number;
     latitude?: number;
     longitude?: number;
+    location?: {
+        lat: number;
+        lng: number;
+    };
     workMode?: string;
     workLocation?: string;
 }
@@ -79,7 +85,13 @@ const Attendance = () => {
     };
 
     const getAttendanceStatus = (empId: string) => {
-        const record = attendance.find(r => r.employeeId === empId && r.date === selectedDate);
+        const emp = employees.find(e => e.id === empId);
+        const record = attendance.find(r =>
+            ((r.employeeId === empId) ||
+                (emp && r.employeeId === emp.email) ||
+                (emp && r.employeeId === (emp as any).username)) &&
+            r.date === selectedDate
+        );
         if (!record) {
             const date = new Date(selectedDate);
             if (date.getDay() === 0) { // Sunday
@@ -119,8 +131,8 @@ const Attendance = () => {
                 setMapModal({
                     isOpen: true,
                     empName: `${empName} (Live)`,
-                    lat: data.latitude,
-                    lng: data.longitude
+                    lat: data.lat || 0,
+                    lng: data.lng || 0
                 });
             } else {
                 alert("Location not found for this employee for this specific session.");
@@ -194,7 +206,7 @@ const Attendance = () => {
 
     // Stats Calculation
     const stats = {
-        present: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Present').length : 0,
+        present: Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0,
         absent: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Absent').length : 0,
         late: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late').length : 0,
         halfDay: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Half Day').length : 0,
@@ -401,9 +413,9 @@ const Attendance = () => {
                                             </div>
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-right">
-                                            {record ? (
+                                            {record?.location ? (
                                                 <button
-                                                    onClick={() => handleViewLocation(emp.id, emp.name, { lat: record.latitude, lng: record.longitude })}
+                                                    onClick={() => handleViewLocation(emp.id, emp.name, record.location)}
                                                     className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all"
                                                     title="View Location"
                                                 >

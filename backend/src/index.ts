@@ -121,7 +121,7 @@ app.get('/api/employees', async (req, res) => {
         const employees = await Employee.find();
         res.json(employees);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -198,7 +198,7 @@ app.delete('/api/employees/:id', async (req, res) => {
             res.status(404).json({ message: 'Employee not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -225,7 +225,7 @@ app.put('/api/employees/:id/location', async (req, res) => {
         );
         res.json({ success: true, location: attendance.location });
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -239,12 +239,13 @@ app.get('/api/employees/:id/location', async (req, res) => {
         });
 
         if (attendance && attendance.location) {
-            res.json(attendance.location);
+            const loc = (attendance.location as any).toObject ? (attendance.location as any).toObject() : attendance.location;
+            res.json({ success: true, ...loc });
         } else {
-            res.status(404).json({ message: 'Location not found' });
+            res.status(404).json({ success: false, message: 'Location not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -259,7 +260,7 @@ app.get('/api/attendance', async (req, res) => {
         const attendance = await Attendance.find(query);
         res.json(attendance);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -272,7 +273,7 @@ app.post('/api/attendance', async (req, res) => {
         await newRecord.save();
         res.status(201).json(newRecord);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -291,7 +292,7 @@ app.put('/api/attendance/:id', async (req, res) => {
             res.status(404).json({ message: 'Record not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -312,7 +313,7 @@ app.put('/api/employees/:id/salary', async (req, res) => {
             res.status(404).json({ message: 'Employee not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -333,7 +334,7 @@ app.post('/api/payroll/generate', async (req, res) => {
         );
         res.status(201).json(payroll);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -343,7 +344,7 @@ app.get('/api/payroll', async (req, res) => {
         const payroll = await Payroll.find();
         res.json(payroll);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -355,7 +356,7 @@ app.get('/api/leaves', async (req, res) => {
         const leaves = await Leave.find();
         res.json(leaves);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -370,7 +371,7 @@ app.post('/api/leaves', async (req, res) => {
         await newLeave.save();
         res.status(201).json(newLeave);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -409,7 +410,7 @@ app.put('/api/leaves/:id', async (req, res) => {
         await leave.save();
         res.json(leave);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -420,7 +421,7 @@ app.get('/api/performance', async (req, res) => {
         const performance = await Performance.find();
         res.json(performance);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -433,7 +434,7 @@ app.post('/api/performance', async (req, res) => {
         await newRecord.save();
         res.status(201).json(newRecord);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -447,7 +448,7 @@ app.get('/api/documents', async (req, res) => {
         const documents = await DocumentModel.find(query);
         res.json(documents);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -460,7 +461,7 @@ app.post('/api/documents', async (req, res) => {
         await newDoc.save();
         res.status(201).json(newDoc);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -471,7 +472,7 @@ app.get('/api/announcements', async (req, res) => {
         const announcements = await Announcement.find();
         res.json(announcements);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -484,7 +485,7 @@ app.post('/api/announcements', async (req, res) => {
         await newAnnouncement.save();
         res.status(201).json(newAnnouncement);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -499,20 +500,19 @@ app.get('/api/tasks', async (req, res) => {
         const tasks = await Task.find(query);
         res.json(tasks);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
 app.post('/api/tasks', async (req, res) => {
     try {
         const newTask = new Task({
-            status: 'Pending',
             ...req.body
         });
         await newTask.save();
         res.status(201).json(newTask);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -530,7 +530,7 @@ app.put('/api/tasks/:id', async (req, res) => {
             res.status(404).json({ message: 'Task not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -541,7 +541,7 @@ app.get('/api/policies', async (req, res) => {
         const policies = await Policy.find();
         res.json(policies);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -554,7 +554,7 @@ app.post('/api/policies', async (req, res) => {
         await newPolicy.save();
         res.status(201).json(newPolicy);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -575,7 +575,7 @@ app.put('/api/policies/:id', async (req, res) => {
             res.status(404).json({ message: 'Policy not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -588,7 +588,7 @@ app.delete('/api/policies/:id', async (req, res) => {
             res.status(404).json({ message: 'Policy not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
