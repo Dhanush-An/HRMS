@@ -16,11 +16,12 @@ import api from '../../api';
 interface LeaveRequest {
     id: string;
     employeeId: string;
-    name: string;
+    name?: string;
+    employeeName?: string;
     type: string;
     startDate: string;
     endDate: string;
-    reason: string;
+    reason?: string;
     status: 'Pending' | 'Approved' | 'Rejected';
     appliedOn: string;
 }
@@ -162,10 +163,12 @@ const Leaves = () => {
     const filteredLeaves = (statusFilter === 'All'
         ? visibleLeaves
         : (Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === statusFilter) : [])
-    ).filter((l: LeaveRequest) =>
-        l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.reason.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    ).filter((l: LeaveRequest) => {
+        const empName = l.employeeName || l.name || '';
+        const reqReason = l.reason || '';
+        return empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            reqReason.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
     const visibleEmployees = isAdmin
         ? (Array.isArray(employees) ? employees : [])
@@ -320,7 +323,7 @@ const Leaves = () => {
                                         {Array.isArray(filteredLeaves) && filteredLeaves.map((leave) => (
                                             <tr key={leave.id} className="hover:bg-brand-bg/30 transition-colors group">
                                                 <td className="px-8 py-6 whitespace-nowrap">
-                                                    <div className="text-brand-text font-black text-sm">{leave.name}</div>
+                                                    <div className="text-brand-text font-black text-sm">{leave.employeeName || leave.name || 'Unknown'}</div>
                                                     <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1 italic">Applied: {leave.appliedOn}</div>
                                                 </td>
                                                 <td className="px-8 py-6 whitespace-nowrap">
@@ -385,10 +388,10 @@ const Leaves = () => {
                                         <div className="flex items-center justify-between mb-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black shadow-sm">
-                                                    {leave.name.charAt(0)}
+                                                    {(leave.employeeName || leave.name || 'U').charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <div className="text-brand-text font-black text-sm">{leave.name}</div>
+                                                    <div className="text-brand-text font-black text-sm">{leave.employeeName || leave.name || 'Unknown'}</div>
                                                     <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest">{leave.type}</div>
                                                 </div>
                                             </div>

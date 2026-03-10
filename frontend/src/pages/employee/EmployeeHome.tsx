@@ -12,6 +12,7 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { cn } from '../../utils/cn';
 
@@ -58,6 +59,7 @@ const INSPIRATIONAL_QUOTES = [
 ];
 
 const EmployeeHome = () => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState({
         leaveBalance: '0 Days',
         attendanceRate: '0%',
@@ -177,31 +179,32 @@ const EmployeeHome = () => {
 
                 {/* Quick Actions / Summary */}
                 <div className="space-y-6 md:space-y-10">
-                    <div className="absolute -top-12 -right-12 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-45 transition-all duration-700">
-                        <Clock className="w-48 h-48" />
-                    </div>
-                    <div className="relative z-10 space-y-6">
-                        <div>
-                            <h3 className="text-2xl font-black tracking-tighter uppercase mb-2">Request Leave</h3>
-                            <p className="text-white/70 text-sm font-medium leading-relaxed italic">Initiate professional break protocols across internal modules.</p>
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[3rem] p-6 md:p-10 shadow-xl relative overflow-hidden group">
+                        <div className="absolute -top-12 -right-12 p-8 opacity-[0.05] group-hover:scale-125 group-hover:rotate-45 transition-all duration-700">
+                            <Clock className="w-48 h-48" />
                         </div>
-                        <button className="w-full bg-white text-brand-primary px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.03] active:scale-95 transition-all border-b-4 border-brand-bg">
-                            Apply Now
-                        </button>
+                        <div className="relative z-10 space-y-6">
+                            <div>
+                                <h3 className="text-2xl font-black tracking-tighter uppercase mb-2 text-brand-text">Request Leave</h3>
+                                <p className="text-brand-muted text-sm font-medium leading-relaxed italic">Initiate professional break protocols across internal modules.</p>
+                            </div>
+                            <button
+                                onClick={() => navigate('/employee-dashboard/leaves')}
+                                className="w-full bg-brand-primary text-white hover:bg-white hover:text-brand-primary px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:scale-[1.03] active:scale-95 transition-all border-b-4 border-brand-primary/20 hover:border-brand-bg"
+                            >
+                                Apply Now
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                <div className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[3rem] p-6 md:p-10 shadow-xl group relative overflow-hidden">
-                    <div className="absolute bottom-0 right-0 p-6 opacity-5">
-                        <MessageSquare className="w-20 h-20" />
-                    </div>
-                    <h3 className="text-[10px] font-black text-brand-text uppercase tracking-widest mb-6 opacity-60">System Inspiration</h3>
-                    <p className="italic text-brand-muted font-medium leading-relaxed text-lg">
-                        "Gravity may keep us on the ground, but Antigraviity keeps our dreams soaring."
-                    </p>
-                    <div className="flex items-center gap-4 mt-8">
-                        <div className="h-1 w-12 bg-brand-primary rounded-full group-hover:w-16 transition-all duration-500" />
-                        <span className="text-[10px] font-black text-brand-primary uppercase tracking-[0.2em]">Collective Spirits</span>
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[3rem] p-6 md:p-10 shadow-xl group relative overflow-hidden">
+                        <div className="absolute bottom-0 right-0 p-6 opacity-5">
+                            <MessageSquare className="w-20 h-20" />
+                        </div>
+                        <h3 className="text-[10px] font-black text-brand-text uppercase tracking-widest mb-6 opacity-60">System Inspiration</h3>
+                        <p className="italic text-brand-muted font-medium leading-relaxed text-lg">
+                            "Gravity may keep us on the ground, but Antigraviity keeps our dreams soaring."
+                        </p>
                     </div>
                 </div>
             </div>
