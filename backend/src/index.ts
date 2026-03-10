@@ -283,6 +283,17 @@ app.get('/api/attendance', async (req, res) => {
 // POST attendance (Check-in / Manual)
 app.post('/api/attendance', async (req, res) => {
     try {
+        const { employeeId, date } = req.body;
+
+        // Check for existing record for this employee and date
+        const existingRecord = await Attendance.findOne({ employeeId, date });
+        if (existingRecord) {
+            return res.status(400).json({
+                success: false,
+                message: 'Attendance already marked for today'
+            });
+        }
+
         const newRecord = new Attendance({
             ...req.body,
         });

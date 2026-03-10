@@ -464,19 +464,18 @@ const EmployeeDashboard = () => {
                                         onClick={() => {
                                             if (!isCheckedIn && !isCheckedOut) {
                                                 handleCheckIn();
-                                            } else {
-                                                handleCheckIn();
                                             }
                                         }}
+                                        disabled={isCheckedIn || isCheckedOut}
                                         className={cn(
                                             "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
                                             (isCheckedIn || isCheckedOut)
-                                                ? "bg-brand-primary-light text-brand-primary border border-brand-primary/20"
+                                                ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20 opacity-80 cursor-not-allowed"
                                                 : "bg-status-approved hover:opacity-90 text-white shadow-lg shadow-status-approved/20"
                                         )}
                                     >
                                         <CheckCircle2 className="w-4 h-4" />
-                                        Login
+                                        {isCheckedOut ? "Day Completed" : isCheckedIn ? "Logged In" : "Login"}
                                     </button>
                                     <button
                                         onClick={handleCheckOut}
@@ -484,12 +483,12 @@ const EmployeeDashboard = () => {
                                         className={cn(
                                             "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
                                             !isCheckedIn || isCheckedOut
-                                                ? "text-brand-muted bg-brand-bg cursor-not-allowed"
+                                                ? "text-brand-muted bg-brand-bg opacity-50 cursor-not-allowed border border-brand-border"
                                                 : "bg-status-rejected hover:opacity-90 text-white shadow-lg shadow-status-rejected/20"
                                         )}
                                     >
                                         <LogOut className="w-4 h-4" />
-                                        Logout
+                                        {isCheckedOut ? "Logged Out" : "Logout"}
                                     </button>
                                 </div>
                             </div>
