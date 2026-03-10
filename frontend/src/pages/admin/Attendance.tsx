@@ -113,12 +113,12 @@ const Attendance = () => {
 
     const handleViewLocation = async (empId: string, empName: string, recordLocation?: { lat?: number; lng?: number }) => {
         // 1. Check if record has a specific Login Location
-        if (recordLocation?.lat && recordLocation.lng) {
+        if (recordLocation?.lat !== undefined && recordLocation.lng !== undefined) {
             setMapModal({
                 isOpen: true,
                 empName: `${empName} (Login Location)`,
-                lat: recordLocation.lat,
-                lng: recordLocation.lng
+                lat: Number(recordLocation.lat),
+                lng: Number(recordLocation.lng)
             });
             return;
         }
@@ -131,8 +131,8 @@ const Attendance = () => {
                 setMapModal({
                     isOpen: true,
                     empName: `${empName} (Live)`,
-                    lat: data.lat || 0,
-                    lng: data.lng || 0
+                    lat: Number(data.lat || 0),
+                    lng: Number(data.lng || 0)
                 });
             } else {
                 alert("Location not found for this employee for this specific session.");
@@ -435,7 +435,7 @@ const Attendance = () => {
 
             {/* Map Modal */}
             {mapModal.isOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div
                         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
                         onClick={() => setMapModal(prev => ({ ...prev, isOpen: false }))}
@@ -461,22 +461,31 @@ const Attendance = () => {
 
                         <div className="p-2 bg-brand-bg">
                             <div className="relative rounded-[1.5rem] overflow-hidden border border-brand-border shadow-inner bg-brand-surface aspect-video">
-                                <iframe
-                                    title="Employee Location"
-                                    width="100%"
-                                    height="100%"
-                                    frameBorder="0"
-                                    src={`https://maps.google.com/maps?q=${mapModal.lat},${mapModal.lng}&z=15&output=embed`}
-                                    className="grayscale-[0.2] contrast-[1.1]"
-                                />
-                                <div className="absolute bottom-6 left-6 p-4 bg-brand-surface/90 backdrop-blur-md border border-brand-primary/20 rounded-2xl shadow-xl">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-3 h-3 bg-brand-primary rounded-full animate-pulse" />
-                                        <p className="font-mono text-sm font-black text-brand-text">
-                                            {mapModal.lat.toFixed(6)}, {mapModal.lng.toFixed(6)}
-                                        </p>
+                                {mapModal.lat !== undefined && mapModal.lng !== undefined ? (
+                                    <>
+                                        <iframe
+                                            title="Employee Location"
+                                            width="100%"
+                                            height="100%"
+                                            frameBorder="0"
+                                            src={`https://maps.google.com/maps?q=${mapModal.lat},${mapModal.lng}&z=15&output=embed`}
+                                            className="grayscale-[0.2] contrast-[1.1]"
+                                        />
+                                        <div className="absolute bottom-6 left-6 p-4 bg-brand-surface/90 backdrop-blur-md border border-brand-primary/20 rounded-2xl shadow-xl">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-3 h-3 bg-brand-primary rounded-full animate-pulse" />
+                                                <p className="font-mono text-sm font-black text-brand-text">
+                                                    {Number(mapModal.lat || 0).toFixed(6)}, {Number(mapModal.lng || 0).toFixed(6)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center h-full gap-4">
+                                        <AlertCircle className="w-8 h-8 text-brand-muted opacity-20" />
+                                        <p className="text-brand-muted text-[10px] font-black uppercase tracking-widest">Incomplete Coordinates</p>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
 

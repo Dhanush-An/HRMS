@@ -13,7 +13,11 @@ import Performance from './models/Performance';
 import Announcement from './models/Announcement';
 import Task from './models/Task';
 import Policy from './models/Policy';
-import DocumentModel from './models/Document'; // Rename to avoid conflict with global Document type
+import DocumentModel from './models/Document';
+import multer from 'multer';
+
+const app = express();
+const PORT = process.env.PORT || 5000;
 
 dotenv.config();
 
@@ -22,8 +26,19 @@ connectDB();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hrms_dev_secret_change_in_production';
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+// Configure Multer for local storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadPath = path.join(__dirname, '../uploads');
+        if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage });
 
 const allowedOrigins = [
     'http://localhost:5173',
@@ -51,6 +66,7 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // --- AUTH MIDDLEWARE ---
 const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
@@ -452,12 +468,24 @@ app.get('/api/documents', async (req, res) => {
     }
 });
 
-app.post('/api/documents', async (req, res) => {
+app.post('/api/documents', upload.single('file'), async (req, res) => {
     try {
+        const { title, type, employeeId, uploadedBy } = req.body;
+
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+
         const newDoc = new DocumentModel({
+            employeeId,
+            title,
+            type,
+            uploadedBy,
+            fileUrl: `/uploads/${req.file.filename}`,
             uploadDate: new Date().toISOString().split('T')[0],
-            ...req.body
+            status: 'Pending'
         });
+
         await newDoc.save();
         res.status(201).json(newDoc);
     } catch (error: any) {

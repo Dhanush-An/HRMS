@@ -91,27 +91,35 @@ const EmployeeDocuments = () => {
 
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user?.id) return;
+        if (!user?.id || !uploadData.file) return;
 
         try {
-            const response = await api.post('/api/documents', {
-                title: selectedDocType,
-                type: selectedDocType,
-                url: 'http://example.com/file.pdf',
-                employeeId: user.id,
-                uploadedBy: user.name,
+            const formData = new FormData();
+            formData.append('title', selectedDocType);
+            formData.append('type', selectedDocType);
+            formData.append('employeeId', user.id);
+            formData.append('uploadedBy', user.name);
+            formData.append('file', uploadData.file);
+
+            // Use fetch directly for FormData or update api.post if it supports it
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/documents`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formData
             });
 
             if (response.ok) {
                 await fetchDocuments();
                 setShowUploadModal(false);
-                // Removed localhost notification
             } else {
-                // Removed localhost notification
+                const err = await response.json();
+                alert(`Upload failed: ${err.message || 'Unknown error'}`);
             }
         } catch (error) {
             console.error("Upload failed", error);
-            // Removed localhost notification
+            alert("An error occurred during upload.");
         }
     };
 

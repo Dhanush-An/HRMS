@@ -46,6 +46,24 @@ const Documents = () => {
         setView('list');
     };
 
+    const handleDownload = (doc: Document) => {
+        const fileUrl = doc.url || (doc as any).fileUrl;
+        if (fileUrl) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const fullUrl = fileUrl.startsWith('http') ? fileUrl : `${baseUrl}${fileUrl}`;
+
+            const link = document.createElement('a');
+            link.href = fullUrl;
+            link.setAttribute('download', `${doc.title}`);
+            link.target = "_blank";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            alert("No file URL found for this document.");
+        }
+    };
+
     const filteredDocuments = selectedEmployee && Array.isArray(documents)
         ? documents
             .filter((d: Document) => d.employeeId === selectedEmployee.id)
@@ -185,6 +203,7 @@ const Documents = () => {
                                     <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mb-6">Uploaded: {doc.uploadDate}</p>
 
                                     <button
+                                        onClick={() => handleDownload(doc)}
                                         className="w-full bg-brand-bg hover:bg-brand-primary text-brand-text hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-3 border border-brand-border group-hover:border-transparent transition-all shadow-sm active:scale-95"
                                     >
                                         <Download className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
