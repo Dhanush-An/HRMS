@@ -147,7 +147,7 @@ const Payroll = () => {
     };
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-4">
                 <div>
                     <h1 className="text-3xl font-black text-brand-text tracking-tight">Payroll Management</h1>
@@ -262,8 +262,8 @@ const Payroll = () => {
                         </button>
                     </div>
 
-                    <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm">
-                        <table className="w-full text-left border-collapse">
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm overflow-x-auto no-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[800px]">
                             <thead>
                                 <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
                                     <th className="px-8 py-4">Employee</th>

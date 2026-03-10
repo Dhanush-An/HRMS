@@ -10,6 +10,8 @@ export interface IAttendance extends Document {
         lat: number;
         lng: number;
     };
+    workMode?: string;
+    workLocation?: string;
 }
 
 const AttendanceSchema: Schema = new Schema({
@@ -18,6 +20,8 @@ const AttendanceSchema: Schema = new Schema({
     checkIn: { type: String },
     checkOut: { type: String },
     status: { type: String, enum: ['Present', 'Absent', 'Late', 'Half Day'], default: 'Present' },
+    workMode: { type: String },
+    workLocation: { type: String },
     location: {
         lat: { type: Number },
         lng: { type: Number }

@@ -406,17 +406,30 @@ app.put('/api/leaves/:id', async (req, res) => {
             const employee = await Employee.findOne({ employeeId: leave.employeeId });
 
             if (employee) {
-                const type = leave.type.toLowerCase().split(' ')[0] as keyof typeof employee.leaveBalance;
+                // Map frontend leave types to backend schema keys
+                const typeMapping: Record<string, string> = {
+                    'sick': 'sick',
+                    'casual': 'casual',
+                    'emergency': 'sick', // Emergency counts as Sick
+                    'vacation': 'earned',  // Vacation counts as Earned
+                    'paid': 'paid',
+                    'remote': 'wfh'
+                };
+
+                const leaveTypeKey = leave.type.toLowerCase().split(' ')[0];
+                const type = typeMapping[leaveTypeKey] as keyof typeof employee.leaveBalance;
 
                 // Deduct days
-                const days = (new Date(leave.endDate).getTime() - new Date(leave.startDate).getTime()) / (1000 * 60 * 60 * 24) + 1;
+                const days = Math.max(1, (new Date(leave.endDate).getTime() - new Date(leave.startDate).getTime()) / (1000 * 60 * 60 * 24) + 1);
 
-                if (employee.leaveBalance && (employee.leaveBalance as any)[type] !== undefined) {
+                if (employee.leaveBalance && type && (employee.leaveBalance as any)[type] !== undefined) {
                     if ((employee.leaveBalance as any)[type] >= days) {
                         (employee.leaveBalance as any)[type] -= days;
+                        // Mark modified for nested objects
+                        employee.markModified('leaveBalance');
                         await employee.save();
                     } else {
-                        return res.status(400).json({ message: 'Insufficient leave balance' });
+                        return res.status(400).json({ message: `Insufficient ${type} leave balance. Required: ${days}, Available: ${(employee.leaveBalance as any)[type]}` });
                     }
                 }
             }

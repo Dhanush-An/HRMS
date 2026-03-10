@@ -84,7 +84,7 @@ const Performance = () => {
     };
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
                 <div>
                     <h1 className="text-3xl font-black text-brand-text tracking-tight">Performance Management</h1>
@@ -107,7 +107,7 @@ const Performance = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between md:justify-end gap-12 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-brand-border border-dashed">
+                        <div className="flex items-center justify-between md:justify-end gap-6 md:gap-12 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-brand-border border-dashed">
                             <div className="text-right">
                                 <span className="block text-[10px] text-brand-muted uppercase font-black tracking-[0.2em] mb-1">Last Rating</span>
                                 <span className="text-brand-text font-black flex items-center gap-1.5 justify-end">
@@ -116,7 +116,7 @@ const Performance = () => {
                                     <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                                 </span>
                             </div>
-                            <div className="text-right border-l border-brand-border border-dashed pl-8">
+                            <div className="text-right border-l border-brand-border border-dashed pl-6 md:pl-8">
                                 <span className="block text-[10px] text-brand-muted uppercase font-black tracking-[0.2em] mb-1">Reviews</span>
                                 <span className="text-brand-text font-black text-lg">
                                     {Array.isArray(records) ? records.filter(r => r.employeeId === emp.id).length : 0}
@@ -124,7 +124,7 @@ const Performance = () => {
                             </div>
                             <button
                                 onClick={() => handleReviewClick(emp)}
-                                className="bg-brand-primary text-white px-6 py-3 rounded-2xl flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-brand-primary/20 text-xs font-black uppercase tracking-widest ml-4"
+                                className="bg-brand-primary text-white px-5 md:px-6 py-2.5 md:py-3 rounded-2xl flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-brand-primary/20 text-[10px] md:text-xs font-black uppercase tracking-widest ml-0 md:ml-4"
                             >
                                 <MessageSquare className="w-4 h-4" />
                                 Review

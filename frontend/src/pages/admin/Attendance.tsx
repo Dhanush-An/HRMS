@@ -332,8 +332,8 @@ const Attendance = () => {
                     </div>
                 </div>
 
-                {/* Main Table */}
-                <div className="bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden overflow-x-auto no-scrollbar">
+                {/* Attendance List - Desktop View */}
+                <div className="hidden lg:block bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden overflow-x-auto no-scrollbar">
                     <table className="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr className="bg-table-header border-b border-brand-border">
@@ -430,6 +430,72 @@ const Attendance = () => {
                             })}
                         </tbody>
                     </table>
+                </div>
+
+                {/* Attendance List - Card View (Mobile) */}
+                <div className="lg:hidden p-4 space-y-4 bg-brand-bg/50">
+                    {employees.filter(emp =>
+                        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        emp.department.toLowerCase().includes(searchQuery.toLowerCase())
+                    ).map((emp) => {
+                        const record = getAttendanceStatus(emp.id);
+                        return (
+                            <div key={emp.id} className="bg-brand-surface border border-brand-border rounded-2xl p-5 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black text-xs">
+                                            {emp.name.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <div className="text-sm font-black text-brand-text">{emp.name}</div>
+                                            <div className="text-[10px] font-bold text-brand-muted uppercase tracking-widest">{emp.department}</div>
+                                        </div>
+                                    </div>
+                                    <div className={cn(
+                                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                        record?.status === 'Present' ? "bg-status-approved/10 text-status-approved border-status-approved/20" :
+                                            record?.status === 'Absent' ? "bg-status-rejected/10 text-status-rejected border-status-rejected/20" :
+                                                record?.status === 'Late' ? "bg-status-pending/10 text-status-pending border-status-pending/20" :
+                                                    record?.status === 'Half Day' ? "bg-status-info/10 text-status-info border-status-info/20" :
+                                                        (record as any)?.isWeeklyOff ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20" :
+                                                            "bg-brand-muted/10 text-brand-muted border-brand-muted/20"
+                                    )}>
+                                        {(record as any)?.isWeeklyOff ? 'OFF' : (record?.status || 'N/A')}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 py-4 border-y border-brand-border border-dashed">
+                                    <div>
+                                        <span className="block text-[10px] text-brand-muted uppercase font-black tracking-widest mb-1">Check In</span>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-brand-text font-bold text-xs">{record?.checkIn || '--:--'}</span>
+                                            {record?.workMode && (
+                                                <span className="text-[9px] font-black text-brand-primary uppercase">{record.workMode === 'Work from Office' ? 'Office' : 'Remote'}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="block text-[10px] text-brand-muted uppercase font-black tracking-widest mb-1">Check Out</span>
+                                        <div className="flex flex-col gap-1 items-end">
+                                            <span className="text-brand-text font-bold text-xs">{record?.checkOut || '--:--'}</span>
+                                            {record?.workLocation && (
+                                                <span className="text-[9px] font-black text-brand-muted opacity-60 uppercase tracking-tighter">{record.workLocation}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {record?.location && (
+                                    <button
+                                        onClick={() => handleViewLocation(emp.id, emp.name, record.location)}
+                                        className="w-full mt-4 bg-brand-bg border border-brand-border text-brand-text py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                    >
+                                        <MapPin className="w-4 h-4 text-brand-primary" /> View Location
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

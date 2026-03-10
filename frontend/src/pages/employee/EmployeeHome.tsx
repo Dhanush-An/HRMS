@@ -144,15 +144,31 @@ const EmployeeHome = () => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-            fetchStats(parsedUser.id, parsedUser.leaveBalance);
+            // Fetch latest user data to get live balances
+            fetchLatestUser(parsedUser.id);
         }
     }, []);
+
+    const fetchLatestUser = async (userId: string) => {
+        try {
+            const res = await api.get(`/api/employees`);
+            if (res.ok) {
+                const employees = await res.json();
+                const updatedUser = employees.find((e: any) => e.id === userId || e.employeeId === userId);
+                if (updatedUser) {
+                    setUser(updatedUser);
+                    fetchStats(userId, updatedUser.leaveBalance);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching live user data:", error);
+        }
+    };
 
     const fetchStats = async (employeeId: string, leaveBalance: any) => {
         try {
             const totalLeaves = leaveBalance ?
-                (leaveBalance.sick || 0) + (leaveBalance.casual || 0) + (leaveBalance.paid || 0) : 0;
+                (leaveBalance.sick || 0) + (leaveBalance.casual || 0) + (leaveBalance.earned || 0) + (leaveBalance.wfh || 0) + (leaveBalance.paid || 0) : 0;
 
             const taskRes = await api.get(`/api/tasks?employeeId=${employeeId}`);
             const tasks = await taskRes.json();

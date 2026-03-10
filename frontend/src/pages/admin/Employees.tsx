@@ -187,8 +187,8 @@ const Employees = () => {
                 </button>
             </div>
 
-            {/* Employee List - Table View */}
-            <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm overflow-x-auto no-scrollbar">
+            {/* Employee List - Table View (Desktop) */}
+            <div className="hidden md:block bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm overflow-x-auto no-scrollbar">
                 <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr className="bg-table-header border-b border-brand-border">
@@ -277,6 +277,75 @@ const Employees = () => {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Employee List - Card View (Mobile) */}
+            <div className="md:hidden space-y-4">
+                {Array.isArray(filteredEmployees) && filteredEmployees.map((emp) => (
+                    <div
+                        key={emp.id}
+                        onClick={() => openProfile(emp)}
+                        className="bg-brand-surface border border-brand-border rounded-2xl p-5 shadow-sm active:scale-[0.98] transition-all"
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
+                                    {emp.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <div className="text-brand-text font-black text-base">{emp.name}</div>
+                                    <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest">{emp.department} • {emp.role}</div>
+                                </div>
+                            </div>
+                            <div className={cn(
+                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                emp.status === 'Active'
+                                    ? "bg-status-approved/10 text-status-approved border-status-approved/20"
+                                    : "bg-status-rejected/10 text-status-rejected border-status-rejected/20"
+                            )}>
+                                {emp.status}
+                            </div>
+                        </div>
+
+                        <div className="space-y-3 pt-4 border-t border-brand-border border-dashed">
+                            <div className="flex items-center gap-3 text-brand-muted text-xs font-medium">
+                                <Mail className="w-4 h-4 text-brand-primary" />
+                                <span className="truncate">{emp.email}</span>
+                            </div>
+                            {emp.phone && (
+                                <div className="flex items-center gap-3 text-brand-muted text-xs font-medium">
+                                    <Phone className="w-4 h-4 text-brand-primary" />
+                                    {emp.phone}
+                                </div>
+                            )}
+                            <div className="flex items-center gap-3 text-brand-muted text-xs font-medium">
+                                <Calendar className="w-4 h-4 text-brand-primary" />
+                                Joined {emp.joiningDate}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 mt-5">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    openEditModal(emp);
+                                }}
+                                className="flex-1 bg-brand-bg border border-brand-border text-brand-text py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2"
+                            >
+                                <Edit2 className="w-4 h-4" /> Edit
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(emp.id);
+                                }}
+                                className="flex-1 bg-red-500/10 text-red-500 py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2"
+                            >
+                                <Trash2 className="w-4 h-4" /> Delete
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {/* Add/Edit Employee Modal */}
