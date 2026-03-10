@@ -5,6 +5,15 @@ import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
 import connectDB from './config/db';
+import Employee from './models/Employee';
+import Attendance from './models/Attendance';
+import Leave from './models/Leave';
+import Payroll from './models/Payroll';
+import Performance from './models/Performance';
+import Announcement from './models/Announcement';
+import Task from './models/Task';
+import Policy from './models/Policy';
+import DocumentModel from './models/Document'; // Rename to avoid conflict with global Document type
 
 dotenv.config();
 
@@ -43,177 +52,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const DATA_FILE = path.join(__dirname, '../data/employees.json');
-const ATTENDANCE_FILE = path.join(__dirname, '../data/attendance.json');
-const PAYROLL_FILE = path.join(__dirname, '../data/payroll.json');
-const LEAVES_FILE = path.join(__dirname, '../data/leaves.json');
-const PERFORMANCE_FILE = path.join(__dirname, '../data/performance.json');
-const DOCUMENTS_FILE = path.join(__dirname, '../data/documents.json');
-const ANNOUNCEMENTS_FILE = path.join(__dirname, '../data/announcements.json');
-const TASKS_FILE = path.join(__dirname, '../data/tasks.json');
-const LOCATIONS_FILE = path.join(__dirname, '../data/locations.json');
-const POLICIES_FILE = path.join(__dirname, '../data/policies.json');
-
-// Helper to read data
-const readData = () => {
-    try {
-        if (!fs.existsSync(DATA_FILE)) {
-            console.warn(`[DEBUG] ${DATA_FILE} not found, returning empty array`);
-            return [];
-        }
-        const data = fs.readFileSync(DATA_FILE, 'utf-8');
-        const parsed = JSON.parse(data);
-        console.log(`[DEBUG] readData SUCCESS | File: ${DATA_FILE} | Count: ${parsed.length}`);
-        return parsed;
-    } catch (error: any) {
-        console.error(`[DEBUG] readData ERROR | File: ${DATA_FILE} | Msg: ${error.message}`);
-        return [];
-    }
-};
-
-// Helper to write data
-const writeData = (data: any) => {
-    try {
-        const dir = path.dirname(DATA_FILE);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        console.log(`[DEBUG] Attempting writeData to ${DATA_FILE}: ${data.length} employees`);
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-        console.log(`[DEBUG] writeData Success`);
-    } catch (error: any) {
-        console.error(`[DEBUG] writeData ERROR:`, error.message);
-    }
-};
-
-// Helper for Attendance
-const readAttendance = () => {
-    try {
-        const data = fs.readFileSync(ATTENDANCE_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-};
-
-const writeAttendance = (data: any) => {
-    fs.writeFileSync(ATTENDANCE_FILE, JSON.stringify(data, null, 2));
-};
-
-// Helper for Payroll
-const readPayroll = () => {
-    try {
-        const data = fs.readFileSync(PAYROLL_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-};
-
-const writePayroll = (data: any) => {
-    fs.writeFileSync(PAYROLL_FILE, JSON.stringify(data, null, 2));
-};
-
-// Helper for Leaves
-const readLeaves = () => {
-    try {
-        const data = fs.readFileSync(LEAVES_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-};
-
-const writeLeaves = (data: any) => {
-    fs.writeFileSync(LEAVES_FILE, JSON.stringify(data, null, 2));
-};
-
-// Helper for Performance
-const readPerformance = () => {
-    try {
-        const data = fs.readFileSync(PERFORMANCE_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-};
-
-const writePerformance = (data: any) => {
-    fs.writeFileSync(PERFORMANCE_FILE, JSON.stringify(data, null, 2));
-};
-
-// Helper for Documents
-const readDocuments = () => {
-    try {
-        const data = fs.readFileSync(DOCUMENTS_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-};
-
-const writeDocuments = (data: any) => {
-    fs.writeFileSync(DOCUMENTS_FILE, JSON.stringify(data, null, 2));
-};
-
-// Helper for Announcements
-const readAnnouncements = () => {
-    try {
-        const data = fs.readFileSync(ANNOUNCEMENTS_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-};
-
-const writeAnnouncements = (data: any) => {
-    fs.writeFileSync(ANNOUNCEMENTS_FILE, JSON.stringify(data, null, 2));
-};
-
-// Helper for Tasks
-const readTasks = () => {
-    try {
-        const data = fs.readFileSync(TASKS_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-};
-
-const writeTasks = (data: any) => {
-    fs.writeFileSync(TASKS_FILE, JSON.stringify(data, null, 2));
-};
-
-// Helper for Locations
-const readLocations = () => {
-    try {
-        if (!fs.existsSync(LOCATIONS_FILE)) return {};
-        const data = fs.readFileSync(LOCATIONS_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return {};
-    }
-};
-
-const writeLocations = (data: any) => {
-    fs.writeFileSync(LOCATIONS_FILE, JSON.stringify(data, null, 2));
-};
-
-// Helper for Policies
-const readPolicies = () => {
-    try {
-        if (!fs.existsSync(POLICIES_FILE)) return [];
-        const data = fs.readFileSync(POLICIES_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-};
-
-const writePolicies = (data: any) => {
-    fs.writeFileSync(POLICIES_FILE, JSON.stringify(data, null, 2));
-};
-
 // --- AUTH MIDDLEWARE ---
 const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const authHeader = req.headers['authorization'];
@@ -238,7 +76,7 @@ app.get('/', (req, res) => {
 });
 
 // --- AUTH ROUTES (PUBLIC) ---
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     const normalizedEmail = (email || '').trim().toLowerCase();
     const cleanPassword = (password || '').trim();
@@ -250,104 +88,112 @@ app.post('/api/login', (req, res) => {
         return res.json({ success: true, token, user: adminUser });
     }
 
-    // 2. Check Employees in local storage
-    const employees = readData();
-    const user = employees.find((e: any) =>
-        (e.email === email || e.username === email) && e.password === password
-    );
+    // 2. Check Employees in MongoDB
+    try {
+        const user = await Employee.findOne({
+            $or: [{ email: normalizedEmail }, { username: email }],
+            password: cleanPassword
+        });
 
-    if (user) {
-        const empUser = {
-            id: user.id,
-            name: user.name,
-            role: 'employee',
-            email: user.email,
-            department: user.department
-        };
-        const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
-        res.json({ success: true, token, user: empUser });
-    } else {
-        res.status(401).json({ success: false, message: 'Invalid credentials' });
+        if (user) {
+            const empUser = {
+                id: user.employeeId,
+                name: user.name,
+                role: user.role,
+                email: user.email,
+                department: user.department
+            };
+            const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
+            res.json({ success: true, token, user: empUser });
+        } else {
+            res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
 // --- PROTECTED ROUTES (require valid JWT) ---
 app.use(authMiddleware);
 
-app.get('/api/employees', (req, res) => {
-    const employees = readData();
-    res.json(employees);
+app.get('/api/employees', async (req, res) => {
+    try {
+        const employees = await Employee.find();
+        res.json(employees);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // POST new employee
-app.post('/api/employees', (req, res) => {
-    const employees = readData();
-    const { id, name, email, role, department, status, phone, joiningDate } = req.body;
+app.post('/api/employees', async (req, res) => {
+    try {
+        const { id, name, email, role, department, status, phone, joiningDate } = req.body;
 
-    let finalId = id;
-    if (!finalId) {
-        let maxId = 0;
-        employees.forEach((e: any) => {
-            const match = e.id.match(/\d+/);
-            if (match) {
-                const num = parseInt(match[0], 10);
-                if (num > maxId) maxId = num;
-            }
+        let finalId = id;
+        if (!finalId) {
+            const count = await Employee.countDocuments();
+            finalId = `EMP${String(count + 1).padStart(3, '0')}`;
+        }
+
+        const newEmployee = new Employee({
+            employeeId: finalId,
+            name,
+            email,
+            username: req.body.username || email,
+            password: req.body.password || 'Password123!',
+            role: role || 'employee',
+            department,
+            status: status || 'Active',
+            joiningDate: joiningDate || new Date().toISOString().split('T')[0],
+            phone: phone || '',
+            salary: req.body.salary || { base: 0, hra: 0, transport: 0, other: 0 },
+            leaveBalance: req.body.leaveBalance || { sick: 10, casual: 12, earned: 15, wfh: 10 }
         });
-        finalId = `EMP${String(maxId + 1).padStart(3, '0')}`;
+
+        await newEmployee.save();
+        console.log(`[DEBUG] Employee added: ${newEmployee.name} (ID: ${newEmployee.employeeId})`);
+        res.status(201).json(newEmployee);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
-
-    const newEmployee = {
-        id: finalId,
-        name,
-        email,
-        username: req.body.username || email,
-        password: req.body.password || 'Password123!',
-        role,
-        department,
-        status: status || 'Active',
-        joiningDate: joiningDate || new Date().toISOString().split('T')[0],
-        phone: phone || '',
-        salary: { base: 0, hra: 0, transport: 0, other: 0 },
-        leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
-    };
-
-    employees.push(newEmployee);
-    console.log(`[DEBUG] PRE-WRITE | New employee count: ${employees.length}`);
-    writeData(employees);
-    console.log(`[DEBUG] POST-WRITE | Employee added: ${newEmployee.name} (ID: ${newEmployee.id})`);
-    res.status(201).json(newEmployee);
 });
 
 // PUT update employee
-app.put('/api/employees/:id', (req, res) => {
-    const employees = readData();
-    const index = employees.findIndex((e: any) => e.id === req.params.id);
+app.put('/api/employees/:id', async (req, res) => {
+    try {
+        const updatedEmployee = await Employee.findOneAndUpdate(
+            { employeeId: req.params.id },
+            req.body,
+            { new: true }
+        );
 
-    if (index !== -1) {
-        employees[index] = { ...employees[index], ...req.body };
-        writeData(employees);
-        res.json(employees[index]);
-    } else {
-        res.status(404).json({ message: 'Employee not found' });
+        if (updatedEmployee) {
+            res.json(updatedEmployee);
+        } else {
+            res.status(404).json({ message: 'Employee not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 // DELETE employee
-app.delete('/api/employees/:id', (req, res) => {
-    const employees = readData();
-    const filtered = employees.filter((e: any) => e.id !== req.params.id);
-
-    if (filtered.length < employees.length) {
-        writeData(filtered);
-        res.json({ message: 'Employee deleted' });
-    } else {
-        res.status(404).json({ message: 'Employee not found' });
+app.delete('/api/employees/:id', async (req, res) => {
+    try {
+        const result = await Employee.findOneAndDelete({ employeeId: req.params.id });
+        if (result) {
+            res.json({ message: 'Employee deleted' });
+        } else {
+            res.status(404).json({ message: 'Employee not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 // Update Employee Location
-app.put('/api/employees/:id/location', (req, res) => {
+app.put('/api/employees/:id/location', async (req, res) => {
     const { id } = req.params;
     const { latitude, longitude } = req.body;
     console.log(`[Location Update] Employee: ${id}, Lat: ${latitude}, Lng: ${longitude}`);
@@ -356,330 +202,383 @@ app.put('/api/employees/:id/location', (req, res) => {
         return res.status(400).json({ message: 'Latitude and Longitude are required' });
     }
 
-    const locations = readLocations();
-    locations[id] = {
-        latitude,
-        longitude,
-        lastUpdated: new Date().toISOString()
-    };
-
-    writeLocations(locations);
-    res.json({ success: true, location: locations[id] });
+    try {
+        const attendance = await Attendance.findOneAndUpdate(
+            { employeeId: id, date: new Date().toISOString().split('T')[0] },
+            {
+                $set: {
+                    'location.lat': latitude,
+                    'location.lng': longitude
+                }
+            },
+            { upsert: true, new: true }
+        );
+        res.json({ success: true, location: attendance.location });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // Get Employee Location
-app.get('/api/employees/:id/location', (req, res) => {
+app.get('/api/employees/:id/location', async (req, res) => {
     const { id } = req.params;
-    const locations = readLocations();
-    const location = locations[id];
+    try {
+        const attendance = await Attendance.findOne({
+            employeeId: id,
+            date: new Date().toISOString().split('T')[0]
+        });
 
-    if (location) {
-        res.json(location);
-    } else {
-        res.status(404).json({ message: 'Location not found' });
+        if (attendance && attendance.location) {
+            res.json(attendance.location);
+        } else {
+            res.status(404).json({ message: 'Location not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 // --- ATTENDANCE ROUTES ---
 
 // GET attendance (optional filter by date)
-app.get('/api/attendance', (req, res) => {
+app.get('/api/attendance', async (req, res) => {
     const { date } = req.query;
-    const attendance = readAttendance();
-
-    if (date) {
-        const filtered = attendance.filter((r: any) => r.date === date);
-        res.json(filtered);
-    } else {
+    try {
+        const query: any = {};
+        if (date) query.date = date;
+        const attendance = await Attendance.find(query);
         res.json(attendance);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 // POST attendance (Check-in / Manual)
-app.post('/api/attendance', (req, res) => {
-    const attendance = readAttendance();
-    const newRecord = {
-        id: Date.now().toString(),
-        ...req.body,
-    };
-    attendance.push(newRecord);
-    writeAttendance(attendance);
-    res.status(201).json(newRecord);
+app.post('/api/attendance', async (req, res) => {
+    try {
+        const newRecord = new Attendance({
+            ...req.body,
+        });
+        await newRecord.save();
+        res.status(201).json(newRecord);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // PUT attendance (Update / Checkout / Approve)
-app.put('/api/attendance/:id', (req, res) => {
-    const attendance = readAttendance();
-    const index = attendance.findIndex((r: any) => r.id === req.params.id);
+app.put('/api/attendance/:id', async (req, res) => {
+    try {
+        const updatedRecord = await Attendance.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
 
-    if (index !== -1) {
-        attendance[index] = { ...attendance[index], ...req.body };
-        writeAttendance(attendance);
-        res.json(attendance[index]);
-    } else {
-        res.status(404).json({ message: 'Record not found' });
+        if (updatedRecord) {
+            res.json(updatedRecord);
+        } else {
+            res.status(404).json({ message: 'Record not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 // --- PAYROLL ROUTES ---
 
 // UPDATE Salary Structure
-app.put('/api/employees/:id/salary', (req, res) => {
-    const employees = readData();
-    const index = employees.findIndex((e: any) => e.id === req.params.id);
+app.put('/api/employees/:id/salary', async (req, res) => {
+    try {
+        const updatedEmployee = await Employee.findOneAndUpdate(
+            { employeeId: req.params.id },
+            { $set: { salary: req.body } },
+            { new: true }
+        );
 
-    if (index !== -1) {
-        employees[index].salary = { ...employees[index].salary, ...req.body };
-        writeData(employees);
-        res.json(employees[index]);
-    } else {
-        res.status(404).json({ message: 'Employee not found' });
+        if (updatedEmployee) {
+            res.json(updatedEmployee);
+        } else {
+            res.status(404).json({ message: 'Employee not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 // GENERATE Payroll
-app.post('/api/payroll/generate', (req, res) => {
-    const payroll = readPayroll();
+app.post('/api/payroll/generate', async (req, res) => {
     const { month, year, records } = req.body;
 
-    // Check if payroll already exists for this month
-    const index = payroll.findIndex((p: any) => p.month === month && p.year === year);
-
-    const newPayroll = {
-        id: index !== -1 ? payroll[index].id : Date.now().toString(),
-        month,
-        year,
-        dateGenerated: new Date().toISOString(),
-        records // Array of { employeeId, name, base, bonus, deductions, netSalary }
-    };
-
-    if (index !== -1) {
-        payroll[index] = newPayroll;
-    } else {
-        payroll.push(newPayroll);
+    try {
+        const payroll = await Payroll.findOneAndUpdate(
+            { month, year },
+            {
+                month,
+                year,
+                dateGenerated: new Date().toISOString(),
+                records
+            },
+            { upsert: true, new: true }
+        );
+        res.status(201).json(payroll);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
-
-    writePayroll(payroll);
-    res.status(201).json(newPayroll);
 });
 
 // GET Payroll History
-app.get('/api/payroll', (req, res) => {
-    const payroll = readPayroll();
-    res.json(payroll);
+app.get('/api/payroll', async (req, res) => {
+    try {
+        const payroll = await Payroll.find();
+        res.json(payroll);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // --- LEAVE ROUTES ---
 
 // GET all leaves
-app.get('/api/leaves', (req, res) => {
-    const leaves = readLeaves();
-    res.json(leaves);
+app.get('/api/leaves', async (req, res) => {
+    try {
+        const leaves = await Leave.find();
+        res.json(leaves);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // POST new leave request
-app.post('/api/leaves', (req, res) => {
-    const leaves = readLeaves();
-    const newLeave = {
-        id: Date.now().toString(),
-        status: 'Pending',
-        appliedOn: new Date().toISOString().split('T')[0],
-        ...req.body
-    };
-    leaves.push(newLeave);
-    writeLeaves(leaves);
-    res.status(201).json(newLeave);
+app.post('/api/leaves', async (req, res) => {
+    try {
+        const newLeave = new Leave({
+            status: 'Pending',
+            appliedOn: new Date().toISOString().split('T')[0],
+            ...req.body
+        });
+        await newLeave.save();
+        res.status(201).json(newLeave);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // PUT update leave status (Approve/Reject)
-app.put('/api/leaves/:id', (req, res) => {
-    const leaves = readLeaves();
-    const index = leaves.findIndex((l: any) => l.id === req.params.id);
+app.put('/api/leaves/:id', async (req, res) => {
+    try {
+        const leave = await Leave.findById(req.params.id);
+        if (!leave) {
+            return res.status(404).json({ message: 'Leave request not found' });
+        }
 
-    if (index !== -1) {
-        const leave = leaves[index];
         const { status } = req.body;
 
         // If approving, deduct balance
         if (status === 'Approved' && leave.status !== 'Approved') {
-            const employees = readData();
-            const empIndex = employees.findIndex((e: any) => e.id === leave.employeeId);
+            const employee = await Employee.findOne({ employeeId: leave.employeeId });
 
-            if (empIndex !== -1) {
-                const emp = employees[empIndex];
-                const type = leave.type.toLowerCase().split(' ')[0]; // sick, casual, paid
-
-                // Initialize balance if missing
-                if (!emp.leaveBalance) {
-                    emp.leaveBalance = { sick: 12, casual: 12, paid: 15, wfh: 10 };
-                }
+            if (employee) {
+                const type = leave.type.toLowerCase().split(' ')[0] as keyof typeof employee.leaveBalance;
 
                 // Deduct days
                 const days = (new Date(leave.endDate).getTime() - new Date(leave.startDate).getTime()) / (1000 * 60 * 60 * 24) + 1;
 
-                if (emp.leaveBalance[type] >= days) {
-                    emp.leaveBalance[type] -= days;
-                    writeData(employees);
-                } else {
-                    return res.status(400).json({ message: 'Insufficient leave balance' });
+                if (employee.leaveBalance && (employee.leaveBalance as any)[type] !== undefined) {
+                    if ((employee.leaveBalance as any)[type] >= days) {
+                        (employee.leaveBalance as any)[type] -= days;
+                        await employee.save();
+                    } else {
+                        return res.status(400).json({ message: 'Insufficient leave balance' });
+                    }
                 }
             }
         }
 
-        leaves[index] = { ...leave, status };
-        writeLeaves(leaves);
-        res.json(leaves[index]);
-    } else {
-        res.status(404).json({ message: 'Leave request not found' });
+        leave.status = status;
+        await leave.save();
+        res.json(leave);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 // --- PERFORMANCE ROUTES ---
 
-app.get('/api/performance', (req, res) => {
-    const performance = readPerformance();
-    res.json(performance);
+app.get('/api/performance', async (req, res) => {
+    try {
+        const performance = await Performance.find();
+        res.json(performance);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
-app.post('/api/performance', (req, res) => {
-    const performance = readPerformance();
-    const newRecord = {
-        id: Date.now().toString(),
-        date: new Date().toISOString().split('T')[0],
-        ...req.body
-    };
-    performance.push(newRecord);
-    writePerformance(performance);
-    res.status(201).json(newRecord);
+app.post('/api/performance', async (req, res) => {
+    try {
+        const newRecord = new Performance({
+            date: new Date().toISOString().split('T')[0],
+            ...req.body
+        });
+        await newRecord.save();
+        res.status(201).json(newRecord);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // --- DOCUMENT ROUTES ---
 
-app.get('/api/documents', (req, res) => {
+app.get('/api/documents', async (req, res) => {
     const { employeeId } = req.query;
-    let documents = readDocuments();
-    if (employeeId) {
-        documents = documents.filter((doc: any) => doc.employeeId === employeeId);
+    try {
+        const query: any = {};
+        if (employeeId) query.employeeId = employeeId;
+        const documents = await DocumentModel.find(query);
+        res.json(documents);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
-    res.json(documents);
 });
 
-app.post('/api/documents', (req, res) => {
-    const documents = readDocuments();
-    const newDoc = {
-        id: Date.now().toString(),
-        uploadDate: new Date().toISOString().split('T')[0],
-        ...req.body
-    };
-    documents.push(newDoc);
-    writeDocuments(documents);
-    res.status(201).json(newDoc);
+app.post('/api/documents', async (req, res) => {
+    try {
+        const newDoc = new DocumentModel({
+            uploadDate: new Date().toISOString().split('T')[0],
+            ...req.body
+        });
+        await newDoc.save();
+        res.status(201).json(newDoc);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // --- ANNOUNCEMENT ROUTES ---
 
-app.get('/api/announcements', (req, res) => {
-    const announcements = readAnnouncements();
-    res.json(announcements);
+app.get('/api/announcements', async (req, res) => {
+    try {
+        const announcements = await Announcement.find();
+        res.json(announcements);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
-app.post('/api/announcements', (req, res) => {
-    const announcements = readAnnouncements();
-    const newAnnouncement = {
-        id: Date.now().toString(),
-        date: new Date().toISOString().split('T')[0],
-        ...req.body
-    };
-    announcements.push(newAnnouncement);
-    writeAnnouncements(announcements);
-    res.status(201).json(newAnnouncement);
+app.post('/api/announcements', async (req, res) => {
+    try {
+        const newAnnouncement = new Announcement({
+            date: new Date().toISOString().split('T')[0],
+            ...req.body
+        });
+        await newAnnouncement.save();
+        res.status(201).json(newAnnouncement);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 // --- TASKS ROUTES ---
 
-app.get('/api/tasks', (req, res) => {
+app.get('/api/tasks', async (req, res) => {
     const { date, employeeId } = req.query;
-    let tasks = readTasks();
-
-    if (date) {
-        tasks = tasks.filter((t: any) => t.date === date);
+    try {
+        const query: any = {};
+        if (date) query.date = date;
+        if (employeeId) query.employeeId = employeeId;
+        const tasks = await Task.find(query);
+        res.json(tasks);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
-    if (employeeId) {
-        tasks = tasks.filter((t: any) => t.employeeId === employeeId);
-    }
-    res.json(tasks);
 });
 
-app.post('/api/tasks', (req, res) => {
-    const tasks = readTasks();
-    const newTask = {
-        id: Date.now().toString(),
-        status: 'Pending',
-        ...req.body
-    };
-    tasks.push(newTask);
-    writeTasks(tasks);
-    res.status(201).json(newTask);
+app.post('/api/tasks', async (req, res) => {
+    try {
+        const newTask = new Task({
+            status: 'Pending',
+            ...req.body
+        });
+        await newTask.save();
+        res.status(201).json(newTask);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
-app.put('/api/tasks/:id', (req, res) => {
-    const tasks = readTasks();
-    const index = tasks.findIndex((t: any) => t.id === req.params.id);
+app.put('/api/tasks/:id', async (req, res) => {
+    try {
+        const updatedTask = await Task.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
 
-    if (index !== -1) {
-        tasks[index] = { ...tasks[index], ...req.body };
-        writeTasks(tasks);
-        res.json(tasks[index]);
-    } else {
-        res.status(404).json({ message: 'Task not found' });
+        if (updatedTask) {
+            res.json(updatedTask);
+        } else {
+            res.status(404).json({ message: 'Task not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 // --- POLICIES ROUTES ---
 
-app.get('/api/policies', (req, res) => {
-    const policies = readPolicies();
-    res.json(policies);
-});
-
-app.post('/api/policies', (req, res) => {
-    const policies = readPolicies();
-    const newPolicy = {
-        id: Date.now(),
-        lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        ...req.body
-    };
-    policies.push(newPolicy);
-    writePolicies(policies);
-    res.status(201).json(newPolicy);
-});
-
-app.put('/api/policies/:id', (req, res) => {
-    const policies = readPolicies();
-    const index = policies.findIndex((p: any) => p.id === parseInt(req.params.id));
-
-    if (index !== -1) {
-        policies[index] = {
-            ...policies[index],
-            ...req.body,
-            lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-        };
-        writePolicies(policies);
-        res.json(policies[index]);
-    } else {
-        res.status(404).json({ message: 'Policy not found' });
+app.get('/api/policies', async (req, res) => {
+    try {
+        const policies = await Policy.find();
+        res.json(policies);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
-app.delete('/api/policies/:id', (req, res) => {
-    const policies = readPolicies();
-    const filtered = policies.filter((p: any) => p.id !== parseInt(req.params.id));
+app.post('/api/policies', async (req, res) => {
+    try {
+        const newPolicy = new Policy({
+            lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            ...req.body
+        });
+        await newPolicy.save();
+        res.status(201).json(newPolicy);
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
 
-    if (filtered.length < policies.length) {
-        writePolicies(filtered);
-        res.json({ message: 'Policy deleted' });
-    } else {
-        res.status(404).json({ message: 'Policy not found' });
+app.put('/api/policies/:id', async (req, res) => {
+    try {
+        const updatedPolicy = await Policy.findByIdAndUpdate(
+            req.params.id,
+            {
+                ...req.body,
+                lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+            },
+            { new: true }
+        );
+
+        if (updatedPolicy) {
+            res.json(updatedPolicy);
+        } else {
+            res.status(404).json({ message: 'Policy not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+app.delete('/api/policies/:id', async (req, res) => {
+    try {
+        const result = await Policy.findByIdAndDelete(req.params.id);
+        if (result) {
+            res.json({ message: 'Policy deleted' });
+        } else {
+            res.status(404).json({ message: 'Policy not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 

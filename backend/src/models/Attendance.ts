@@ -1,0 +1,27 @@
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IAttendance extends Document {
+    employeeId: string;
+    date: string;
+    checkIn?: string;
+    checkOut?: string;
+    status: 'Present' | 'Absent' | 'Late' | 'Half Day';
+    location?: {
+        lat: number;
+        lng: number;
+    };
+}
+
+const AttendanceSchema: Schema = new Schema({
+    employeeId: { type: String, required: true },
+    date: { type: String, required: true },
+    checkIn: { type: String },
+    checkOut: { type: String },
+    status: { type: String, enum: ['Present', 'Absent', 'Late', 'Half Day'], default: 'Present' },
+    location: {
+        lat: { type: Number },
+        lng: { type: Number }
+    }
+}, { timestamps: true });
+
+export default mongoose.model<IAttendance>('Attendance', AttendanceSchema);
