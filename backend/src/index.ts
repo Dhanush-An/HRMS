@@ -155,7 +155,12 @@ app.post('/api/employees', async (req, res) => {
         console.log(`[DEBUG] Employee added: ${newEmployee.name} (ID: ${newEmployee.employeeId})`);
         res.status(201).json(newEmployee);
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyPattern)[0];
+            const message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists. Please use a unique value.`;
+            return res.status(400).json({ success: false, message });
+        }
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
@@ -174,7 +179,12 @@ app.put('/api/employees/:id', async (req, res) => {
             res.status(404).json({ message: 'Employee not found' });
         }
     } catch (error: any) {
-        res.status(500).json({ message: error.message });
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyPattern)[0];
+            const message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists. Please use a unique value.`;
+            return res.status(400).json({ success: false, message });
+        }
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 
