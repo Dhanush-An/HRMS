@@ -28,6 +28,10 @@ const PayrollSchema: Schema = new Schema({
         deductions: { type: Number, default: 0 },
         netSalary: { type: Number, required: true }
     }]
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model<IPayroll>('Payroll', PayrollSchema);

@@ -20,6 +20,10 @@ const LeaveSchema: Schema = new Schema({
     reason: { type: String, required: true },
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
     appliedOn: { type: String, required: true }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model<ILeave>('Leave', LeaveSchema);

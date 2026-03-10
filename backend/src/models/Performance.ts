@@ -14,6 +14,10 @@ const PerformanceSchema: Schema = new Schema({
     feedback: { type: String, required: true },
     date: { type: String, required: true },
     reviewer: { type: String, required: true }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model<IPerformance>('Performance', PerformanceSchema);

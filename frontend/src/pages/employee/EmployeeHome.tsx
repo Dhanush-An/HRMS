@@ -43,73 +43,7 @@ const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
     </motion.div>
 );
 
-const LiveLocationCard = () => {
-    const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const fetchCurrentLocation = () => {
-            if (!navigator.geolocation) {
-                setError("Geolocation is not supported");
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-                },
-                (err) => setError(err.message)
-            );
-        };
-        fetchCurrentLocation();
-    }, []);
-
-    return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[2.5rem] p-5 md:p-8 shadow-2xl relative overflow-hidden group"
-        >
-            <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:rotate-12 transition-transform duration-700">
-                <Globe className="w-40 h-40" />
-            </div>
-
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <div className="p-4 bg-brand-primary rounded-2xl shadow-lg shadow-brand-primary/20">
-                        <MapPin className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <h3 className="text-[10px] font-black text-brand-text uppercase tracking-widest opacity-60">Live Presence</h3>
-                        <p className="text-xl font-black text-brand-text tracking-tighter">Current Location</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-brand-primary/10 text-brand-primary rounded-full text-[10px] font-black uppercase tracking-widest border border-brand-primary/20 animate-pulse">
-                    <Activity className="w-3 h-3" />
-                    <span>Live</span>
-                </div>
-            </div>
-
-            <div className="space-y-4 relative z-10">
-                <div className="p-6 bg-brand-bg rounded-2xl border border-brand-border shadow-inner">
-                    <p className="text-sm font-medium text-brand-muted mb-1 uppercase tracking-tighter opacity-60">Geospatial Coordinates</p>
-                    <p className="text-2xl font-black text-brand-primary tracking-tighter font-mono">
-                        {error ? <span className="text-rose-500 text-sm italic">{error}</span> :
-                            location ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : "Locating..."}
-                    </p>
-                </div>
-
-                <button
-                    onClick={() => location && window.open(`https://www.google.com/maps?q=${location.lat},${location.lng}`, '_blank')}
-                    disabled={!location}
-                    className="w-full h-14 bg-brand-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                >
-                    <Navigation className="w-4 h-4" />
-                    Transcend to Map
-                </button>
-            </div>
-        </motion.div>
-    );
-};
 
 const INSPIRATIONAL_QUOTES = [
     { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
@@ -248,34 +182,31 @@ const EmployeeHome = () => {
 
                 {/* Quick Actions / Summary */}
                 <div className="space-y-6 md:space-y-10">
-                    {user && <LiveLocationCard />}
-                    <div className="bg-brand-primary rounded-2xl md:rounded-[3rem] p-6 md:p-10 text-white relative overflow-hidden group shadow-[0_32px_64px_-16px_rgba(99,102,241,0.5)] border border-brand-primary/20">
-                        <div className="absolute -top-12 -right-12 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-45 transition-all duration-700">
-                            <Clock className="w-48 h-48" />
-                        </div>
-                        <div className="relative z-10 space-y-6">
-                            <div>
-                                <h3 className="text-2xl font-black tracking-tighter uppercase mb-2">Request Leave</h3>
-                                <p className="text-white/70 text-sm font-medium leading-relaxed italic">Initiate professional break protocols across internal modules.</p>
-                            </div>
-                            <button className="w-full bg-white text-brand-primary px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.03] active:scale-95 transition-all border-b-4 border-brand-bg">
-                                Apply Now
-                            </button>
-                        </div>
+                    <div className="absolute -top-12 -right-12 p-8 opacity-10 group-hover:scale-125 group-hover:rotate-45 transition-all duration-700">
+                        <Clock className="w-48 h-48" />
                     </div>
+                    <div className="relative z-10 space-y-6">
+                        <div>
+                            <h3 className="text-2xl font-black tracking-tighter uppercase mb-2">Request Leave</h3>
+                            <p className="text-white/70 text-sm font-medium leading-relaxed italic">Initiate professional break protocols across internal modules.</p>
+                        </div>
+                        <button className="w-full bg-white text-brand-primary px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:scale-[1.03] active:scale-95 transition-all border-b-4 border-brand-bg">
+                            Apply Now
+                        </button>
+                    </div>
+                </div>
 
-                    <div className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[3rem] p-6 md:p-10 shadow-xl group relative overflow-hidden">
-                        <div className="absolute bottom-0 right-0 p-6 opacity-5">
-                            <MessageSquare className="w-20 h-20" />
-                        </div>
-                        <h3 className="text-[10px] font-black text-brand-text uppercase tracking-widest mb-6 opacity-60">System Inspiration</h3>
-                        <p className="italic text-brand-muted font-medium leading-relaxed text-lg">
-                            "Gravity may keep us on the ground, but Antigraviity keeps our dreams soaring."
-                        </p>
-                        <div className="flex items-center gap-4 mt-8">
-                            <div className="h-1 w-12 bg-brand-primary rounded-full group-hover:w-16 transition-all duration-500" />
-                            <span className="text-[10px] font-black text-brand-primary uppercase tracking-[0.2em]">Collective Spirits</span>
-                        </div>
+                <div className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[3rem] p-6 md:p-10 shadow-xl group relative overflow-hidden">
+                    <div className="absolute bottom-0 right-0 p-6 opacity-5">
+                        <MessageSquare className="w-20 h-20" />
+                    </div>
+                    <h3 className="text-[10px] font-black text-brand-text uppercase tracking-widest mb-6 opacity-60">System Inspiration</h3>
+                    <p className="italic text-brand-muted font-medium leading-relaxed text-lg">
+                        "Gravity may keep us on the ground, but Antigraviity keeps our dreams soaring."
+                    </p>
+                    <div className="flex items-center gap-4 mt-8">
+                        <div className="h-1 w-12 bg-brand-primary rounded-full group-hover:w-16 transition-all duration-500" />
+                        <span className="text-[10px] font-black text-brand-primary uppercase tracking-[0.2em]">Collective Spirits</span>
                     </div>
                 </div>
             </div>

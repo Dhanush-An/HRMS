@@ -20,6 +20,10 @@ const PolicySchema: Schema = new Schema({
     bgColor: { type: String, default: 'bg-brand-primary/10' },
     borderColor: { type: String, default: 'border-brand-primary/20' },
     lastUpdated: { type: String, required: true }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model<IPolicy>('Policy', PolicySchema);

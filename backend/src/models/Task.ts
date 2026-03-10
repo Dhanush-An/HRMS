@@ -16,6 +16,10 @@ const TaskSchema: Schema = new Schema({
     status: { type: String, enum: ['Pending', 'In Progress', 'Completed'], default: 'Pending' },
     date: { type: String, required: true },
     priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model<ITask>('Task', TaskSchema);

@@ -55,8 +55,6 @@ const EmployeeDashboard = () => {
     const [clockedInTime, setClockedInTime] = useState('--:--');
     const [clockedOutTime, setClockedOutTime] = useState('--:--');
     const [attendanceId, setAttendanceId] = useState<string | null>(null);
-    const [locationStatus, setLocationStatus] = useState<'active' | 'denied' | 'error' | 'idle'>('idle');
-    const [lastPosition, setLastPosition] = useState<{ latitude: number, longitude: number } | null>(null);
 
     // Login Options Modal State
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -78,7 +76,6 @@ const EmployeeDashboard = () => {
                 const parsedUser = JSON.parse(storedUser);
                 setUser(parsedUser);
                 fetchTodayAttendance(parsedUser.id);
-                startGlobalTracking(parsedUser.id);
             } catch (err) {
                 console.error("[DASHBOARD] Failed to parse user data", err);
                 navigate('/login');
@@ -89,38 +86,7 @@ const EmployeeDashboard = () => {
         }
     }, [navigate]);
 
-    const startGlobalTracking = (userId: string) => {
-        if (!navigator.geolocation) {
-            console.error("Geolocation is not supported by this browser.");
-            setLocationStatus('error');
-            return;
-        }
 
-        const watchId = navigator.geolocation.watchPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                try {
-                    await api.put(`/api/employees/${userId}/location`, {
-                        latitude,
-                        longitude
-                    });
-                    setLastPosition({ latitude, longitude });
-                    console.log(`[Location Sync] Success: ${latitude}, ${longitude}`);
-                    setLocationStatus('active');
-                } catch (err) {
-                    console.error("Failed to sync location with server:", err);
-                    setLocationStatus('error');
-                }
-            },
-            (err) => {
-                console.error("Location tracking error:", err.message);
-                setLocationStatus('denied');
-            },
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-        );
-
-        return () => navigator.geolocation.clearWatch(watchId);
-    };
 
     const fetchTodayAttendance = async (employeeId: string) => {
         try {
@@ -169,16 +135,8 @@ const EmployeeDashboard = () => {
                 longitude: position.coords.longitude
             };
         } catch (err: any) {
-            console.warn("Could not capture immediate login location, trying cache:", err);
-
-            // Fallback to last known position if available
-            if (lastPosition) {
-                console.log("[GEOFENCE] Using cached position as fallback");
-                loginLocation = {
-                    latitude: lastPosition.latitude,
-                    longitude: lastPosition.longitude
-                };
-            } else if (loginOptions.workMode === 'Work from Office') {
+            // Fallback to warning if workMode is Work from Office
+            if (loginOptions.workMode === 'Work from Office') {
                 let errorMessage = "Location Error: We could not verify your position.";
                 if (err.code === 1) { // PERMISSION_DENIED
                     errorMessage = "Location Denied: Please enable GPS and allow location access in your browser settings to check-in from the office.";
@@ -434,16 +392,6 @@ const EmployeeDashboard = () => {
                                 <h2 className="text-lg font-bold text-brand-text leading-tight mb-1">Welcome, {user.name}</h2>
                                 <div className="flex items-center gap-3">
                                     <p className="text-xs text-brand-muted uppercase font-bold tracking-widest">{user.role}</p>
-                                    <div className="w-1 h-1 bg-brand-border rounded-full" />
-                                    <div className={cn(
-                                        "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border",
-                                        locationStatus === 'active' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
-                                            locationStatus === 'denied' ? "bg-rose-500/10 text-rose-500 border-rose-500/20" :
-                                                "bg-brand-muted/10 text-brand-muted border-brand-border"
-                                    )}>
-                                        <div className={cn("w-1.5 h-1.5 rounded-full", locationStatus === 'active' ? "bg-emerald-500 animate-pulse" : "bg-brand-muted")} />
-                                        {locationStatus === 'active' ? "Location Live" : locationStatus === 'denied' ? "Location Blocked" : "Checking Location"}
-                                    </div>
                                 </div>
                             </div>
 

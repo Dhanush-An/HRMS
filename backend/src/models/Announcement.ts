@@ -16,6 +16,10 @@ const AnnouncementSchema: Schema = new Schema({
     date: { type: String, required: true },
     author: { type: String, default: 'Admin' },
     target: { type: String, default: 'all' }
-}, { timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
 export default mongoose.model<IAnnouncement>('Announcement', AnnouncementSchema);

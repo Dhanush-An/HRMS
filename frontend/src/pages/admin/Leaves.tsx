@@ -103,14 +103,19 @@ const Leaves = () => {
         const targetEmployeeId = !isUserAdmin ? user.id : formData.employeeId;
 
         const emp = employees.find(e => e.id === targetEmployeeId);
-        if (!emp) return;
+        if (!emp) {
+            alert("Error: Employee records not loaded or you do not have an active profile.");
+            return;
+        }
 
         try {
-            const response = await api.post('/api/leaves', {
+            const payload = {
                 ...formData,
                 employeeId: targetEmployeeId,
-                name: emp.name
-            });
+                employeeName: emp.name
+            };
+
+            const response = await api.post('/api/leaves', payload);
 
             if (response.ok) {
                 setShowApplyModal(false);
@@ -123,10 +128,10 @@ const Leaves = () => {
                     endDate: '',
                     reason: ''
                 });
-                // Removed localhost notification
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error applying for leave:", error);
+            alert(`Failed to submit request: ${error.message}`);
         }
     };
 
