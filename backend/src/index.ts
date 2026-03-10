@@ -4,8 +4,12 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
+import connectDB from './config/db';
 
 dotenv.config();
+
+// Connect to Database
+connectDB();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hrms_dev_secret_change_in_production';
 
