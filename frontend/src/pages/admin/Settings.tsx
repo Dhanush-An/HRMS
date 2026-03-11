@@ -22,6 +22,14 @@ const Settings = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showResults, setShowResults] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [adminFormData, setAdminFormData] = useState({
+        email: '',
+        password: '',
+        name: ''
+    });
+    const [adminLoading, setAdminLoading] = useState(false);
+    const [adminMessage, setAdminMessage] = useState('');
+    const [showAdminPassword, setShowAdminPassword] = useState(false);
 
     useEffect(() => {
         api.get('/api/employees')
@@ -65,6 +73,29 @@ const Settings = () => {
             setMessage('Error updating credentials.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleAdminUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setAdminLoading(true);
+        setAdminMessage('');
+
+        try {
+            const response = await api.put('/api/admin/credentials', adminFormData);
+
+            if (response.ok) {
+                setAdminMessage('Admin credentials updated successfully!');
+                setAdminFormData(prev => ({ ...prev, password: '' }));
+            } else {
+                const data = await response.json();
+                setAdminMessage(data.message || 'Failed to update admin credentials.');
+            }
+        } catch (error) {
+            console.error(error);
+            setAdminMessage('Error updating admin credentials.');
+        } finally {
+            setAdminLoading(false);
         }
     };
 
@@ -216,6 +247,97 @@ const Settings = () => {
                             <p className="text-brand-muted text-xs font-black uppercase tracking-widest italic">Protected Zone: Select an employee to begin synchronization</p>
                         </div>
                     )}
+                </div>
+            </div>
+
+            {/* Admin Security Section */}
+            <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-hidden shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-200">
+                <div className="p-8 border-b border-brand-border bg-table-header flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-black text-brand-text uppercase tracking-tight flex items-center gap-3">
+                            <Lock className="w-6 h-6 text-brand-primary" />
+                            Admin Account Security
+                        </h2>
+                        <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1">Master Dashboard Access Control</p>
+                    </div>
+                </div>
+
+                <div className="p-8">
+                    <form onSubmit={handleAdminUpdate} className="space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">Admin Display Name</label>
+                                <div className="relative group">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={adminFormData.name}
+                                        onChange={(e) => setAdminFormData({ ...adminFormData, name: e.target.value })}
+                                        placeholder="Admin Display Name"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">Admin Email Address</label>
+                                <div className="relative group">
+                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type="email"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={adminFormData.email}
+                                        onChange={(e) => setAdminFormData({ ...adminFormData, email: e.target.value })}
+                                        placeholder="admin@hrms.com"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">Master Password</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type={showAdminPassword ? "text" : "password"}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-12 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={adminFormData.password}
+                                        onChange={(e) => setAdminFormData({ ...adminFormData, password: e.target.value })}
+                                        placeholder="Update Master Password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAdminPassword(!showAdminPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-brand-primary/60 hover:text-brand-primary transition-all z-10 flex items-center justify-center rounded-lg hover:bg-brand-primary/5"
+                                    >
+                                        {showAdminPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                                <p className="text-[9px] text-brand-muted font-bold uppercase tracking-widest pl-1 mt-2 flex items-center gap-2">
+                                    <Shield className="w-3 h-3" />
+                                    Changing these credentials will affect all future admin logins immediately.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-brand-border">
+                            <div className="text-emerald-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                {adminMessage && (
+                                    <>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                                        {adminMessage}
+                                    </>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={adminLoading}
+                                className="w-full md:w-auto bg-brand-primary text-white px-10 py-4 rounded-2xl font-black flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-brand-primary/30 disabled:opacity-50 text-[10px] uppercase tracking-[0.2em] border-t border-white/20"
+                            >
+                                <Save className="w-4 h-4" />
+                                {adminLoading ? 'Processing...' : 'Apply Admin Changes'}
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

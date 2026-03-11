@@ -185,7 +185,7 @@ const Documents = () => {
                             <p className="text-brand-muted font-medium italic">No documentation has been uploaded for this personnel yet.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filteredDocuments.map((doc, idx) => (
                                 <div
                                     key={doc.id}
@@ -199,7 +199,7 @@ const Documents = () => {
                                         <span className="text-[10px] font-black text-brand-muted group-hover:text-brand-primary uppercase tracking-widest bg-brand-bg px-3 py-1.5 rounded-xl border border-brand-border shadow-sm">{doc.type}</span>
                                     </div>
 
-                                    <h3 className="text-xl font-black text-brand-text mb-1 truncate tracking-tight group-hover:text-brand-primary transition-colors" title={doc.title}>{doc.title}</h3>
+                                    <h3 className="text-base font-black text-brand-text mb-1 tracking-tight group-hover:text-brand-primary transition-colors break-words" title={doc.title}>{doc.title}</h3>
                                     <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mb-6">Uploaded: {doc.uploadDate}</p>
 
                                     <button

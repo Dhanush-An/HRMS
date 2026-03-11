@@ -14,6 +14,7 @@ import Announcement from './models/Announcement';
 import Task from './models/Task';
 import Policy from './models/Policy';
 import DocumentModel from './models/Document';
+import Admin from './models/Admin';
 import multer from 'multer';
 
 const app = express();
@@ -97,11 +98,25 @@ app.post('/api/login', async (req, res) => {
     const normalizedEmail = (email || '').trim().toLowerCase();
     const cleanPassword = (password || '').trim();
 
-    // 1. Check Hardcoded Admin
-    if (normalizedEmail === 'admin@hrms.com' && cleanPassword === 'admin123') {
-        const adminUser = { id: 'ADMIN', name: 'System Admin', role: 'admin', email: 'admin@hrms.com' };
-        const token = jwt.sign(adminUser, JWT_SECRET, { expiresIn: '8h' });
-        return res.json({ success: true, token, user: adminUser });
+    // 1. Check Admin in MongoDB
+    try {
+        const admin = await Admin.findOne({
+            email: normalizedEmail,
+            password: cleanPassword
+        });
+
+        if (admin) {
+            const adminUser = {
+                id: 'ADMIN',
+                name: admin.name || 'System Admin',
+                role: 'admin',
+                email: admin.email
+            };
+            const token = jwt.sign(adminUser, JWT_SECRET, { expiresIn: '8h' });
+            return res.json({ success: true, token, user: adminUser });
+        }
+    } catch (error) {
+        console.error('[ERROR] Admin check failed:', error);
     }
 
     // 2. Check Employees in MongoDB
@@ -213,6 +228,34 @@ app.delete('/api/employees/:id', async (req, res) => {
         } else {
             res.status(404).json({ message: 'Employee not found' });
         }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- ADMIN ROUTES ---
+
+// Update Admin Credentials
+app.put('/api/admin/credentials', async (req, res) => {
+    // Check if requester is admin
+    const requester = (req as any).user;
+    if (requester.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Only administrators can perform this action' });
+    }
+
+    const { email, password, name } = req.body;
+    try {
+        const admin = await Admin.findOne(); // Assuming single admin for now
+        if (!admin) {
+            return res.status(404).json({ success: false, message: 'Admin not found' });
+        }
+
+        if (email) admin.email = email;
+        if (password) admin.password = password;
+        if (name) admin.name = name;
+
+        await admin.save();
+        res.json({ success: true, message: 'Admin credentials updated successfully' });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -681,6 +724,21 @@ app.delete('/api/performance/:id', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}`);
+
+    // Initialize Admin if not exists
+    try {
+        const adminCount = await Admin.countDocuments();
+        if (adminCount === 0) {
+            await Admin.create({
+                email: 'admin@hrms.com',
+                password: 'admin123',
+                name: 'System Admin'
+            });
+            console.log('[INIT] Default admin created: admin@hrms.com / admin123');
+        }
+    } catch (err) {
+        console.error('[INIT] Failed to initialize admin:', err);
+    }
 });
