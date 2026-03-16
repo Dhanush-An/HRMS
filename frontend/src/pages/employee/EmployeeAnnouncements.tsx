@@ -17,7 +17,13 @@ const EmployeeAnnouncements = () => {
         fetchData();
     }, []);
 
-    const parseDate = (dateStr: string) => {
+    const parseDate = (item: any) => {
+        // Prefer backend timestamps if available
+        if (item.createdAt) return new Date(item.createdAt).getTime();
+        
+        const dateStr = item.date;
+        if (!dateStr) return 0;
+
         if (dateStr.toLowerCase().includes('today')) {
             const now = new Date();
             const timeMatch = dateStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
@@ -41,11 +47,11 @@ const EmployeeAnnouncements = () => {
             const data = await response.json();
 
             // Mock Personal Notifications
-            const personalNotifications: Announcement[] = [
+            const personalNotifications: any[] = [
                 {
                     id: 'p1',
                     title: 'Leave Approved',
-                    message: 'Your leave request for Feb 24th - Feb 25th has been approved by HR.',
+                    message: 'Your leave request has been approved by HR.',
                     type: 'Personal',
                     date: 'Today, 10:30 AM'
                 },
@@ -60,7 +66,7 @@ const EmployeeAnnouncements = () => {
 
             // Merge and Sort by Date (Latest First)
             const combined = [...personalNotifications, ...data];
-            const sorted = combined.sort((a, b) => parseDate(b.date) - parseDate(a.date));
+            const sorted = combined.sort((a, b) => parseDate(b) - parseDate(a));
 
             setAnnouncements(sorted);
         } catch (error) {
