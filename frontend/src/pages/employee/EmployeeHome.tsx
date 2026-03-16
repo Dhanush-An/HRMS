@@ -15,6 +15,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { cn } from '../../utils/cn';
+import AnnouncementPopup from '../../components/AnnouncementPopup';
 
 const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
     <motion.div
@@ -65,6 +66,8 @@ const EmployeeHome = () => {
         attendanceRate: '0%',
         pendingTasks: '0 Tasks'
     });
+    const [pendingNotifications, setPendingNotifications] = useState<any[]>([]);
+    const [currentUser, setCurrentUser] = useState<any>(null);
 
     const dailyQuote = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
@@ -72,14 +75,26 @@ const EmployeeHome = () => {
         return INSPIRATIONAL_QUOTES[seed % INSPIRATIONAL_QUOTES.length];
     }, []);
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            // Fetch latest user data to get live balances
-            fetchLatestUser(parsedUser.id);
+    const fetchNotifications = async (userId: string) => {
+        try {
+            const [annRes, polRes] = await Promise.all([
+                api.get('/api/announcements'),
+                api.get('/api/policies')
+            ]);
+
+            if (annRes.ok && polRes.ok) {
+                const announcements = await annRes.json();
+                const policies = await polRes.json();
+
+                const unseenAnnouncements = announcements.filter((a: any) => !a.seenBy?.includes(userId));
+                const unseenPolicies = policies.filter((p: any) => !p.seenBy?.includes(userId));
+
+                setPendingNotifications([...unseenAnnouncements, ...unseenPolicies]);
+            }
+        } catch (error) {
+            console.error("Error fetching notifications:", error);
         }
-    }, []);
+    };
 
     const fetchLatestUser = async (userId: string) => {
         try {
@@ -119,8 +134,39 @@ const EmployeeHome = () => {
         }
     };
 
+    const handleDismissNotification = async (id: string, type: 'announcement' | 'policy') => {
+        if (!currentUser) return;
+
+        try {
+            const endpoint = type === 'announcement' ? `/api/announcements/${id}/seen` : `/api/policies/${id}/seen`;
+            const res = await api.put(endpoint, { employeeId: currentUser.id });
+
+            if (res.ok) {
+                setPendingNotifications(prev => prev.filter(item => (item.id || item._id) !== id));
+            }
+        } catch (error) {
+            console.error(`Error marking ${type} as seen:`, error);
+        }
+    };
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setCurrentUser(parsedUser);
+            // Fetch latest user data to get live balances
+            fetchLatestUser(parsedUser.id);
+            // Fetch announcements and policies
+            fetchNotifications(parsedUser.id);
+        }
+    }, []);
+
     return (
         <div className="p-4 md:p-8 space-y-6 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <AnnouncementPopup 
+                items={pendingNotifications} 
+                onDismiss={handleDismissNotification} 
+            />
             {/* Greeting */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>

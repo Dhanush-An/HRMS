@@ -9,6 +9,7 @@ export interface IPolicy extends Document {
     bgColor: string;
     borderColor: string;
     lastUpdated: string;
+    seenBy: string[];
 }
 
 const PolicySchema: Schema = new Schema({
@@ -19,7 +20,8 @@ const PolicySchema: Schema = new Schema({
     color: { type: String, default: 'text-brand-primary' },
     bgColor: { type: String, default: 'bg-brand-primary/10' },
     borderColor: { type: String, default: 'border-brand-primary/20' },
-    lastUpdated: { type: String, required: true }
+    lastUpdated: { type: String, required: true },
+    seenBy: { type: [String], default: [] }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

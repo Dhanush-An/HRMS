@@ -1,20 +1,25 @@
 import { useState, useEffect } from 'react';
-import { Users, DollarSign, Briefcase, FileText, Loader2 } from 'lucide-react';
+import { Users, DollarSign, Briefcase, FileText, Loader2, ExternalLink } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import api from '../../api';
 
-const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
+const StatCard = ({ title, value, icon: Icon, color, delay, onClick }: any) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="bg-brand-surface border border-brand-border p-4 md:p-6 rounded-2xl md:rounded-3xl hover:shadow-lg transition-all group"
+        onClick={onClick}
+        className={cn(
+            "bg-brand-surface border border-brand-border p-4 md:p-6 rounded-2xl md:rounded-3xl hover:shadow-lg transition-all group",
+            onClick && "cursor-pointer hover:border-brand-primary/50"
+        )}
     >
         <div className="flex justify-between items-start mb-4">
             <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-sm", color)}>
                 <Icon className="w-6 h-6 text-white" />
             </div>
+            {onClick && <ExternalLink className="w-4 h-4 text-brand-muted group-hover:text-brand-primary transition-colors" />}
         </div>
         <h3 className="text-brand-muted text-sm font-bold uppercase tracking-wider">{title}</h3>
         <p className="text-2xl font-black text-brand-text mt-1">{value}</p>
@@ -100,7 +105,7 @@ const AdminHome = () => {
                 <p className="text-brand-muted font-medium text-sm md:text-base">Welcome back! Here's what's happening today.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                 <StatCard
                     title="Total Employees"
                     value={stats.totalEmployees.toString()}
@@ -128,6 +133,14 @@ const AdminHome = () => {
                     icon={FileText}
                     color="bg-amber-600"
                     delay={0.4}
+                />
+                <StatCard
+                    title="Employee Details"
+                    value="Shared Drive"
+                    icon={FileText}
+                    color="bg-indigo-600"
+                    delay={0.5}
+                    onClick={() => window.open('https://drive.google.com/drive/folders/1tazZKUNBb-cO-YXP9vIVkAUs0GlAGu7L?usp=sharing', '_blank')}
                 />
             </div>
         </div>

@@ -584,6 +584,20 @@ app.post('/api/announcements', async (req, res) => {
     }
 });
 
+app.put('/api/announcements/:id/seen', async (req, res) => {
+    try {
+        const { employeeId } = req.body;
+        const announcement = await Announcement.findByIdAndUpdate(
+            req.params.id,
+            { $addToSet: { seenBy: employeeId } },
+            { new: true }
+        );
+        res.json({ success: true, announcement });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // --- TASKS ROUTES ---
 
 app.get('/api/tasks', async (req, res) => {
@@ -682,6 +696,20 @@ app.delete('/api/policies/:id', async (req, res) => {
         } else {
             res.status(404).json({ message: 'Policy not found' });
         }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/policies/:id/seen', async (req, res) => {
+    try {
+        const { employeeId } = req.body;
+        const policy = await Policy.findByIdAndUpdate(
+            req.params.id,
+            { $addToSet: { seenBy: employeeId } },
+            { new: true }
+        );
+        res.json({ success: true, policy });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
