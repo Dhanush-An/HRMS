@@ -178,14 +178,14 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
 
             {/* Task List */}
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-100">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto no-scrollbar">
                     <table className="w-full">
                         <thead className="bg-brand-bg/50">
                             <tr>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Employee</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Work Report / Task</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Priority</th>
-                                <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Status</th>
+                                <th className="px-4 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Employee</th>
+                                <th className="px-4 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Work Report / Task</th>
+                                <th className="px-4 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Priority</th>
+                                <th className="px-4 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Status</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-border">
@@ -201,14 +201,14 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                                     )
                                     .map((task) => (
                                         <tr key={task.id} className="hover:bg-brand-bg/30 transition-colors group">
-                                            <td className="px-8 py-6 whitespace-nowrap">
+                                            <td className="px-4 py-6 whitespace-nowrap">
                                                 <div className="text-brand-text font-black text-sm">{getEmployeeName(task.employeeId)}</div>
                                                 <div className="text-[9px] text-brand-muted font-bold uppercase tracking-widest mt-0.5">Assigned: {task.date}</div>
                                             </td>
-                                            <td className="px-8 py-6 text-brand-text font-medium text-sm max-w-md italic">
+                                            <td className="px-4 py-6 text-brand-text font-medium text-sm max-w-md italic">
                                                 "{task.description}"
                                             </td>
-                                            <td className="px-8 py-6 whitespace-nowrap">
+                                            <td className="px-4 py-6 whitespace-nowrap">
                                                 <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border ${task.priority === 'High' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
                                                     task.priority === 'Medium' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
                                                         'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
@@ -216,7 +216,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                                                     {task.priority}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-6 whitespace-nowrap">
+                                            <td className="px-4 py-6 whitespace-nowrap">
                                                 <span className={`flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-2xl border ${task.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
                                                     task.status === 'In Progress' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
                                                         'bg-brand-muted/10 text-brand-muted border-brand-border'
