@@ -44,6 +44,19 @@ interface AttendanceRecord {
     workLocation?: string;
 }
 
+const formatTimeTo12Hour = (time?: string) => {
+    if (!time || time === '--:--') return '--:--';
+    try {
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minutes} ${ampm}`;
+    } catch (e) {
+        return time;
+    }
+};
+
 const Attendance = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
@@ -341,6 +354,7 @@ const Attendance = () => {
                                 <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
                                 <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check In</th>
                                 <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check Out</th>
+                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Work Hours</th>
                                 <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
@@ -389,7 +403,7 @@ const Attendance = () => {
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
                                             <div className="flex flex-col gap-1">
-                                                <span>{record?.checkIn || '--:--'}</span>
+                                                <span>{formatTimeTo12Hour(record?.checkIn)}</span>
                                                 {record?.workMode && (
                                                     <span className={cn(
                                                         "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border w-fit",
@@ -404,13 +418,18 @@ const Attendance = () => {
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
                                             <div className="flex flex-col gap-1">
-                                                <span>{record?.checkOut || '--:--'}</span>
+                                                <span>{formatTimeTo12Hour(record?.checkOut)}</span>
                                                 {record?.workLocation && (
                                                     <span className="text-[9px] font-black uppercase tracking-widest text-brand-muted opacity-60">
                                                         {record.workLocation}
                                                     </span>
                                                 )}
                                             </div>
+                                        </td>
+                                        <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
+                                            <span className="bg-brand-bg px-3 py-1 rounded-lg border border-brand-border">
+                                                {record?.workHours ? `${record.workHours.toFixed(1)} hrs` : '--:--'}
+                                            </span>
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-right">
                                             {record?.location ? (
@@ -468,7 +487,7 @@ const Attendance = () => {
                                     <div>
                                         <span className="block text-[10px] text-brand-muted uppercase font-black tracking-widest mb-1">Check In</span>
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-brand-text font-bold text-xs">{record?.checkIn || '--:--'}</span>
+                                            <span className="text-brand-text font-bold text-xs">{formatTimeTo12Hour(record?.checkIn)}</span>
                                             {record?.workMode && (
                                                 <span className="text-[9px] font-black text-brand-primary uppercase">{record.workMode === 'Work from Office' ? 'Office' : 'Remote'}</span>
                                             )}
@@ -477,12 +496,17 @@ const Attendance = () => {
                                     <div className="text-right">
                                         <span className="block text-[10px] text-brand-muted uppercase font-black tracking-widest mb-1">Check Out</span>
                                         <div className="flex flex-col gap-1 items-end">
-                                            <span className="text-brand-text font-bold text-xs">{record?.checkOut || '--:--'}</span>
+                                            <span className="text-brand-text font-bold text-xs">{formatTimeTo12Hour(record?.checkOut)}</span>
                                             {record?.workLocation && (
                                                 <span className="text-[9px] font-black text-brand-muted opacity-60 uppercase tracking-tighter">{record.workLocation}</span>
                                             )}
                                         </div>
                                     </div>
+                                </div>
+
+                                <div className="flex items-center justify-between mt-4 p-3 bg-brand-bg rounded-xl border border-brand-border">
+                                    <span className="text-[10px] text-brand-muted uppercase font-black tracking-widest">Total Working Hours</span>
+                                    <span className="text-sm font-black text-brand-primary">{record?.workHours ? `${record.workHours.toFixed(1)} hrs` : '--:--'}</span>
                                 </div>
 
                                 {record?.location && (
