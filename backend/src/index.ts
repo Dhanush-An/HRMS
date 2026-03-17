@@ -598,6 +598,36 @@ app.put('/api/announcements/:id/seen', async (req, res) => {
     }
 });
 
+app.put('/api/announcements/:id', async (req, res) => {
+    try {
+        const updatedAnnouncement = await Announcement.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        if (updatedAnnouncement) {
+            res.json(updatedAnnouncement);
+        } else {
+            res.status(404).json({ message: 'Announcement not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.delete('/api/announcements/:id', async (req, res) => {
+    try {
+        const result = await Announcement.findByIdAndDelete(req.params.id);
+        if (result) {
+            res.json({ message: 'Announcement deleted' });
+        } else {
+            res.status(404).json({ message: 'Announcement not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // --- TASKS ROUTES ---
 
 app.get('/api/tasks', async (req, res) => {

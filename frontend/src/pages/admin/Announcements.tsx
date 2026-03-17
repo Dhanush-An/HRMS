@@ -1,9 +1,10 @@
 import { useState, useEffect, memo } from 'react';
-import { Megaphone, Bell, Calendar, Send, Sparkles, Filter, MoreHorizontal } from 'lucide-react';
+import { Megaphone, Bell, Calendar, Send, Sparkles, Filter, MoreHorizontal, Edit2, Trash2, X } from 'lucide-react';
 import api from '../../api';
 
 interface Announcement {
-    id: string;
+    _id?: string; // MongoDB ID
+    id: string; // Potential legacy ID
     title: string;
     message: string;
     type: 'Company' | 'HR' | 'Salary' | 'Holiday';
@@ -28,7 +29,9 @@ const getTypeStyles = (type: string) => {
     }
 };
 
-const AnnouncementCard = memo(({ ann, idx }: { ann: Announcement; idx: number }) => {
+const AnnouncementCard = memo(({ ann, idx, onEdit, onDelete }: { ann: Announcement; idx: number; onEdit: (ann: Announcement) => void; onDelete: (id: string) => void }) => {
+    const [showOptions, setShowOptions] = useState(false);
+
     return (
         <div
             className="bg-brand-surface border border-brand-border rounded-[2.5rem] p-8 relative overflow-hidden group hover:shadow-2xl hover:border-brand-primary/20 transition-all duration-500 animate-in slide-in-from-right-4"
@@ -46,9 +49,39 @@ const AnnouncementCard = memo(({ ann, idx }: { ann: Announcement; idx: number })
                         {ann.date}
                     </span>
                 </div>
-                <button className="p-2 text-brand-muted hover:text-brand-text hover:bg-brand-bg rounded-xl transition-all opacity-0 group-hover:opacity-100">
-                    <MoreHorizontal className="w-5 h-5" />
-                </button>
+                <div className="relative">
+                    <button 
+                        onClick={() => setShowOptions(!showOptions)}
+                        className="p-2 text-brand-muted hover:text-brand-text hover:bg-brand-bg rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                    >
+                        <MoreHorizontal className="w-5 h-5" />
+                    </button>
+
+                    {showOptions && (
+                        <div className="absolute right-0 top-full mt-2 w-40 bg-brand-surface border border-brand-border rounded-2xl shadow-xl z-10 overflow-hidden animate-in zoom-in-95 duration-200">
+                            <button
+                                onClick={() => {
+                                    onEdit(ann);
+                                    setShowOptions(false);
+                                }}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-brand-text hover:bg-brand-bg transition-colors border-b border-brand-border"
+                            >
+                                <Edit2 className="w-4 h-4 text-brand-primary" />
+                                Edit Post
+                            </button>
+                            <button
+                                onClick={() => {
+                                    onDelete(ann._id || ann.id);
+                                    setShowOptions(false);
+                                }}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-status-rejected hover:bg-brand-bg transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                                Delete Post
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <h3 className="text-2xl font-black text-brand-text mb-4 group-hover:text-brand-primary transition-colors tracking-tight">{ann.title}</h3>
@@ -61,7 +94,7 @@ const AnnouncementCard = memo(({ ann, idx }: { ann: Announcement; idx: number })
     );
 });
 
-const AnnouncementForm = ({ onPostSuccess }: { onPostSuccess: () => void }) => {
+const AnnouncementForm = ({ onPostSuccess, editingAnnouncement, onCancelEdit }: { onPostSuccess: () => void; editingAnnouncement?: Announcement | null; onCancelEdit?: () => void }) => {
     const [formData, setFormData] = useState({
         title: '',
         message: '',
@@ -69,14 +102,32 @@ const AnnouncementForm = ({ onPostSuccess }: { onPostSuccess: () => void }) => {
     });
     const [isPosting, setIsPosting] = useState(false);
 
+    useEffect(() => {
+        if (editingAnnouncement) {
+            setFormData({
+                title: editingAnnouncement.title,
+                message: editingAnnouncement.message,
+                type: editingAnnouncement.type
+            });
+        } else {
+            setFormData({ title: '', message: '', type: 'Company' });
+        }
+    }, [editingAnnouncement]);
+
     const handlePost = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsPosting(true);
         try {
-            const response = await api.post('/api/announcements', formData);
+            const url = editingAnnouncement 
+                ? `/api/announcements/${editingAnnouncement._id || editingAnnouncement.id}` 
+                : '/api/announcements';
+            const method = editingAnnouncement ? 'PUT' : 'POST';
+            
+            const response = await api[method === 'POST' ? 'post' : 'put'](url, formData);
             if (response.ok) {
                 onPostSuccess();
                 setFormData({ title: '', message: '', type: 'Company' });
+                if (onCancelEdit) onCancelEdit();
             }
         } catch (error) {
             console.error("Error posting announcement:", error);
@@ -87,14 +138,26 @@ const AnnouncementForm = ({ onPostSuccess }: { onPostSuccess: () => void }) => {
 
     return (
         <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] p-8 shadow-xl sticky top-8 animate-in slide-in-from-left-4 duration-700">
-            <div className="flex items-center gap-4 mb-8">
-                <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center border border-brand-primary/20">
-                    <Megaphone className="w-6 h-6 text-brand-primary" />
+            <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center border border-brand-primary/20">
+                        <Megaphone className="w-6 h-6 text-brand-primary" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-brand-text tracking-tight">
+                            {editingAnnouncement ? 'Edit Broadcast' : 'New Broadcast'}
+                        </h2>
+                        <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest">Share important updates</p>
+                    </div>
                 </div>
-                <div>
-                    <h2 className="text-xl font-black text-brand-text tracking-tight">New Broadcast</h2>
-                    <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest">Share important updates</p>
-                </div>
+                {editingAnnouncement && (
+                    <button 
+                        onClick={onCancelEdit}
+                        className="p-2 hover:bg-brand-bg rounded-xl text-brand-muted hover:text-brand-text transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                )}
             </div>
 
             <form onSubmit={handlePost} className="space-y-6">
@@ -114,7 +177,7 @@ const AnnouncementForm = ({ onPostSuccess }: { onPostSuccess: () => void }) => {
                         <select
                             className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text font-black text-sm focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all shadow-sm cursor-pointer appearance-none"
                             value={formData.type}
-                            onChange={e => setFormData({ ...formData, type: e.target.value })}
+                            onChange={e => setFormData({ ...formData, type: e.target.value as any })}
                         >
                             <option value="Company" className="bg-brand-surface text-brand-text">General Company</option>
                             <option value="HR" className="bg-brand-surface text-brand-text">Human Resources</option>
@@ -133,14 +196,25 @@ const AnnouncementForm = ({ onPostSuccess }: { onPostSuccess: () => void }) => {
                         required
                     ></textarea>
                 </div>
-                <button
-                    type="submit"
-                    disabled={isPosting}
-                    className="w-full bg-brand-primary hover:opacity-90 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand-primary/25 flex items-center justify-center gap-3 disabled:opacity-50"
-                >
-                    <Send className="w-4 h-4" />
-                    {isPosting ? 'Posting...' : 'Post Announcement'}
-                </button>
+                <div className="flex gap-4">
+                    {editingAnnouncement && (
+                        <button
+                            type="button"
+                            onClick={onCancelEdit}
+                            className="flex-1 bg-brand-bg border border-brand-border hover:bg-brand-surface text-brand-text py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
+                        >
+                            Cancel
+                        </button>
+                    )}
+                    <button
+                        type="submit"
+                        disabled={isPosting}
+                        className="flex-[2] bg-brand-primary hover:opacity-90 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-brand-primary/25 flex items-center justify-center gap-3 disabled:opacity-50"
+                    >
+                        <Send className="w-4 h-4" />
+                        {isPosting ? 'Saving...' : editingAnnouncement ? 'Update Broadcast' : 'Post Announcement'}
+                    </button>
+                </div>
             </form>
         </div>
     );
@@ -148,6 +222,7 @@ const AnnouncementForm = ({ onPostSuccess }: { onPostSuccess: () => void }) => {
 
 const Announcements = () => {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -160,6 +235,18 @@ const Announcements = () => {
             setAnnouncements(data.reverse()); // Show newest first
         } catch (error) {
             console.error("Error fetching announcements:", error);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this broadcast?')) return;
+        try {
+            const response = await api.delete(`/api/announcements/${id}`);
+            if (response.ok) {
+                fetchData();
+            }
+        } catch (error) {
+            console.error("Error deleting announcement:", error);
         }
     };
 
@@ -176,7 +263,11 @@ const Announcements = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Create Announcement Form */}
                 <div className="lg:col-span-1">
-                    <AnnouncementForm onPostSuccess={fetchData} />
+                    <AnnouncementForm 
+                        onPostSuccess={fetchData} 
+                        editingAnnouncement={editingAnnouncement}
+                        onCancelEdit={() => setEditingAnnouncement(null)}
+                    />
                 </div>
 
                 {/* Announcement List */}
@@ -202,7 +293,13 @@ const Announcements = () => {
                     ) : (
                         <div className="space-y-6">
                             {Array.isArray(announcements) && announcements.map((ann, idx) => (
-                                <AnnouncementCard key={ann.id} ann={ann} idx={idx} />
+                                <AnnouncementCard 
+                                    key={ann._id || ann.id} 
+                                    ann={ann} 
+                                    idx={idx} 
+                                    onEdit={setEditingAnnouncement}
+                                    onDelete={handleDelete}
+                                />
                             ))}
                         </div>
                     )}
