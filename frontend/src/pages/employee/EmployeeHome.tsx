@@ -201,7 +201,6 @@ const EmployeeHome = () => {
                     </div>
                     <div className="space-y-8">
                         {[
-                            { type: 'Leave', status: 'Approved', info: 'Annual Leave Request', date: '2 hours ago', icon: Calendar },
                             { type: 'Attendance', status: 'Clock In', info: 'Main Office Node', date: '5 hours ago', icon: Zap },
                             { type: 'Payroll', status: 'Processed', info: 'Financial Statement', date: 'Yesterday', icon: Briefcase },
                         ].map((activity, i) => (

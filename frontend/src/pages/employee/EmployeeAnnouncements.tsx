@@ -49,13 +49,6 @@ const EmployeeAnnouncements = () => {
             // Mock Personal Notifications
             const personalNotifications: any[] = [
                 {
-                    id: 'p1',
-                    title: 'Leave Approved',
-                    message: 'Your leave request has been approved by HR.',
-                    type: 'Personal',
-                    date: 'Today, 10:30 AM'
-                },
-                {
                     id: 'p2',
                     title: 'Salary Credited',
                     message: 'Your salary for the month of January 2026 has been credited to your account.',
