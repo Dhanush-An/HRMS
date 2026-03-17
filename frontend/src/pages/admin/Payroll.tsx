@@ -174,16 +174,16 @@ const Payroll = () => {
             {/* Salary Structure Tab */}
             {activeTab === 'structure' && (
                 <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm animate-in zoom-in-95 duration-200">
-                    <div className="overflow-hidden">
+                    <div className="overflow-x-auto no-scrollbar">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-[0.2em]">
-                                    <th className="px-4 py-4">Employee</th>
-                                    <th className="px-4 py-4">Base Salary</th>
-                                    <th className="px-4 py-4">HRA</th>
-                                    <th className="px-4 py-4">Transport</th>
-                                    <th className="px-4 py-4">Other</th>
-                                    <th className="px-4 py-4 text-right">Total (Gross)</th>
+                                    <th className="px-2 py-4">Employee</th>
+                                    <th className="px-2 py-4">Base</th>
+                                    <th className="px-2 py-4">HRA</th>
+                                    <th className="px-2 py-4">Transport</th>
+                                    <th className="px-2 py-4">Other</th>
+                                    <th className="px-2 py-4 text-right whitespace-nowrap">Total Gross</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-brand-border">
@@ -192,25 +192,25 @@ const Payroll = () => {
                                     const gross = salary.base + salary.hra + salary.transport + salary.other;
                                     return (
                                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
-                                            <td className="px-4 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-bold text-brand-text">{emp.name}</div>
-                                                <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider">{emp.role}</div>
+                                            <td className="px-2 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-bold text-brand-text truncate max-w-[120px]">{emp.name}</div>
+                                                <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider truncate max-w-[120px]">{emp.role}</div>
                                             </td>
                                             {['base', 'hra', 'transport', 'other'].map((field) => (
-                                                <td key={field} className="px-4 py-4 whitespace-nowrap">
+                                                <td key={field} className="px-2 py-4 whitespace-nowrap">
                                                     <div className="relative group/input">
-                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted group-focus-within/input:text-brand-primary text-xs font-bold">₹</span>
+                                                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-brand-muted group-focus-within/input:text-brand-primary text-[10px] font-bold">₹</span>
                                                         <input
                                                             type="number"
                                                             value={salary[field as keyof SalaryStructure] || ''}
                                                             onChange={(e) => handleSalaryUpdate(emp.id, field as keyof SalaryStructure, e.target.value)}
-                                                            className="w-32 bg-brand-bg border border-brand-border rounded-lg py-2 pl-7 pr-2 text-brand-text font-bold text-sm focus:ring-2 focus:ring-brand-primary/50 focus:border-transparent transition-all outline-none"
+                                                            className="w-24 bg-brand-bg border border-brand-border rounded-lg py-2 pl-5 pr-1 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/50 focus:border-transparent transition-all outline-none"
                                                             placeholder="0"
                                                         />
                                                     </div>
                                                 </td>
                                             ))}
-                                            <td className="px-4 py-4 whitespace-nowrap text-right">
+                                            <td className="px-2 py-4 whitespace-nowrap text-right">
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-brand-text font-black text-base italic">₹{gross.toLocaleString()}</span>
                                                     <span className="text-[10px] font-bold text-brand-muted uppercase">Gross</span>
@@ -262,16 +262,16 @@ const Payroll = () => {
                         </button>
                     </div>
 
-                    <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm no-scrollbar">
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-x-auto no-scrollbar shadow-sm">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
-                                    <th className="px-4 py-4">Employee</th>
-                                    <th className="px-4 py-4">Base</th>
-                                    <th className="px-4 py-4">Bonus (+)</th>
-                                    <th className="px-4 py-4">Deductions (-)</th>
-                                    <th className="px-4 py-4">Tax</th>
-                                    <th className="px-4 py-4 text-right">Net Payable</th>
+                                    <th className="px-2 py-4">Employee</th>
+                                    <th className="px-2 py-4">Base</th>
+                                    <th className="px-2 py-4">Bonus (+)</th>
+                                    <th className="px-2 py-4">Deductions (-)</th>
+                                    <th className="px-2 py-4">Tax</th>
+                                    <th className="px-2 py-4 text-right">Net Payable</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-brand-border">
@@ -279,28 +279,28 @@ const Payroll = () => {
                                     const { netSalary, tax } = calculateNetSalary(emp);
                                     return (
                                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
-                                            <td className="px-4 py-4 whitespace-nowrap text-brand-text font-bold">{emp.name}</td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">₹{(emp.salary?.base || 0).toLocaleString()}</td>
-                                            <td className="px-4 py-4 whitespace-nowrap">
+                                            <td className="px-2 py-4 whitespace-nowrap text-brand-text font-bold truncate max-w-[120px]">{emp.name}</td>
+                                            <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">₹{(emp.salary?.base || 0).toLocaleString()}</td>
+                                            <td className="px-2 py-4 whitespace-nowrap">
                                                 <input
                                                     type="number"
                                                     value={processData[emp.id]?.bonus || ''}
                                                     onChange={(e) => setProcessData({ ...processData, [emp.id]: { ...processData[emp.id], bonus: Number(e.target.value) } })}
-                                                    className="w-24 bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-status-approved font-bold text-sm focus:ring-2 focus:ring-status-approved outline-none tracking-tight"
+                                                    className="w-24 bg-brand-bg border border-brand-border rounded-lg px-2 py-1.5 text-status-approved font-bold text-sm focus:ring-2 focus:ring-status-approved outline-none tracking-tight"
                                                     placeholder="0"
                                                 />
                                             </td>
-                                            <td className="px-4 py-4 whitespace-nowrap">
+                                            <td className="px-2 py-4 whitespace-nowrap">
                                                 <input
                                                     type="number"
                                                     value={processData[emp.id]?.deductions || ''}
                                                     onChange={(e) => setProcessData({ ...processData, [emp.id]: { ...processData[emp.id], deductions: Number(e.target.value) } })}
-                                                    className="w-24 bg-brand-bg border border-brand-border rounded-lg px-3 py-1.5 text-status-rejected font-bold text-sm focus:ring-2 focus:ring-status-rejected outline-none tracking-tight"
+                                                    className="w-24 bg-brand-bg border border-brand-border rounded-lg px-2 py-1.5 text-status-rejected font-bold text-sm focus:ring-2 focus:ring-status-rejected outline-none tracking-tight"
                                                     placeholder="0"
                                                 />
                                             </td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-status-rejected font-bold text-xs">-₹{tax.toLocaleString()}</td>
-                                            <td className="px-4 py-4 whitespace-nowrap text-right">
+                                            <td className="px-2 py-4 whitespace-nowrap text-status-rejected font-bold text-xs">-₹{tax.toLocaleString()}</td>
+                                            <td className="px-2 py-4 whitespace-nowrap text-right">
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-status-approved font-black text-xl tracking-tight">₹{netSalary.toLocaleString()}</span>
                                                     <span className="text-[10px] font-bold text-brand-muted uppercase">Net Pay</span>
@@ -344,27 +344,27 @@ const Payroll = () => {
                                     </div>
                                 </div>
 
-                                <div className="overflow-x-auto">
+                                <div className="overflow-x-auto no-scrollbar">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
                                             <tr className="bg-table-header border-b border-brand-border text-[10px] font-black uppercase text-brand-muted tracking-widest">
-                                                <th className="px-4 py-3">Employee</th>
-                                                <th className="px-4 py-3 text-right">Base</th>
-                                                <th className="px-4 py-3 text-right">Bonus</th>
-                                                <th className="px-4 py-3 text-right">Deductions</th>
-                                                <th className="px-4 py-3 text-right">Net Pay</th>
-                                                <th className="px-4 py-3 text-right">Action</th>
+                                                <th className="px-2 py-3">Employee</th>
+                                                <th className="px-2 py-3 text-right">Base</th>
+                                                <th className="px-2 py-3 text-right">Bonus</th>
+                                                <th className="px-2 py-3 text-right">Deductions</th>
+                                                <th className="px-2 py-3 text-right">Net Pay</th>
+                                                <th className="px-2 py-3 text-right">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-brand-border">
                                             {Array.isArray(payroll.records) && payroll.records.map((record) => (
                                                 <tr key={record.employeeId} className="hover:bg-brand-bg transition-colors">
-                                                    <td className="px-4 py-4 text-sm font-bold text-brand-text">{record.name}</td>
-                                                    <td className="px-4 py-4 text-sm text-right font-medium text-brand-muted">₹{record.base.toLocaleString()}</td>
-                                                    <td className="px-4 py-4 text-xs text-right font-bold text-status-approved">+₹{record.bonus.toLocaleString()}</td>
-                                                    <td className="px-4 py-4 text-xs text-right font-bold text-status-rejected">-₹{record.deductions.toLocaleString()}</td>
-                                                    <td className="px-4 py-4 text-sm text-right font-black text-status-approved">₹{record.netSalary.toLocaleString()}</td>
-                                                    <td className="px-4 py-4 text-right">
+                                                    <td className="px-2 py-4 text-sm font-bold text-brand-text truncate max-w-[120px] whitespace-nowrap">{record.name}</td>
+                                                    <td className="px-2 py-4 text-sm text-right font-medium text-brand-muted whitespace-nowrap">₹{record.base.toLocaleString()}</td>
+                                                    <td className="px-2 py-4 text-xs text-right font-bold text-status-approved whitespace-nowrap">+₹{record.bonus.toLocaleString()}</td>
+                                                    <td className="px-2 py-4 text-xs text-right font-bold text-status-rejected whitespace-nowrap">-₹{record.deductions.toLocaleString()}</td>
+                                                    <td className="px-2 py-4 text-sm text-right font-black text-status-approved whitespace-nowrap">₹{record.netSalary.toLocaleString()}</td>
+                                                    <td className="px-2 py-4 text-right">
                                                         <button
                                                             className="text-brand-primary hover:opacity-80 p-2 hover:bg-brand-primary-light rounded-lg transition-all"
                                                         >
