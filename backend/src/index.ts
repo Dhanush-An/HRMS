@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import connectDB from './config/db';
 import Employee from './models/Employee';
 import Attendance from './models/Attendance';
@@ -112,19 +113,33 @@ app.post('/api/login', async (req, res) => {
     // 1. Check Admin in MongoDB
     try {
         const admin = await Admin.findOne({
-            email: normalizedEmail,
-            password: cleanPassword
+            email: normalizedEmail
         });
 
         if (admin) {
-            const adminUser = {
-                id: 'ADMIN',
-                name: admin.name || 'System Admin',
-                role: 'admin',
-                email: admin.email
-            };
-            const token = jwt.sign(adminUser, JWT_SECRET, { expiresIn: '8h' });
-            return res.json({ success: true, token, user: adminUser });
+            let isMatch = false;
+            if (admin.password && admin.password.startsWith('$2')) {
+                isMatch = await bcrypt.compare(cleanPassword, admin.password);
+            } else {
+                // Fallback for plain text passwords (migration)
+                isMatch = (cleanPassword === admin.password);
+                if (isMatch) {
+                    const salt = await bcrypt.genSalt(10);
+                    admin.password = await bcrypt.hash(cleanPassword, salt);
+                    await admin.save();
+                }
+            }
+
+            if (isMatch) {
+                const adminUser = {
+                    id: 'ADMIN',
+                    name: admin.name || 'System Admin',
+                    role: 'admin',
+                    email: admin.email
+                };
+                const token = jwt.sign(adminUser, JWT_SECRET, { expiresIn: '8h' });
+                return res.json({ success: true, token, user: adminUser });
+            }
         }
     } catch (error) {
         console.error('[ERROR] Admin check failed:', error);
@@ -133,20 +148,36 @@ app.post('/api/login', async (req, res) => {
     // 2. Check Employees in MongoDB
     try {
         const user = await Employee.findOne({
-            $or: [{ email: normalizedEmail }, { username: email }],
-            password: cleanPassword
+            $or: [{ email: normalizedEmail }, { username: email }]
         });
 
         if (user) {
-            const empUser = {
-                id: user.employeeId,
-                name: user.name,
-                role: user.role,
-                email: user.email,
-                department: user.department
-            };
-            const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
-            res.json({ success: true, token, user: empUser });
+            let isMatch = false;
+            if (user.password && user.password.startsWith('$2')) {
+                isMatch = await bcrypt.compare(cleanPassword, user.password);
+            } else {
+                // Fallback for plain text passwords
+                isMatch = (cleanPassword === user.password);
+                if (isMatch) {
+                    const salt = await bcrypt.genSalt(10);
+                    user.password = await bcrypt.hash(cleanPassword, salt);
+                    await user.save();
+                }
+            }
+
+            if (isMatch) {
+                const empUser = {
+                    id: user.employeeId,
+                    name: user.name,
+                    role: user.role,
+                    email: user.email,
+                    department: user.department
+                };
+                const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
+                res.json({ success: true, token, user: empUser });
+            } else {
+                res.status(401).json({ success: false, message: 'Invalid credentials' });
+            }
         } else {
             res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
@@ -178,12 +209,15 @@ app.post('/api/employees', authorizeRoles('admin'), async (req, res) => {
             finalId = `EMP${String(count + 1).padStart(3, '0')}`;
         }
 
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password || 'Password123!', salt);
+
         const newEmployee = new Employee({
             employeeId: finalId,
             name,
             email,
             username: req.body.username || email,
-            password: req.body.password || 'Password123!',
+            password: hashedPassword,
             role: role || 'employee',
             department,
             status: status || 'Active',
@@ -209,9 +243,15 @@ app.post('/api/employees', authorizeRoles('admin'), async (req, res) => {
 // PUT update employee
 app.put('/api/employees/:id', async (req, res) => {
     try {
+        const updateData = { ...req.body };
+        if (updateData.password) {
+            const salt = await bcrypt.genSalt(10);
+            updateData.password = await bcrypt.hash(updateData.password, salt);
+        }
+
         const updatedEmployee = await Employee.findOneAndUpdate(
             { employeeId: req.params.id },
-            req.body,
+            updateData,
             { new: true }
         );
 
@@ -262,7 +302,10 @@ app.put('/api/admin/credentials', authorizeRoles('admin'), async (req, res) => {
         }
 
         if (email) admin.email = email;
-        if (password) admin.password = password;
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            admin.password = await bcrypt.hash(password, salt);
+        }
         if (name) admin.name = name;
 
         await admin.save();
@@ -800,9 +843,11 @@ app.listen(PORT, async () => {
     try {
         const adminCount = await Admin.countDocuments();
         if (adminCount === 0) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedAdminPassword = await bcrypt.hash('admin123', salt);
             await Admin.create({
                 email: 'admin@hrms.com',
-                password: 'admin123',
+                password: hashedAdminPassword,
                 name: 'System Admin'
             });
             console.log('[INIT] Default admin created: admin@hrms.com / admin123');

@@ -57,6 +57,26 @@ const formatTimeTo12Hour = (time?: string) => {
     }
 };
 
+const calculateWorkingHours = (checkIn?: string, checkOut?: string, dbWorkHours?: number) => {
+    if (!checkIn || !checkOut || checkIn === '--:--' || checkOut === '--:--') {
+        return dbWorkHours ? `${dbWorkHours.toFixed(1)} hrs` : '--:--';
+    }
+    try {
+        const [inH, inM] = checkIn.split(':').map(Number);
+        const [outH, outM] = checkOut.split(':').map(Number);
+        
+        let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+        if (diffMins < 0) diffMins += 24 * 60;
+        
+        const hrs = Math.floor(diffMins / 60);
+        const mins = diffMins % 60;
+        
+        return `${hrs}h ${mins}m`;
+    } catch {
+        return dbWorkHours ? `${dbWorkHours.toFixed(1)} hrs` : '--:--';
+    }
+};
+
 const Attendance = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
@@ -428,7 +448,7 @@ const Attendance = () => {
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
                                             <span className="bg-brand-bg px-3 py-1 rounded-lg border border-brand-border">
-                                                {record?.workHours ? `${record.workHours.toFixed(1)} hrs` : '--:--'}
+                                                {calculateWorkingHours(record?.checkIn, record?.checkOut, record?.workHours)}
                                             </span>
                                         </td>
                                         <td className="px-8 py-4 whitespace-nowrap text-right">
@@ -506,7 +526,7 @@ const Attendance = () => {
 
                                 <div className="flex items-center justify-between mt-4 p-3 bg-brand-bg rounded-xl border border-brand-border">
                                     <span className="text-[10px] text-brand-muted uppercase font-black tracking-widest">Total Working Hours</span>
-                                    <span className="text-sm font-black text-brand-primary">{record?.workHours ? `${record.workHours.toFixed(1)} hrs` : '--:--'}</span>
+                                    <span className="text-sm font-black text-brand-primary">{calculateWorkingHours(record?.checkIn, record?.checkOut, record?.workHours)}</span>
                                 </div>
 
                                 {record?.location && (

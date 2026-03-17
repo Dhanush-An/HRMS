@@ -45,6 +45,39 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
     return R * c; // in metres
 };
 
+const formatTimeTo12Hour = (time?: string) => {
+    if (!time || time === '--:--') return '--:--';
+    try {
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minutes} ${ampm}`;
+    } catch (e) {
+        return time;
+    }
+};
+
+const calculateWorkingHours = (checkIn?: string, checkOut?: string, dbWorkHours?: number) => {
+    if (!checkIn || !checkOut || checkIn === '--:--' || checkOut === '--:--') {
+        return dbWorkHours ? `${dbWorkHours.toFixed(1)} hrs` : '--:--';
+    }
+    try {
+        const [inH, inM] = checkIn.split(':').map(Number);
+        const [outH, outM] = checkOut.split(':').map(Number);
+        
+        let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+        if (diffMins < 0) diffMins += 24 * 60;
+        
+        const hrs = Math.floor(diffMins / 60);
+        const mins = diffMins % 60;
+        
+        return `${hrs}h ${mins}m`;
+    } catch {
+        return dbWorkHours ? `${dbWorkHours.toFixed(1)} hrs` : '--:--';
+    }
+};
+
 const EmployeeDashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -55,6 +88,7 @@ const EmployeeDashboard = () => {
     const [clockedInTime, setClockedInTime] = useState('--:--');
     const [clockedOutTime, setClockedOutTime] = useState('--:--');
     const [attendanceId, setAttendanceId] = useState<string | null>(null);
+    const [sessionLocation, setSessionLocation] = useState({ workMode: '', workLocation: '', workHours: 0 });
 
     // Login Options Modal State
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -99,6 +133,7 @@ const EmployeeDashboard = () => {
                 setAttendanceId(record.id);
                 setClockedInTime(record.checkIn || '--:--');
                 setClockedOutTime(record.checkOut || '--:--');
+                setSessionLocation({ workMode: record.workMode || '', workLocation: record.workLocation || '', workHours: record.workHours || 0 });
                 if (record.checkOut) {
                     setIsCheckedIn(false);
                     setIsCheckedOut(true);
@@ -214,6 +249,7 @@ const EmployeeDashboard = () => {
             setClockedInTime(timeString);
             setClockedOutTime('--:--');
             setAttendanceId(data.id);
+            setSessionLocation({ workMode: loginOptions.workMode, workLocation: loginOptions.workLocation, workHours: 0 });
             setIsLoginModalOpen(false);
         } catch (error) {
             console.error("Error checking in:", error);
@@ -245,6 +281,7 @@ const EmployeeDashboard = () => {
             setIsCheckedIn(false);
             setIsCheckedOut(true);
             setClockedOutTime(timeString);
+            setSessionLocation(prev => ({ ...prev, workHours }));
         } catch (error) {
             console.error("Error checking out:", error);
         }
@@ -398,15 +435,35 @@ const EmployeeDashboard = () => {
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                                <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-4 px-4 py-2 bg-brand-surface border border-brand-border rounded-xl shadow-sm">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-brand-muted uppercase font-bold tracking-wider">Login</span>
-                                        <span className="text-sm font-bold text-brand-text">{clockedInTime}</span>
+                                <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-xl shadow-sm">
+                                    {/* Login Details */}
+                                    <div className="flex flex-col items-start gap-1">
+                                        <span className="text-lg font-medium text-brand-text">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
+                                        {sessionLocation.workMode && (
+                                            <span className={cn(
+                                                "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
+                                                sessionLocation.workMode === 'Work from Office'
+                                                    ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20"
+                                                    : "bg-[#e5dfff] text-[#5b3ae9] border-[#d4cbff]" 
+                                            )}>
+                                                {sessionLocation.workMode === 'Work from Office' ? 'Office' : 'Remote'}
+                                            </span>
+                                        )}
                                     </div>
-                                    <div className="w-[1px] h-8 bg-brand-border" />
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-brand-muted uppercase font-bold tracking-wider">Logout</span>
-                                        <span className="text-sm font-bold text-brand-text">{clockedOutTime}</span>
+                                    
+                                    {/* Logout Details */}
+                                    <div className="flex flex-col items-start gap-1">
+                                        <span className="text-lg font-medium text-brand-text">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
+                                        {sessionLocation.workLocation && (
+                                            <span className="text-[10px] text-brand-muted uppercase font-black tracking-widest">
+                                                {sessionLocation.workLocation}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Total Hours Metric */}
+                                    <div className="flex items-center justify-center px-4 py-1.5 ml-2 border border-brand-border rounded-xl bg-brand-bg text-sm font-bold text-brand-text">
+                                        {calculateWorkingHours(clockedInTime, clockedOutTime, sessionLocation.workHours)}
                                     </div>
                                 </div>
                                 <div className="w-full sm:w-auto flex bg-brand-surface border border-brand-border rounded-xl p-1 gap-1 shadow-sm">
