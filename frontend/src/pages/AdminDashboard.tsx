@@ -136,7 +136,11 @@ const AdminDashboard: React.FC = () => {
                             </div>
                         </div>
                         <button
-                            onClick={() => navigate('/login')}
+                            onClick={() => {
+                                localStorage.removeItem('token');
+                                localStorage.removeItem('user');
+                                navigate('/login');
+                            }}
                             className="p-2 hover:bg-red-500/10 rounded-lg transition-colors group/logout"
                             title="Logout"
                         >

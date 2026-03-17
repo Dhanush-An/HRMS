@@ -88,6 +88,17 @@ const authMiddleware = (req: Request, res: Response, next: NextFunction): void =
     }
 };
 
+const authorizeRoles = (...roles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction): void => {
+        const user = (req as any).user;
+        if (!user || !roles.includes(user.role)) {
+            res.status(403).json({ success: false, message: `Access denied. Requires one of roles: ${roles.join(', ')}` });
+            return;
+        }
+        next();
+    };
+};
+
 app.get('/', (req, res) => {
     res.send('Antigraviity HRMS API is running...');
 });
@@ -157,7 +168,7 @@ app.get('/api/employees', async (req, res) => {
 });
 
 // POST new employee
-app.post('/api/employees', async (req, res) => {
+app.post('/api/employees', authorizeRoles('admin'), async (req, res) => {
     try {
         const { id, name, email, role, department, status, phone, joiningDate } = req.body;
 
@@ -220,7 +231,7 @@ app.put('/api/employees/:id', async (req, res) => {
 });
 
 // DELETE employee
-app.delete('/api/employees/:id', async (req, res) => {
+app.delete('/api/employees/:id', authorizeRoles('admin'), async (req, res) => {
     try {
         const result = await Employee.findOneAndDelete({ employeeId: req.params.id });
         if (result) {
@@ -236,7 +247,7 @@ app.delete('/api/employees/:id', async (req, res) => {
 // --- ADMIN ROUTES ---
 
 // Update Admin Credentials
-app.put('/api/admin/credentials', async (req, res) => {
+app.put('/api/admin/credentials', authorizeRoles('admin'), async (req, res) => {
     // Check if requester is admin
     const requester = (req as any).user;
     if (requester.role !== 'admin') {
@@ -369,7 +380,7 @@ app.put('/api/attendance/:id', async (req, res) => {
 // --- PAYROLL ROUTES ---
 
 // UPDATE Salary Structure
-app.put('/api/employees/:id/salary', async (req, res) => {
+app.put('/api/employees/:id/salary', authorizeRoles('admin'), async (req, res) => {
     try {
         const updatedEmployee = await Employee.findOneAndUpdate(
             { employeeId: req.params.id },
@@ -388,7 +399,7 @@ app.put('/api/employees/:id/salary', async (req, res) => {
 });
 
 // GENERATE Payroll
-app.post('/api/payroll/generate', async (req, res) => {
+app.post('/api/payroll/generate', authorizeRoles('admin'), async (req, res) => {
     const { month, year, records } = req.body;
 
     try {
@@ -571,7 +582,7 @@ app.get('/api/announcements', async (req, res) => {
     }
 });
 
-app.post('/api/announcements', async (req, res) => {
+app.post('/api/announcements', authorizeRoles('admin'), async (req, res) => {
     try {
         const newAnnouncement = new Announcement({
             date: new Date().toISOString().split('T')[0],
@@ -598,7 +609,7 @@ app.put('/api/announcements/:id/seen', async (req, res) => {
     }
 });
 
-app.put('/api/announcements/:id', async (req, res) => {
+app.put('/api/announcements/:id', authorizeRoles('admin'), async (req, res) => {
     try {
         const updatedAnnouncement = await Announcement.findByIdAndUpdate(
             req.params.id,
@@ -615,7 +626,7 @@ app.put('/api/announcements/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/announcements/:id', async (req, res) => {
+app.delete('/api/announcements/:id', authorizeRoles('admin'), async (req, res) => {
     try {
         const result = await Announcement.findByIdAndDelete(req.params.id);
         if (result) {
@@ -684,7 +695,7 @@ app.get('/api/policies', async (req, res) => {
     }
 });
 
-app.post('/api/policies', async (req, res) => {
+app.post('/api/policies', authorizeRoles('admin'), async (req, res) => {
     try {
         const newPolicy = new Policy({
             lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
@@ -697,7 +708,7 @@ app.post('/api/policies', async (req, res) => {
     }
 });
 
-app.put('/api/policies/:id', async (req, res) => {
+app.put('/api/policies/:id', authorizeRoles('admin'), async (req, res) => {
     try {
         const updatedPolicy = await Policy.findByIdAndUpdate(
             req.params.id,
@@ -718,7 +729,7 @@ app.put('/api/policies/:id', async (req, res) => {
     }
 });
 
-app.delete('/api/policies/:id', async (req, res) => {
+app.delete('/api/policies/:id', authorizeRoles('admin'), async (req, res) => {
     try {
         const result = await Policy.findByIdAndDelete(req.params.id);
         if (result) {

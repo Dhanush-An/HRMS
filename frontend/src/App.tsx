@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
@@ -24,12 +23,9 @@ import CompanyPolicies from './pages/employee/CompanyPolicies';
 import EmployeePayroll from './pages/employee/EmployeePayroll';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import { ThemeProvider } from './context/ThemeContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
-/** Redirects unauthenticated users to /login */
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem('token');
-  return token ? <>{children}</> : <Navigate to="/login" replace />;
-};
+
 
 function App() {
   return (
@@ -39,7 +35,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* Admin Routes */}
-          <Route path="/admin-dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>}>
+          <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>}>
             <Route index element={<AdminHome />} />
             <Route path="employees" element={<Employees />} />
             <Route path="attendance" element={<Attendance />} />
@@ -54,7 +50,7 @@ function App() {
           </Route>
 
           {/* Employee Routes */}
-          <Route path="/employee-dashboard" element={<PrivateRoute><EmployeeDashboard /></PrivateRoute>}>
+          <Route path="/employee-dashboard" element={<ProtectedRoute allowedRoles={['employee']}><EmployeeDashboard /></ProtectedRoute>}>
             <Route index element={<EmployeeHome />} />
             <Route path="tasks" element={<EmployeeTasks />} />
             <Route path="profile" element={<EmployeeProfile />} />
