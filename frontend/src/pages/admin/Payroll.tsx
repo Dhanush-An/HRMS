@@ -174,16 +174,16 @@ const Payroll = () => {
             {/* Salary Structure Tab */}
             {activeTab === 'structure' && (
                 <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm animate-in zoom-in-95 duration-200">
-                    <div className="overflow-x-auto">
+                    <div className="overflow-hidden">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-[0.2em]">
-                                    <th className="px-8 py-4">Employee</th>
-                                    <th className="px-8 py-4">Base Salary</th>
-                                    <th className="px-8 py-4">HRA</th>
-                                    <th className="px-8 py-4">Transport</th>
-                                    <th className="px-8 py-4">Other</th>
-                                    <th className="px-8 py-4 text-right">Total (Gross)</th>
+                                    <th className="px-4 py-4">Employee</th>
+                                    <th className="px-4 py-4">Base Salary</th>
+                                    <th className="px-4 py-4">HRA</th>
+                                    <th className="px-4 py-4">Transport</th>
+                                    <th className="px-4 py-4">Other</th>
+                                    <th className="px-4 py-4 text-right">Total (Gross)</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-brand-border">
@@ -192,12 +192,12 @@ const Payroll = () => {
                                     const gross = salary.base + salary.hra + salary.transport + salary.other;
                                     return (
                                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
-                                            <td className="px-8 py-4 whitespace-nowrap">
+                                            <td className="px-4 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-bold text-brand-text">{emp.name}</div>
                                                 <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider">{emp.role}</div>
                                             </td>
                                             {['base', 'hra', 'transport', 'other'].map((field) => (
-                                                <td key={field} className="px-8 py-4 whitespace-nowrap">
+                                                <td key={field} className="px-4 py-4 whitespace-nowrap">
                                                     <div className="relative group/input">
                                                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted group-focus-within/input:text-brand-primary text-xs font-bold">₹</span>
                                                         <input
@@ -210,7 +210,7 @@ const Payroll = () => {
                                                     </div>
                                                 </td>
                                             ))}
-                                            <td className="px-8 py-4 whitespace-nowrap text-right">
+                                            <td className="px-4 py-4 whitespace-nowrap text-right">
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-brand-text font-black text-base italic">₹{gross.toLocaleString()}</span>
                                                     <span className="text-[10px] font-bold text-brand-muted uppercase">Gross</span>
@@ -262,16 +262,16 @@ const Payroll = () => {
                         </button>
                     </div>
 
-                    <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm overflow-x-auto no-scrollbar">
-                        <table className="w-full text-left border-collapse min-w-[800px]">
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm no-scrollbar">
+                        <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
-                                    <th className="px-8 py-4">Employee</th>
-                                    <th className="px-8 py-4">Base</th>
-                                    <th className="px-8 py-4">Bonus (+)</th>
-                                    <th className="px-8 py-4">Deductions (-)</th>
-                                    <th className="px-8 py-4">Tax</th>
-                                    <th className="px-8 py-4 text-right">Net Payable</th>
+                                    <th className="px-4 py-4">Employee</th>
+                                    <th className="px-4 py-4">Base</th>
+                                    <th className="px-4 py-4">Bonus (+)</th>
+                                    <th className="px-4 py-4">Deductions (-)</th>
+                                    <th className="px-4 py-4">Tax</th>
+                                    <th className="px-4 py-4 text-right">Net Payable</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-brand-border">
@@ -279,9 +279,9 @@ const Payroll = () => {
                                     const { netSalary, tax } = calculateNetSalary(emp);
                                     return (
                                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
-                                            <td className="px-8 py-4 whitespace-nowrap text-brand-text font-bold">{emp.name}</td>
-                                            <td className="px-8 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">₹{(emp.salary?.base || 0).toLocaleString()}</td>
-                                            <td className="px-8 py-4 whitespace-nowrap">
+                                            <td className="px-4 py-4 whitespace-nowrap text-brand-text font-bold">{emp.name}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">₹{(emp.salary?.base || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap">
                                                 <input
                                                     type="number"
                                                     value={processData[emp.id]?.bonus || ''}
@@ -290,7 +290,7 @@ const Payroll = () => {
                                                     placeholder="0"
                                                 />
                                             </td>
-                                            <td className="px-8 py-4 whitespace-nowrap">
+                                            <td className="px-4 py-4 whitespace-nowrap">
                                                 <input
                                                     type="number"
                                                     value={processData[emp.id]?.deductions || ''}
@@ -299,8 +299,8 @@ const Payroll = () => {
                                                     placeholder="0"
                                                 />
                                             </td>
-                                            <td className="px-8 py-4 whitespace-nowrap text-status-rejected font-bold text-xs">-₹{tax.toLocaleString()}</td>
-                                            <td className="px-8 py-4 whitespace-nowrap text-right">
+                                            <td className="px-4 py-4 whitespace-nowrap text-status-rejected font-bold text-xs">-₹{tax.toLocaleString()}</td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-right">
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-status-approved font-black text-xl tracking-tight">₹{netSalary.toLocaleString()}</span>
                                                     <span className="text-[10px] font-bold text-brand-muted uppercase">Net Pay</span>

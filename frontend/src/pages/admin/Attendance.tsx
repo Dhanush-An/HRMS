@@ -366,16 +366,16 @@ const Attendance = () => {
                 </div>
 
                 {/* Attendance List - Desktop View */}
-                <div className="hidden lg:block bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden overflow-x-auto no-scrollbar">
-                    <table className="w-full text-left border-collapse min-w-[900px]">
+                <div className="hidden lg:block bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden no-scrollbar">
+                    <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-table-header border-b border-brand-border">
-                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
-                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check In</th>
-                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check Out</th>
-                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Work Hours</th>
-                                <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest text-right">Actions</th>
+                                <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
+                                <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
+                                <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check In</th>
+                                <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check Out</th>
+                                <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Work Hours</th>
+                                <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-border">
@@ -386,7 +386,7 @@ const Attendance = () => {
                                 const record = getAttendanceStatus(emp.id);
                                 return (
                                     <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
-                                        <td className="px-8 py-4 whitespace-nowrap">
+                                        <td className="px-4 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-10 w-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black text-xs shadow-sm group-hover:scale-110 transition-transform">
                                                     {emp.name.charAt(0)}
@@ -397,7 +397,7 @@ const Attendance = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-4 whitespace-nowrap">
+                                        <td className="px-4 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 <div className={cn(
                                                     "w-2 h-2 rounded-full",
@@ -421,7 +421,7 @@ const Attendance = () => {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
+                                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
                                             <div className="flex flex-col gap-1">
                                                 <span>{formatTimeTo12Hour(record?.checkIn)}</span>
                                                 {record?.workMode && (
@@ -436,7 +436,7 @@ const Attendance = () => {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
+                                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
                                             <div className="flex flex-col gap-1">
                                                 <span>{formatTimeTo12Hour(record?.checkOut)}</span>
                                                 {record?.workLocation && (
@@ -446,12 +446,12 @@ const Attendance = () => {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="px-8 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
+                                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
                                             <span className="bg-brand-bg px-3 py-1 rounded-lg border border-brand-border">
                                                 {calculateWorkingHours(record?.checkIn, record?.checkOut, record?.workHours)}
                                             </span>
                                         </td>
-                                        <td className="px-8 py-4 whitespace-nowrap text-right">
+                                        <td className="px-4 py-4 whitespace-nowrap text-right">
                                             {record?.location ? (
                                                 <button
                                                     onClick={() => handleViewLocation(emp.id, emp.name, record.location)}

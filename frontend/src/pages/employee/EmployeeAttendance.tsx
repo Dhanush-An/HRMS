@@ -11,7 +11,42 @@ interface AttendanceRecord {
     checkIn?: string;
     checkOut?: string;
     workHours?: number;
+    workMode?: string;
+    workLocation?: string;
 }
+
+const formatTimeTo12Hour = (time?: string) => {
+    if (!time || time === '--:--') return '--:--';
+    try {
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minutes} ${ampm}`;
+    } catch (e) {
+        return time;
+    }
+};
+
+const calculateWorkingHours = (checkIn?: string, checkOut?: string, dbWorkHours?: number) => {
+    if (!checkIn || !checkOut || checkIn === '--:--' || checkOut === '--:--') {
+        return dbWorkHours ? `${dbWorkHours.toFixed(1)} hrs` : '--:--';
+    }
+    try {
+        const [inH, inM] = checkIn.split(':').map(Number);
+        const [outH, outM] = checkOut.split(':').map(Number);
+        
+        let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+        if (diffMins < 0) diffMins += 24 * 60;
+        
+        const hrs = Math.floor(diffMins / 60);
+        const mins = diffMins % 60;
+        
+        return `${hrs}h ${mins}m`;
+    } catch {
+        return dbWorkHours ? `${dbWorkHours.toFixed(1)} hrs` : '--:--';
+    }
+};
 
 const EmployeeAttendance = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -169,7 +204,7 @@ const EmployeeAttendance = () => {
                     {record && (
                         <div className="mt-auto absolute bottom-1 md:bottom-3 left-1 md:left-3 right-1 md:right-3 space-y-0.5 md:space-y-1.5">
                             <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-brand-muted">
-                                {record.checkIn || '--:--'}
+                                {record.checkIn ? formatTimeTo12Hour(record.checkIn) : '--:--'}
                             </span>
                             <div className="h-0.5 md:h-1 w-full bg-brand-border rounded-full overflow-hidden">
                                 <div
@@ -334,19 +369,33 @@ const EmployeeAttendance = () => {
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="bg-brand-bg p-3 rounded-xl border border-brand-border text-center">
                                             <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest block mb-1">In</span>
-                                            <span className="text-xs font-black text-brand-text block">{selectedDayStats.checkIn || '--:--'}</span>
+                                            <span className="text-xs font-black text-brand-text block">{formatTimeTo12Hour(selectedDayStats.checkIn)}</span>
+                                            {selectedDayStats.workMode && (
+                                                <span className={cn(
+                                                    "text-[8px] font-black uppercase mt-1 inline-block",
+                                                    selectedDayStats.workMode === 'Work from Office' ? "text-brand-primary" : "text-[#5b3ae9]"
+                                                )}>
+                                                    {selectedDayStats.workMode === 'Work from Office' ? 'Office' : 'Remote'}
+                                                </span>
+                                            )}
                                         </div>
                                         <div className="bg-brand-bg p-3 rounded-xl border border-brand-border text-center">
                                             <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest block mb-1">Out</span>
-                                            <span className="text-xs font-black text-brand-text block">{selectedDayStats.checkOut || '--:--'}</span>
+                                            <span className="text-xs font-black text-brand-text block">{formatTimeTo12Hour(selectedDayStats.checkOut)}</span>
+                                            {selectedDayStats.workLocation && (
+                                                <span className="text-[8px] font-black text-brand-muted uppercase mt-1 inline-block">
+                                                    {selectedDayStats.workLocation}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
 
                                     <div className="bg-brand-primary/5 p-4 rounded-xl border border-brand-primary/10 flex flex-col items-center justify-center">
                                         <span className="text-[9px] font-black text-brand-primary uppercase tracking-widest mb-1">Work Hours</span>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="text-3xl font-black text-brand-primary tabular-nums">{selectedDayStats.workHours || '-'}</span>
-                                            <span className="text-[10px] font-black text-brand-primary/60 uppercase">hrs</span>
+                                            <span className="text-3xl font-black text-brand-primary tabular-nums">
+                                                {calculateWorkingHours(selectedDayStats.checkIn, selectedDayStats.checkOut, selectedDayStats.workHours)}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

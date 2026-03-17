@@ -188,68 +188,68 @@ const Employees = () => {
             </div>
 
             {/* Employee List - Table View (Desktop) */}
-            <div className="hidden md:block bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm overflow-x-auto no-scrollbar">
-                <table className="w-full text-left border-collapse min-w-[800px]">
+            <div className="hidden md:block bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm no-scrollbar">
+                <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-table-header border-b border-brand-border">
-                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
-                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Role & Dept</th>
-                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Contact</th>
-                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
-                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Joined Date</th>
-                            <th className="px-6 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest text-right">Actions</th>
+                    <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
+                    <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Role & Dept</th>
+                    <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Contact</th>
+                    <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
+                    <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Joined Date</th>
+                    <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-brand-border">
                         {Array.isArray(filteredEmployees) && filteredEmployees.map((emp) => (
-                            <tr key={emp.id} className="hover:bg-brand-bg transition-colors group cursor-pointer" onClick={() => openProfile(emp)}>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black shadow-sm group-hover:scale-105 transition-transform">
-                                            {emp.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <div className="text-brand-text font-bold text-sm">{emp.name}</div>
-                                            <div className="text-brand-muted text-[10px] font-mono tracking-tighter">{emp.id}</div>
-                                        </div>
+                        <tr key={emp.id} className="hover:bg-brand-bg transition-colors group cursor-pointer" onClick={() => openProfile(emp)}>
+                            <td className="px-4 py-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black shadow-sm group-hover:scale-105 transition-transform">
+                                        {emp.name.charAt(0)}
                                     </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="text-brand-text font-bold text-sm">{emp.role}</div>
-                                    <div className="text-brand-muted text-xs font-medium">{emp.department}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex flex-col gap-0.5">
-                                        <div className="flex items-center gap-1.5 text-brand-text text-xs font-medium">
-                                            <Mail className="w-3 h-3 text-brand-primary" />
-                                            {emp.email}
+                                    <div>
+                                        <div className="text-brand-text font-bold text-sm">{emp.name}</div>
+                                        <div className="text-brand-muted text-[10px] font-mono tracking-tighter">{emp.id}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td className="px-4 py-4">
+                                <div className="text-brand-text font-bold text-sm">{emp.role}</div>
+                                <div className="text-brand-muted text-xs font-medium">{emp.department}</div>
+                            </td>
+                            <td className="px-4 py-4">
+                                <div className="flex flex-col gap-0.5">
+                                    <div className="flex items-center gap-1.5 text-brand-text text-xs font-medium">
+                                        <Mail className="w-3 h-3 text-brand-primary" />
+                                        {emp.email}
+                                    </div>
+                                    {emp.phone && (
+                                        <div className="flex items-center gap-1.5 text-brand-muted text-xs font-medium">
+                                            <Phone className="w-3 h-3 text-brand-muted" />
+                                            {emp.phone}
                                         </div>
-                                        {emp.phone && (
-                                            <div className="flex items-center gap-1.5 text-brand-muted text-xs font-medium">
-                                                <Phone className="w-3 h-3 text-brand-muted" />
-                                                {emp.phone}
-                                            </div>
-                                        )}
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className={cn(
-                                            "w-2 h-2 rounded-full",
-                                            emp.status === 'Active' ? "bg-status-approved" : "bg-status-rejected"
-                                        )} />
-                                        <span className={cn(
-                                            "text-xs font-bold",
-                                            emp.status === 'Active' ? "text-status-approved" : "text-status-rejected"
-                                        )}>
-                                            {emp.status}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="text-brand-text text-sm font-medium">{emp.joiningDate}</div>
-                                </td>
-                                <td className="px-6 py-4 text-right">
+                                    )}
+                                </div>
+                            </td>
+                            <td className="px-4 py-4">
+                                <div className="flex items-center gap-2">
+                                    <div className={cn(
+                                        "w-2 h-2 rounded-full",
+                                        emp.status === 'Active' ? "bg-status-approved" : "bg-status-rejected"
+                                    )} />
+                                    <span className={cn(
+                                        "text-xs font-bold",
+                                        emp.status === 'Active' ? "text-status-approved" : "text-status-rejected"
+                                    )}>
+                                        {emp.status}
+                                    </span>
+                                </div>
+                            </td>
+                            <td className="px-4 py-4">
+                                <div className="text-brand-text text-sm font-medium">{emp.joiningDate}</div>
+                            </td>
+                            <td className="px-4 py-4 text-right">
                                     <div className="flex justify-end gap-2 px-2">
                                         <button
                                             onClick={(e) => {

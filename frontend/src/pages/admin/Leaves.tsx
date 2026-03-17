@@ -307,26 +307,26 @@ const Leaves = () => {
 
                             {/* Content Table */}
                             {/* Content Table - Desktop */}
-                            <div className="hidden lg:block bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden overflow-x-auto no-scrollbar">
-                                <table className="w-full text-left border-collapse min-w-[1000px]">
+                            <div className="hidden lg:block bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden no-scrollbar">
+                                <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
-                                            <th className="px-8 py-5">Employee</th>
-                                            <th className="px-8 py-5">Type</th>
-                                            <th className="px-8 py-5">Duration</th>
-                                            <th className="px-8 py-5">Reason</th>
-                                            <th className="px-8 py-5">Status</th>
-                                            {isAdmin && <th className="px-8 py-5 text-right">Actions</th>}
+                                            <th className="px-4 py-5">Employee</th>
+                                            <th className="px-4 py-5">Type</th>
+                                            <th className="px-4 py-5">Duration</th>
+                                            <th className="px-4 py-5">Reason</th>
+                                            <th className="px-4 py-5">Status</th>
+                                            {isAdmin && <th className="px-4 py-5 text-right">Actions</th>}
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-brand-border">
                                         {Array.isArray(filteredLeaves) && filteredLeaves.map((leave) => (
                                             <tr key={leave.id} className="hover:bg-brand-bg/30 transition-colors group">
-                                                <td className="px-8 py-6 whitespace-nowrap">
+                                                <td className="px-4 py-6 whitespace-nowrap">
                                                     <div className="text-brand-text font-black text-sm">{leave.employeeName || leave.name || 'Unknown'}</div>
                                                     <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1 italic">Applied: {leave.appliedOn}</div>
                                                 </td>
-                                                <td className="px-8 py-6 whitespace-nowrap">
+                                                <td className="px-4 py-6 whitespace-nowrap">
                                                     <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm border ${leave.type === 'Sick Leave' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
                                                         leave.type === 'Casual Leave' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
                                                             'bg-amber-500/10 text-amber-600 border-amber-500/20'
@@ -334,28 +334,28 @@ const Leaves = () => {
                                                         {leave.type}
                                                     </span>
                                                 </td>
-                                                <td className="px-8 py-6 whitespace-nowrap text-brand-text font-black text-xs">
-                                                    <div className="flex items-center gap-2">
+                                                <td className="px-4 py-6 whitespace-nowrap text-brand-text font-black text-[10px]">
+                                                    <div className="flex items-center gap-1">
                                                         <CalendarIcon className="w-3.5 h-3.5 text-brand-muted" />
                                                         {leave.startDate} <ChevronRight className="w-3 h-3 text-brand-muted opacity-50" /> {leave.endDate}
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-6 text-brand-muted font-medium text-xs max-w-xs truncate italic" title={leave.reason}>
+                                                <td className="px-4 py-6 text-brand-muted font-medium text-xs max-w-[150px] truncate italic" title={leave.reason}>
                                                     "{leave.reason}"
                                                 </td>
-                                                <td className="px-8 py-6 whitespace-nowrap">
-                                                    <span className={`flex items-center gap-2.5 text-[10px] font-black uppercase tracking-[0.2em] px-4 py-2 rounded-2xl border ${leave.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                                <td className="px-4 py-6 whitespace-nowrap">
+                                                    <span className={`flex items-center gap-2 text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-2xl border ${leave.status === 'Approved' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
                                                         leave.status === 'Rejected' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
                                                             'bg-amber-500/10 text-amber-600 border-amber-500/20'
                                                         }`}>
-                                                        <span className={`w-2 h-2 rounded-full animate-pulse ${leave.status === 'Approved' ? 'bg-emerald-500' :
+                                                        <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${leave.status === 'Approved' ? 'bg-emerald-500' :
                                                             leave.status === 'Rejected' ? 'bg-rose-500' :
                                                                 'bg-amber-500'
                                                             }`}></span>
                                                         {leave.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-8 py-6 whitespace-nowrap text-right">
+                                                <td className="px-4 py-6 whitespace-nowrap text-right">
                                                     {isAdmin && leave.status === 'Pending' && (
                                                         <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
                                                             <button
@@ -448,34 +448,34 @@ const Leaves = () => {
                                     <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1">Summary of remaining leave entitlements across the organization.</p>
                                 </div>
                             )}
-                            <div className="bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden overflow-x-auto no-scrollbar">
-                                <table className="w-full text-left border-collapse min-w-[800px]">
+                            <div className="bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden no-scrollbar">
+                                <table className="w-full text-left border-collapse">
                                     <thead className="bg-brand-bg/50">
                                         <tr>
-                                            <th className="px-8 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Employee</th>
-                                            <th className="px-8 py-5 text-center text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Medical</th>
-                                            <th className="px-8 py-5 text-center text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Personal</th>
-                                            <th className="px-8 py-5 text-center text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Privilege</th>
-                                            <th className="px-8 py-5 text-center text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Remote (WFH)</th>
+                                            <th className="px-4 py-5 text-left text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Employee</th>
+                                            <th className="px-4 py-5 text-center text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Medical</th>
+                                            <th className="px-4 py-5 text-center text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Personal</th>
+                                            <th className="px-4 py-5 text-center text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Privilege</th>
+                                            <th className="px-4 py-5 text-center text-[10px] font-black text-brand-muted uppercase tracking-[0.2em]">Remote (WFH)</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-brand-border">
                                         {Array.isArray(visibleEmployees) && visibleEmployees.map((emp) => (
                                             <tr key={emp.id} className="hover:bg-brand-bg/30 transition-colors">
-                                                <td className="px-8 py-6 whitespace-nowrap">
+                                                <td className="px-4 py-6 whitespace-nowrap">
                                                     <div className="text-brand-text font-black text-sm">{emp.name}</div>
                                                     <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1 italic">{emp.department}</div>
                                                 </td>
-                                                <td className="px-8 py-6 text-center">
+                                                <td className="px-4 py-6 text-center">
                                                     <span className="bg-rose-500/10 text-rose-600 px-4 py-1.5 rounded-xl font-black text-sm">{emp.leaveBalance?.sick ?? 12}</span>
                                                 </td>
-                                                <td className="px-8 py-6 text-center">
+                                                <td className="px-4 py-6 text-center">
                                                     <span className="bg-indigo-500/10 text-indigo-600 px-4 py-1.5 rounded-xl font-black text-sm">{emp.leaveBalance?.casual ?? 12}</span>
                                                 </td>
-                                                <td className="px-8 py-6 text-center">
+                                                <td className="px-4 py-6 text-center">
                                                     <span className="bg-emerald-500/10 text-emerald-600 px-4 py-1.5 rounded-xl font-black text-sm">{emp.leaveBalance?.paid ?? 15}</span>
                                                 </td>
-                                                <td className="px-8 py-6 text-center">
+                                                <td className="px-4 py-6 text-center">
                                                     <span className="bg-amber-500/10 text-amber-600 px-4 py-1.5 rounded-xl font-black text-sm">{emp.leaveBalance?.wfh ?? 10}</span>
                                                 </td>
                                             </tr>
