@@ -294,7 +294,7 @@ const Employees = () => {
                                 </div>
                                 <div>
                                     <div className="text-brand-text font-black text-base">{emp.name}</div>
-                                    <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest">{emp.department} • {emp.role}</div>
+                                    <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest">{emp.department}</div>
                                 </div>
                             </div>
                             <div className={cn(

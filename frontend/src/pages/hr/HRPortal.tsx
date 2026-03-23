@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Users, Calendar, FileText, Bell,
     LogOut, Menu, X, Building2, DollarSign, Shield,
-    Search, Plus, XCircle, CheckCircle, Eye,
+    Search, Plus, XCircle, CheckCircle,
     Mail, Phone,
 } from 'lucide-react';
 import api from '../../api';
@@ -120,39 +120,44 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                     className="w-full pl-10 pr-4 py-2.5 bg-brand-surface border border-brand-border rounded-xl text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/30 transition-all"
                 />
             </div>
-            <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-brand-bg border-b border-brand-border">
-                        <tr>{['Employee', 'Department', 'Role', 'Status', ''].map(h => (
-                            <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
-                        ))}</tr>
-                    </thead>
-                    <tbody className="divide-y divide-brand-border">
-                        {filtered.map((emp: any) => (
-                            <tr key={emp._id || emp.id} className="hover:bg-brand-bg/50 transition-colors">
-                                <td className="px-4 py-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-brand-primary/10 flex items-center justify-center text-brand-primary text-xs font-bold">{emp.name?.charAt(0)}</div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-brand-text">{emp.name}</p>
-                                            <p className="text-xs text-brand-muted">{emp.email}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td className="px-4 py-3 text-sm text-brand-text">{emp.department}</td>
-                                <td className="px-4 py-3 text-sm text-brand-muted">{emp.role}</td>
-                                <td className="px-4 py-3"><Badge status={emp.status || 'Active'} /></td>
-                                <td className="px-4 py-3">
-                                    <button onClick={() => setProfile(emp)} className="p-1.5 hover:bg-brand-primary/10 rounded-lg text-brand-muted hover:text-brand-primary transition-colors">
-                                        <Eye className="w-4 h-4" />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                {!filtered.length && <p className="px-6 py-8 text-center text-brand-muted text-sm">No employees found.</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filtered.map((emp: any) => (
+                    <div
+                        key={emp._id || emp.id}
+                        onClick={() => setProfile(emp)}
+                        className="bg-brand-surface border border-brand-border rounded-[2rem] p-6 hover:border-brand-primary/40 transition-all cursor-pointer group hover:shadow-xl hover:shadow-brand-primary/5 active:scale-[0.98]"
+                    >
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-brand-primary/20 group-hover:scale-110 transition-transform">
+                                {emp.name?.charAt(0)}
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="font-black text-brand-text text-lg truncate group-hover:text-brand-primary transition-colors">{emp.name}</h3>
+                                <p className="text-xs text-brand-muted font-bold uppercase tracking-widest truncate">{emp.department}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3 pt-6 border-t border-brand-border border-dashed">
+                            <div className="flex items-center gap-3 text-brand-muted text-sm font-medium">
+                                <Mail className="w-4 h-4 text-brand-primary/70" />
+                                <span className="truncate">{emp.email}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3 text-brand-muted text-sm font-medium">
+                                    <Phone className="w-4 h-4 text-brand-primary/70" />
+                                    <span>{emp.phone || '—'}</span>
+                                </div>
+                                <Badge status={emp.status || 'Active'} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
+            {!filtered.length && (
+                <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] py-20 text-center">
+                    <p className="text-brand-muted text-sm font-medium">No employees found matching your search.</p>
+                </div>
+            )}
 
             {/* Profile modal */}
             {profile && (
@@ -612,14 +617,14 @@ const HRPortal: React.FC = () => {
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
+                <nav className="flex-1 overflow-y-auto p-3 space-y-2">
                     {NAV.map(({ id, icon: Icon, label }) => (
                         <button key={id} onClick={() => { setSection(id); setSidebar(false); }}
                             className={cn(
-                                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium',
+                                'w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all text-base font-medium',
                                 section === id ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-muted hover:bg-brand-bg hover:text-brand-text'
                             )}>
-                            <Icon className="w-4 h-4 flex-shrink-0" />
+                            <Icon className="w-5 h-5 flex-shrink-0" />
                             {label}
                         </button>
                     ))}

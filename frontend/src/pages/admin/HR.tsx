@@ -218,9 +218,7 @@ const HR: React.FC = () => {
                                     <div className="min-w-0">
                                         <p className="font-bold text-brand-text group-hover:text-brand-primary transition-colors truncate text-sm sm:text-base">{contact.name}</p>
                                         <div className="flex items-center gap-2 mt-0.5">
-                                            <p className="text-xs text-brand-primary font-semibold">{contact.role}</p>
-                                            <span className="w-1 h-1 rounded-full bg-brand-border hidden sm:block"></span>
-                                            <p className="text-xs text-brand-muted truncate hidden sm:block">{contact.department}</p>
+                                            <p className="text-xs text-brand-muted truncate">{contact.department}</p>
                                         </div>
                                     </div>
                                 </div>
