@@ -13,6 +13,9 @@ import Settings from './pages/admin/Settings';
 import Reports from './pages/admin/Reports';
 import Announcements from './pages/admin/Announcements';
 import AdminPolicies from './pages/admin/AdminPolicies';
+import HR from './pages/admin/HR';
+import HRDashboard from './pages/HRDashboard';
+import HRPortal from './pages/hr/HRPortal';
 import EmployeeHome from './pages/employee/EmployeeHome';
 import EmployeeTasks from './pages/employee/EmployeeTasks';
 import EmployeeProfile from './pages/employee/EmployeeProfile';
@@ -46,6 +49,8 @@ function App() {
             <Route path="announcements" element={<Announcements />} />
             <Route path="policies" element={<AdminPolicies />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="hr" element={<HR />} />
+            <Route path="hr-dashboard" element={<HRDashboard />} />
             <Route path="settings" element={<Settings />} />
           </Route>
 
@@ -62,6 +67,9 @@ function App() {
             <Route path="leaves" element={<Leaves />} />
             <Route path="attendance" element={<EmployeeAttendance />} />
           </Route>
+
+          {/* HR Routes */}
+          <Route path="/hr-dashboard" element={<ProtectedRoute allowedRoles={['hr', 'admin']}><HRPortal /></ProtectedRoute>} />
 
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>

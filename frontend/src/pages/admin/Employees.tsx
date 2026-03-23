@@ -51,10 +51,6 @@ const Employees = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    useEffect(() => {
-        fetchEmployees();
-    }, []);
-
     const fetchEmployees = async () => {
         try {
             const response = await api.get('/api/employees');
@@ -64,6 +60,10 @@ const Employees = () => {
             console.error('Error fetching employees:', error);
         }
     };
+
+    useEffect(() => {
+        fetchEmployees();
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;

@@ -39,12 +39,6 @@ const EmployeeDocuments = () => {
     const userStr = localStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
 
-    useEffect(() => {
-        if (user?.id) {
-            fetchDocuments();
-        }
-    }, [user?.id]);
-
     const fetchDocuments = async () => {
         if (!user?.id) return;
         try {
@@ -68,6 +62,12 @@ const EmployeeDocuments = () => {
             console.error("Error fetching documents:", error);
         }
     };
+
+    useEffect(() => {
+        if (user?.id) {
+            fetchDocuments();
+        }
+    }, [user?.id]);
 
     const handleOpenUpload = (docType: string) => {
         setSelectedDocType(docType);

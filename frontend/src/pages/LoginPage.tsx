@@ -49,6 +49,8 @@ const LoginPage: React.FC = () => {
 
                 if (data.user.role === 'admin') {
                     navigate('/admin-dashboard');
+                } else if (data.user.role === 'hr') {
+                    navigate('/hr-dashboard');
                 } else {
                     navigate('/employee-dashboard');
                 }
@@ -61,7 +63,6 @@ const LoginPage: React.FC = () => {
             console.error("[LOGIN DEBUG] Error message:", err.message);
             console.error("[LOGIN DEBUG] Full error object:", err);
             setError(`Network Error: ${err.message || 'Check connection to backend'}`);
-            alert(`Login Network Error!\nTarget: ${API_URL}/api/login\nError: ${err.message}`);
         }
     };
 

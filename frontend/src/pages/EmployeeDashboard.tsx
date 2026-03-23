@@ -99,29 +99,6 @@ const EmployeeDashboard = () => {
     });
 
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
-
-        console.log(`[DASHBOARD] Mount check - User: ${!!storedUser}, Token: ${!!token}`);
-
-        if (storedUser && token) {
-            try {
-                const parsedUser = JSON.parse(storedUser);
-                setUser(parsedUser);
-                fetchTodayAttendance(parsedUser.id);
-            } catch (err) {
-                console.error("[DASHBOARD] Failed to parse user data", err);
-                navigate('/login');
-            }
-        } else {
-            console.warn("[DASHBOARD] missing credentials, redirecting to login");
-            navigate('/login');
-        }
-    }, [navigate]);
-
-
-
     const fetchTodayAttendance = async (employeeId: string) => {
         try {
             const today = new Date().toISOString().split('T')[0];
@@ -146,6 +123,27 @@ const EmployeeDashboard = () => {
             console.error("Error fetching attendance:", error);
         }
     };
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('token');
+
+        console.log(`[DASHBOARD] Mount check - User: ${!!storedUser}, Token: ${!!token}`);
+
+        if (storedUser && token) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                setUser(parsedUser);
+                fetchTodayAttendance(parsedUser.id);
+            } catch (err) {
+                console.error("[DASHBOARD] Failed to parse user data", err);
+                navigate('/login');
+            }
+        } else {
+            console.warn("[DASHBOARD] missing credentials, redirecting to login");
+            navigate('/login');
+        }
+    }, [navigate]);
 
     const handleCheckIn = () => {
         setIsLoginModalOpen(true);

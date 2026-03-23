@@ -49,10 +49,6 @@ const Payroll = () => {
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [processData, setProcessData] = useState<{ [key: string]: { bonus: number, deductions: number } }>({});
 
-    useEffect(() => {
-        fetchData();
-    }, [activeTab]);
-
     const fetchData = async () => {
         try {
             const [historyRes, empRes] = await Promise.all([
@@ -76,6 +72,10 @@ const Payroll = () => {
             console.error("Error fetching data:", error);
         }
     };
+
+    useEffect(() => {
+        fetchData();
+    }, [activeTab]);
 
     const handleSalaryUpdate = async (empId: string, field: keyof SalaryStructure, value: string) => {
         const emp = employees.find(e => e.id === empId);

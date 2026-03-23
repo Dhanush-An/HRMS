@@ -33,10 +33,6 @@ const Performance = () => {
         rating: 5
     });
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
     const fetchData = async () => {
         try {
             const [perfRes, empRes] = await Promise.all([
@@ -49,6 +45,10 @@ const Performance = () => {
             console.error("Error fetching data:", error);
         }
     };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const handleReviewClick = (emp: Employee) => {
         setSelectedEmployee(emp);

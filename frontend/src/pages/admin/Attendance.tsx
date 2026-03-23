@@ -96,10 +96,6 @@ const Attendance = () => {
         lng: 0
     });
 
-    useEffect(() => {
-        fetchData();
-    }, [selectedDate]);
-
     const fetchData = async () => {
         try {
             const [empRes, attRes] = await Promise.all([
@@ -116,6 +112,10 @@ const Attendance = () => {
             console.error("Error fetching data:", error);
         }
     };
+
+    useEffect(() => {
+        fetchData();
+    }, [selectedDate]);
 
     const getAttendanceStatus = (empId: string) => {
         const emp = employees.find(e => e.id === empId);

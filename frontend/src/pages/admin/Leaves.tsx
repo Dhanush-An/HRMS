@@ -72,16 +72,6 @@ const Leaves = () => {
 
     const isAdmin = user?.role?.toLowerCase().includes('admin');
 
-    useEffect(() => {
-        if (user) {
-            // Pre-fill for non-admin
-            if (!isAdmin) {
-                setFormData((prev: any) => ({ ...prev, employeeId: user.id }));
-            }
-        }
-        fetchData();
-    }, [user, isAdmin]);
-
     const fetchData = async () => {
         try {
             const [leavesRes, empRes] = await Promise.all([
@@ -95,6 +85,16 @@ const Leaves = () => {
             console.error("Error fetching data:", error);
         }
     };
+
+    useEffect(() => {
+        if (user) {
+            // Pre-fill for non-admin
+            if (!isAdmin) {
+                setFormData((prev: any) => ({ ...prev, employeeId: user.id }));
+            }
+        }
+        fetchData();
+    }, [user, isAdmin]);
 
     const handleApplyLeave = async (e: React.FormEvent) => {
         e.preventDefault();

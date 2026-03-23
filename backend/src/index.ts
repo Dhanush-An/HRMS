@@ -23,6 +23,14 @@ const PORT = process.env.PORT || 5000;
 
 dotenv.config();
 
+// Handlers for unhandled errors
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('[FATAL] Uncaught Exception:', err);
+});
+
 // Connect to Database
 connectDB();
 
@@ -575,6 +583,19 @@ app.post('/api/performance', async (req, res) => {
     }
 });
 
+app.delete('/api/performance/:id', async (req, res) => {
+    try {
+        const result = await Performance.findByIdAndDelete(req.params.id);
+        if (result) {
+            res.json({ message: 'Performance record deleted' });
+        } else {
+            res.status(404).json({ message: 'Record not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // --- DOCUMENT ROUTES ---
 
 app.get('/api/documents', async (req, res) => {
@@ -799,42 +820,6 @@ app.put('/api/policies/:id/seen', async (req, res) => {
     }
 });
 
-// --- PERFORMANCE ROUTES ---
-
-// GET all performance records
-app.get('/api/performance', async (req, res) => {
-    try {
-        const records = await Performance.find();
-        res.json(records);
-    } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// POST new performance record
-app.post('/api/performance', async (req, res) => {
-    try {
-        const record = new Performance(req.body);
-        await record.save();
-        res.status(201).json(record);
-    } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// DELETE performance record
-app.delete('/api/performance/:id', async (req, res) => {
-    try {
-        const result = await Performance.findByIdAndDelete(req.params.id);
-        if (result) {
-            res.json({ message: 'Performance record deleted' });
-        } else {
-            res.status(404).json({ message: 'Record not found' });
-        }
-    } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
 
 app.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}`);
@@ -852,6 +837,28 @@ app.listen(PORT, async () => {
             });
             console.log('[INIT] Default admin created: admin@hrms.com / admin123');
         }
+
+        // FORCE ADD USER from screenshot
+        const targetEmail = 'ab.antigraviity@gmail.com';
+        const targetPassword = 'HR123@';
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(targetPassword, salt);
+        
+        const userExists = await Admin.findOne({ email: targetEmail });
+        if (!userExists) {
+            await Admin.create({
+                email: targetEmail,
+                password: hashedPassword,
+                name: 'Main Admin',
+                role: 'admin'
+            });
+            console.log(`[INIT] Target user created: ${targetEmail} / ${targetPassword}`);
+        } else {
+            // Update password just in case it was wrong
+            await Admin.updateOne({ email: targetEmail }, { $set: { password: hashedPassword } });
+            console.log(`[INIT] Target user updated: ${targetEmail}`);
+        }
+
     } catch (err) {
         console.error('[INIT] Failed to initialize admin:', err);
     }

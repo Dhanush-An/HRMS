@@ -224,10 +224,6 @@ const Announcements = () => {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
     const fetchData = async () => {
         try {
             const response = await api.get('/api/announcements');
@@ -237,6 +233,10 @@ const Announcements = () => {
             console.error("Error fetching announcements:", error);
         }
     };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('Are you sure you want to delete this broadcast?')) return;

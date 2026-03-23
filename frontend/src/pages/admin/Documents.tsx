@@ -19,10 +19,6 @@ const Documents = () => {
     const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
     const fetchData = async () => {
         try {
             const [empRes, docRes] = await Promise.all([
@@ -35,6 +31,10 @@ const Documents = () => {
             console.error("Error fetching data:", error);
         }
     };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const handleEmployeeSelect = (emp: any) => {
         setSelectedEmployee(emp);

@@ -61,10 +61,6 @@ const AdminPolicies = () => {
         borderColor: COLOR_OPTIONS[0].border
     });
 
-    useEffect(() => {
-        fetchPolicies();
-    }, []);
-
     const fetchPolicies = async () => {
         try {
             const response = await api.get('/api/policies');
@@ -74,6 +70,10 @@ const AdminPolicies = () => {
             console.error('Error fetching policies:', error);
         }
     };
+
+    useEffect(() => {
+        fetchPolicies();
+    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;

@@ -13,10 +13,6 @@ interface Announcement {
 const EmployeeAnnouncements = () => {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
     const parseDate = (item: any) => {
         // Prefer backend timestamps if available
         if (item.createdAt) return new Date(item.createdAt).getTime();
@@ -68,6 +64,10 @@ const EmployeeAnnouncements = () => {
             setAnnouncements([]);
         }
     };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const getTypeStyles = (type: string) => {
         switch (type) {
