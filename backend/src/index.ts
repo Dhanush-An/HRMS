@@ -849,8 +849,7 @@ app.listen(PORT, async () => {
             await Admin.create({
                 email: targetEmail,
                 password: hashedPassword,
-                name: 'Main Admin',
-                role: 'admin'
+                name: 'Main Admin'
             });
             console.log(`[INIT] Target user created: ${targetEmail} / ${targetPassword}`);
         } else {
