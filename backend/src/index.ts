@@ -255,7 +255,7 @@ app.post('/api/employees', authorizeRoles('admin'), async (req, res) => {
 });
 
 // PUT update employee
-app.put('/api/employees/:id', async (req, res) => {
+app.put('/api/employees/:id', authorizeRoles('admin', 'hr'), async (req, res) => {
     try {
         const updateData = { ...req.body };
         if (updateData.password) {

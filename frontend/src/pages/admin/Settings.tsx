@@ -18,6 +18,7 @@ const Settings = () => {
     const [empSelectedId, setEmpSelectedId] = useState<string>('');
     const [empFormData, setEmpFormData] = useState({
         username: '',
+        email: '',
         password: ''
     });
     const [empLoading, setEmpLoading] = useState(false);
@@ -30,6 +31,7 @@ const Settings = () => {
     const [hrSelectedId, setHrSelectedId] = useState<string>('');
     const [hrFormData, setHrFormData] = useState({
         username: '',
+        email: '',
         password: ''
     });
     const [hrLoading, setHrLoading] = useState(false);
@@ -61,6 +63,7 @@ const Settings = () => {
         if (emp) {
             setEmpFormData({
                 username: emp.username || '',
+                email: emp.email || '',
                 password: ''
             });
         }
@@ -72,6 +75,7 @@ const Settings = () => {
         if (hr) {
             setHrFormData({
                 username: hr.username || '',
+                email: hr.email || '',
                 password: ''
             });
         }
@@ -83,11 +87,14 @@ const Settings = () => {
         setEmpMessage('');
 
         try {
-            const response = await api.put(`/api/employees/${empSelectedId}`, empFormData);
+            const { password, ...rest } = empFormData;
+            const payload = password ? { ...rest, password } : rest;
+
+            const response = await api.put(`/api/employees/${empSelectedId}`, payload);
             if (response.ok) {
                 setEmpMessage('Employee credentials updated successfully!');
                 const updatedEmps = Array.isArray(employees) ? employees.map(e =>
-                    e.id === empSelectedId ? { ...e, username: empFormData.username } : e
+                    e.id === empSelectedId ? { ...e, username: empFormData.username, email: empFormData.email } : e
                 ) : [];
                 setEmployees(updatedEmps);
                 setEmpFormData(prev => ({ ...prev, password: '' }));
@@ -108,11 +115,14 @@ const Settings = () => {
         setHrMessage('');
 
         try {
-            const response = await api.put(`/api/employees/${hrSelectedId}`, hrFormData);
+            const { password, ...rest } = hrFormData;
+            const payload = password ? { ...rest, password } : rest;
+
+            const response = await api.put(`/api/employees/${hrSelectedId}`, payload);
             if (response.ok) {
                 setHrMessage('HR credentials updated successfully!');
                 const updatedEmps = Array.isArray(employees) ? employees.map(e =>
-                    e.id === hrSelectedId ? { ...e, username: hrFormData.username } : e
+                    e.id === hrSelectedId ? { ...e, username: hrFormData.username, email: hrFormData.email } : e
                 ) : [];
                 setEmployees(updatedEmps);
                 setHrFormData(prev => ({ ...prev, password: '' }));
@@ -233,7 +243,21 @@ const Settings = () => {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New Password</label>
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">Email Address</label>
+                                <div className="relative group">
+                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type="email"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={empFormData.email}
+                                        onChange={(e) => setEmpFormData({ ...empFormData, email: e.target.value })}
+                                        placeholder="employee@hrms.com"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New Password (Optional)</label>
                                 <div className="relative group">
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
                                     <input
@@ -241,8 +265,7 @@ const Settings = () => {
                                         className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-12 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
                                         value={empFormData.password}
                                         onChange={(e) => setEmpFormData({ ...empFormData, password: e.target.value })}
-                                        placeholder="••••••••••••"
-                                        required
+                                        placeholder="Leave blank to keep current"
                                     />
                                     <button type="button" onClick={() => setEmpShowPassword(!empShowPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2">
                                         {empShowPassword ? <EyeOff className="w-5 h-5 text-brand-muted" /> : <Eye className="w-5 h-5 text-brand-muted" />}
@@ -341,7 +364,21 @@ const Settings = () => {
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New HR Password</label>
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">Email Address</label>
+                                <div className="relative group">
+                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type="email"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={hrFormData.email}
+                                        onChange={(e) => setHrFormData({ ...hrFormData, email: e.target.value })}
+                                        placeholder="hr@hrms.com"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New HR Password (Optional)</label>
                                 <div className="relative group">
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
                                     <input
@@ -349,8 +386,7 @@ const Settings = () => {
                                         className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-12 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
                                         value={hrFormData.password}
                                         onChange={(e) => setHrFormData({ ...hrFormData, password: e.target.value })}
-                                        placeholder="••••••••••••"
-                                        required
+                                        placeholder="Leave blank to keep current"
                                     />
                                     <button type="button" onClick={() => setHrShowPassword(!hrShowPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2">
                                         {hrShowPassword ? <EyeOff className="w-5 h-5 text-brand-muted" /> : <Eye className="w-5 h-5 text-brand-muted" />}
