@@ -112,6 +112,20 @@ app.get('/', (req, res) => {
     res.send('Antigraviity HRMS API is running...');
 });
 
+// --- DEV-ONLY DEBUG LOGIN (bypasses DB, for frontend auth testing) ---
+app.post('/api/debug-login', (req, res) => {
+    const { email, role } = req.body;
+    const testUser = {
+        id: 'EMP001',
+        name: 'Debug Employee',
+        role: (role || 'employee').toLowerCase(),
+        email: email || 'debug@hrms.com',
+        department: 'Engineering'
+    };
+    const token = jwt.sign(testUser, JWT_SECRET, { expiresIn: '8h' });
+    res.json({ success: true, token, user: testUser });
+});
+
 // --- AUTH ROUTES (PUBLIC) ---
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
