@@ -277,7 +277,7 @@ const HR: React.FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Employee ID</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">HR ID</label>
                                     <input
                                         name="id"
                                         value={formData.id}
@@ -402,7 +402,7 @@ const HR: React.FC = () => {
                                     type="submit"
                                     className="flex-1 py-4 rounded-2xl bg-brand-primary text-white font-black hover:opacity-90 shadow-lg shadow-brand-primary/20 transition-all active:scale-95"
                                 >
-                                    {isEditing ? 'Save Changes' : 'Save Employee'}
+                                    {isEditing ? 'Save Changes' : 'Save Human Resource'}
                                 </button>
                             </div>
                         </form>
