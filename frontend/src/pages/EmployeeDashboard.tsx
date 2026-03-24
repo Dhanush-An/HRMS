@@ -140,8 +140,7 @@ const EmployeeDashboard = () => {
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
-
-        console.log(`[DASHBOARD] Mount check - User: ${!!storedUser}, Token: ${!!token}`);
+        console.log(`[EMPLOYEE DASHBOARD] Mounted. User in state: ${!!user}, User in localStorage: ${!!storedUser}, Token: ${!!token}`);
 
         if (storedUser && token) {
             try {
@@ -308,7 +307,12 @@ const EmployeeDashboard = () => {
         { icon: Book, label: 'Company Policies', path: '/employee-dashboard/policies' },
     ];
 
-    if (!user) return <div className="h-screen bg-brand-bg text-brand-text flex items-center justify-center font-bold">Loading...</div>;
+    if (!user || Object.keys(user).length === 0) {
+        console.warn("[EMPLOYEE DASHBOARD] No user data found. Showing loading state.");
+        return <div className="h-screen bg-brand-bg text-brand-text flex items-center justify-center font-bold">Loading Employee Data...</div>;
+    }
+
+    console.log("[EMPLOYEE DASHBOARD] Rendering dashboard for user:", user.name);
 
     return (
         <div className="h-screen bg-brand-bg text-brand-text flex overflow-hidden transition-colors duration-300 relative">

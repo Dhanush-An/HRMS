@@ -103,8 +103,15 @@ const EmployeeHome = () => {
                 const employees = await res.json();
                 const updatedUser = employees.find((e: any) => e.id === userId || e.employeeId === userId);
                 if (updatedUser) {
+                    console.log("[EMPLOYEE HOME] Found live user data for stats calculation");
                     fetchStats(userId, updatedUser.leaveBalance);
+                } else {
+                    console.warn(`[EMPLOYEE HOME] User ${userId} not found in employee list for live data sync`);
+                    // Fallback to local user data for stats if possible
+                    fetchStats(userId, currentUser?.leaveBalance);
                 }
+            } else {
+                console.warn("[EMPLOYEE HOME] Failed to fetch employee list for live data sync");
             }
         } catch (error) {
             console.error("Error fetching live user data:", error);
@@ -152,12 +159,19 @@ const EmployeeHome = () => {
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            setCurrentUser(parsedUser);
-            // Fetch latest user data to get live balances
-            fetchLatestUser(parsedUser.id);
-            // Fetch announcements and policies
-            fetchNotifications(parsedUser.id);
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                console.log("[EMPLOYEE HOME] Dashboard initialized for:", parsedUser.name);
+                setCurrentUser(parsedUser);
+                // Fetch latest user data to get live balances
+                fetchLatestUser(parsedUser.id);
+                // Fetch announcements and policies
+                fetchNotifications(parsedUser.id);
+            } catch (err) {
+                console.error("[EMPLOYEE HOME] Error parsing user data from localStorage", err);
+            }
+        } else {
+            console.warn("[EMPLOYEE HOME] No user data in localStorage on mount");
         }
     }, []);
 
