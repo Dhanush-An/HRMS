@@ -150,13 +150,11 @@ const EmployeeDashboard = () => {
                 fetchTodayAttendance(parsedUser.id);
             } catch (err) {
                 console.error("[DASHBOARD] Failed to parse user data", err);
-                navigate('/login');
+                // ProtectedRoute will handle redirect if token is invalid
             }
-        } else {
-            console.warn("[DASHBOARD] missing credentials, redirecting to login");
-            navigate('/login');
         }
-    }, [navigate]);
+        // ProtectedRoute handles auth guard — no need to navigate here
+    }, []); // Empty deps: only run once on mount
 
     const handleCheckIn = () => {
         setIsLoginModalOpen(true);
