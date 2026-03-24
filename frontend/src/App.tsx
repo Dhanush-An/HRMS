@@ -55,7 +55,7 @@ function App() {
           </Route>
 
           {/* Employee Routes */}
-          <Route path="/employee-dashboard" element={<ProtectedRoute allowedRoles={['employee']}><EmployeeDashboard /></ProtectedRoute>}>
+          <Route path="/employee-dashboard" element={<ProtectedRoute allowedRoles={['employee', 'staff']}><EmployeeDashboard /></ProtectedRoute>}>
             <Route index element={<EmployeeHome />} />
             <Route path="tasks" element={<EmployeeTasks />} />
             <Route path="profile" element={<EmployeeProfile />} />

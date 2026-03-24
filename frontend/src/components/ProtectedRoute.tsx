@@ -10,6 +10,7 @@ const ROLE_HOME: Record<string, string> = {
     admin: '/admin-dashboard',
     hr: '/hr-dashboard',
     employee: '/employee-dashboard',
+    staff: '/employee-dashboard',
 };
 
 const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
@@ -45,6 +46,9 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
         
         if (home) {
             return <Navigate to={home} replace />;
+        } else if (role !== 'admin' && role !== 'hr') {
+            // New fallback: Any role that isn't admin or hr can access employee dashboard
+            return <Navigate to="/employee-dashboard" replace />;
         } else {
             // Fallback for unknown roles: clear session and go to login to avoid loops
             console.error(`[AUTH] Unknown role: ${role}. Clearing session.`);
