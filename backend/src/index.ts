@@ -17,6 +17,9 @@ import Policy from './models/Policy';
 import DocumentModel from './models/Document';
 import Admin from './models/Admin';
 import multer from 'multer';
+import dns from 'dns';
+
+dns.setServers(["1.1.1.1","8.8.8.8"])
 
 const app = express();
 const PORT = process.env.PORT || 5000;
