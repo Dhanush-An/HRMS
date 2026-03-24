@@ -143,11 +143,13 @@ const Employees = () => {
             alert(`Error saving employee: ${error.message || 'Unknown error'}`);
         }
     };
-    const filteredEmployees = employees.filter(emp =>
-        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        emp.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        emp.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredEmployees = employees
+        .filter(emp => emp.role !== 'hr' && emp.department !== 'Human Resources')
+        .filter(emp =>
+            emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            emp.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            emp.email.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
 
     return (

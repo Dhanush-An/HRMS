@@ -98,11 +98,13 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
     const [q, setQ] = useState('');
     const [profile, setProfile] = useState<any>(null);
 
-    const filtered = employees.filter(e =>
-        e.name?.toLowerCase().includes(q.toLowerCase()) ||
-        e.email?.toLowerCase().includes(q.toLowerCase()) ||
-        e.department?.toLowerCase().includes(q.toLowerCase())
-    );
+    const filtered = employees
+        .filter(e => e.role !== 'hr' && e.department !== 'Human Resources')
+        .filter(e =>
+            e.name?.toLowerCase().includes(q.toLowerCase()) ||
+            e.email?.toLowerCase().includes(q.toLowerCase()) ||
+            e.department?.toLowerCase().includes(q.toLowerCase())
+        );
 
     return (
         <div className="space-y-5">
