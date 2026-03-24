@@ -2,7 +2,10 @@ import mongoose from "mongoose";
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI as string);
+    const mongoURI = process.env.MONGO_URI || '';
+    const maskedURI = mongoURI.replace(/:([^@]+)@/, ':******@');
+    console.log(`[DEBUG] 🔌 Connecting to MongoDB: ${maskedURI}`);
+    await mongoose.connect(mongoURI);
     console.log("✅ MongoDB Connected");
   } catch (error: any) {
     console.error("[ERROR] ❌ MongoDB connection error detail:");
