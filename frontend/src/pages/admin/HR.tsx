@@ -14,6 +14,7 @@ import {
     Eye,
     EyeOff,
     Edit2,
+    Trash2,
 } from 'lucide-react';
 import api from '../../api';
 
@@ -140,6 +141,21 @@ const HR: React.FC = () => {
         setIsModalOpen(true);
     };
 
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this HR member?')) return;
+        try {
+            const res = await api.delete(`/api/employees/${id}`);
+            if (res.ok) {
+                fetchHREmployees();
+            } else {
+                const data = await res.json();
+                alert(data.message || 'Error deleting');
+            }
+        } catch (err: any) {
+            alert(`Error deleting: ${err.message}`);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -239,6 +255,13 @@ const HR: React.FC = () => {
                                     >
                                         <Edit2 className="w-3.5 h-3.5" />
                                         <span className="hidden sm:inline">Edit</span>
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDelete(contact.id); }}
+                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors flex-shrink-0"
+                                    >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <span className="hidden sm:inline">Delete</span>
                                     </button>
                                 </div>
                             </div>
