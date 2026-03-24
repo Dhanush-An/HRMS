@@ -15,9 +15,9 @@ if (result.error) {
 console.log('--- Environment Variables ---');
 console.log(`PORT: ${process.env.PORT}`);
 console.log(`JWT_SECRET: ${process.env.JWT_SECRET ? '******' : 'NOT DEFINED'}`);
-console.log(`MONGODB_URI: ${process.env.MONGODB_URI ? 'DEFINED' : 'NOT DEFINED'}`);
-if (process.env.MONGODB_URI) {
+console.log(`MONGO_URI: ${process.env.MONGO_URI ? 'DEFINED' : 'NOT DEFINED'}`);
+if (process.env.MONGO_URI) {
     // Mask password for safety
-    const maskedURI = process.env.MONGODB_URI.replace(/:([^@]+)@/, ':******@');
-    console.log(`MONGODB_URI (masked): ${maskedURI}`);
+    const maskedURI = process.env.MONGO_URI.replace(/:([^@]+)@/, ':******@');
+    console.log(`MONGO_URI (masked): ${maskedURI}`);
 }
