@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Users, Calendar, FileText, Bell,
     LogOut, X, Building2, DollarSign, Shield,
     Search, Plus, XCircle, CheckCircle,
-    Mail, Phone,
+    Mail, Phone, Edit2,
 } from 'lucide-react';
 import api from '../../api';
 import logo from '../../assets/antigraviity logo 2.jpg';
@@ -120,36 +120,58 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                     className="w-full pl-10 pr-4 py-2.5 bg-brand-surface border border-brand-border rounded-xl text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/30 transition-all"
                 />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="flex flex-col gap-4">
                 {filtered.map((emp: any) => (
                     <div
                         key={emp._id || emp.id}
                         onClick={() => setProfile(emp)}
-                        className="bg-brand-surface border border-brand-border rounded-[2rem] p-6 hover:border-brand-primary/40 transition-all cursor-pointer group hover:shadow-xl hover:shadow-brand-primary/5 active:scale-[0.98]"
+                        className="bg-[#1a1c2e] border border-brand-border/40 rounded-2xl p-5 hover:border-brand-primary/60 transition-all cursor-pointer group hover:bg-[#22253d] shadow-sm flex flex-col lg:flex-row lg:items-center gap-6"
                     >
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-brand-primary/20 group-hover:scale-110 transition-transform">
+                        {/* 1. Profile Section */}
+                        <div className="flex items-center gap-4 lg:w-1/4 min-w-[200px]">
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-lg font-black shadow-lg shadow-brand-primary/10 flex-shrink-0">
                                 {emp.name?.charAt(0)}
                             </div>
                             <div className="min-w-0">
-                                <h3 className="font-black text-brand-text text-lg truncate group-hover:text-brand-primary transition-colors">{emp.name}</h3>
-                                <p className="text-[10px] text-brand-muted font-bold uppercase tracking-widest -mt-1">{emp.employeeId || emp.id}</p>
-                                <p className="text-xs text-brand-muted font-bold uppercase tracking-widest truncate mt-1">{emp.department}</p>
+                                <h3 className="font-bold text-brand-text truncate group-hover:text-brand-primary transition-colors text-base">{emp.name}</h3>
+                                <p className="text-[11px] text-brand-muted font-bold uppercase tracking-wider mt-0.5">
+                                    {emp.role || 'Staff'} · {emp.department}
+                                </p>
                             </div>
                         </div>
 
-                        <div className="space-y-3 pt-6 border-t border-brand-border border-dashed">
-                            <div className="flex items-center gap-3 text-brand-muted text-sm font-medium">
+                        {/* 2. Contact Section */}
+                        <div className="flex flex-col sm:flex-row lg:flex-row gap-4 lg:flex-1">
+                            <div className="flex items-center gap-3 text-brand-muted text-[13px] font-medium min-w-[180px]">
                                 <Mail className="w-4 h-4 text-brand-primary/70" />
                                 <span className="truncate">{emp.email}</span>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3 text-brand-muted text-sm font-medium">
-                                    <Phone className="w-4 h-4 text-brand-primary/70" />
-                                    <span>{emp.phone || '—'}</span>
-                                </div>
+                            <div className="flex items-center gap-3 text-brand-muted text-[13px] font-medium min-w-[120px]">
+                                <Phone className="w-4 h-4 text-brand-primary/70" />
+                                <span>{emp.phone || '—'}</span>
+                            </div>
+                        </div>
+
+                        {/* 3. Status & Date Section */}
+                        <div className="flex items-center gap-8 lg:w-1/4">
+                            <div className="hidden sm:block">
+                                <p className="text-[10px] text-brand-muted uppercase tracking-[0.2em] font-black opacity-50 mb-1">Status</p>
                                 <Badge status={emp.status || 'Active'} />
                             </div>
+                            <div className="hidden sm:block">
+                                <p className="text-[10px] text-brand-muted uppercase tracking-[0.2em] font-black opacity-50 mb-1">Joined</p>
+                                <p className="text-[13px] text-brand-text font-bold">{emp.joiningDate || '—'}</p>
+                            </div>
+                        </div>
+
+                        {/* 4. Action Section */}
+                        <div className="flex items-center justify-end lg:ml-auto">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setProfile(emp); }}
+                                className="flex items-center gap-2 px-4 py-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-xl text-xs font-bold hover:bg-brand-primary hover:text-white transition-all shadow-sm"
+                            >
+                                <Edit2 className="w-3.5 h-3.5" /> Edit
+                            </button>
                         </div>
                     </div>
                 ))}
