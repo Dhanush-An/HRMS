@@ -8,20 +8,37 @@ interface Employee {
     email: string;
     username?: string;
     role: string;
+    department?: string;
 }
 
 const Settings = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
-    const [selectedEmp, setSelectedEmp] = useState<string>('');
-    const [formData, setFormData] = useState({
+    
+    // Employee Section State
+    const [empSelectedId, setEmpSelectedId] = useState<string>('');
+    const [empFormData, setEmpFormData] = useState({
         username: '',
         password: ''
     });
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showResults, setShowResults] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const [empLoading, setEmpLoading] = useState(false);
+    const [empMessage, setEmpMessage] = useState('');
+    const [empSearchQuery, setEmpSearchQuery] = useState('');
+    const [empShowResults, setEmpShowResults] = useState(false);
+    const [empShowPassword, setEmpShowPassword] = useState(false);
+
+    // HR Section State (NEW)
+    const [hrSelectedId, setHrSelectedId] = useState<string>('');
+    const [hrFormData, setHrFormData] = useState({
+        username: '',
+        password: ''
+    });
+    const [hrLoading, setHrLoading] = useState(false);
+    const [hrMessage, setHrMessage] = useState('');
+    const [hrSearchQuery, setHrSearchQuery] = useState('');
+    const [hrShowResults, setHrShowResults] = useState(false);
+    const [hrShowPassword, setHrShowPassword] = useState(false);
+
+    // Admin Section State
     const [adminFormData, setAdminFormData] = useState({
         email: '',
         password: '',
@@ -39,40 +56,74 @@ const Settings = () => {
     }, []);
 
     const handleSelectEmployee = (id: string) => {
-        setSelectedEmp(id);
+        setEmpSelectedId(id);
         const emp = employees.find(e => e.id === id);
         if (emp) {
-            setFormData({
+            setEmpFormData({
                 username: emp.username || '',
-                password: '' // Don't show existing password for security
+                password: ''
             });
         }
     };
 
-    const handleUpdate = async (e: React.FormEvent) => {
+    const handleSelectHR = (id: string) => {
+        setHrSelectedId(id);
+        const hr = employees.find(e => e.id === id);
+        if (hr) {
+            setHrFormData({
+                username: hr.username || '',
+                password: ''
+            });
+        }
+    };
+
+    const handleEmployeeUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
-        setMessage('');
+        setEmpLoading(true);
+        setEmpMessage('');
 
         try {
-            const response = await api.put(`/api/employees/${selectedEmp}`, formData);
-
+            const response = await api.put(`/api/employees/${empSelectedId}`, empFormData);
             if (response.ok) {
-                setMessage('Credentials updated successfully!');
-                // Update local state
+                setEmpMessage('Employee credentials updated successfully!');
                 const updatedEmps = Array.isArray(employees) ? employees.map(e =>
-                    e.id === selectedEmp ? { ...e, username: formData.username } : e
+                    e.id === empSelectedId ? { ...e, username: empFormData.username } : e
                 ) : [];
                 setEmployees(updatedEmps);
-                setFormData(prev => ({ ...prev, password: '' })); // Clear password field
+                setEmpFormData(prev => ({ ...prev, password: '' }));
             } else {
-                setMessage('Failed to update credentials.');
+                setEmpMessage('Failed to update employee credentials.');
             }
         } catch (error) {
             console.error(error);
-            setMessage('Error updating credentials.');
+            setEmpMessage('Error updating employee credentials.');
         } finally {
-            setLoading(false);
+            setEmpLoading(false);
+        }
+    };
+
+    const handleHRUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setHrLoading(true);
+        setHrMessage('');
+
+        try {
+            const response = await api.put(`/api/employees/${hrSelectedId}`, hrFormData);
+            if (response.ok) {
+                setHrMessage('HR credentials updated successfully!');
+                const updatedEmps = Array.isArray(employees) ? employees.map(e =>
+                    e.id === hrSelectedId ? { ...e, username: hrFormData.username } : e
+                ) : [];
+                setEmployees(updatedEmps);
+                setHrFormData(prev => ({ ...prev, password: '' }));
+            } else {
+                setHrMessage('Failed to update HR credentials.');
+            }
+        } catch (error) {
+            console.error(error);
+            setHrMessage('Error updating HR credentials.');
+        } finally {
+            setHrLoading(false);
         }
     };
 
@@ -101,19 +152,19 @@ const Settings = () => {
 
     return (
         <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
+            {/* Employee Credential Management */}
             <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-hidden shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-100">
                 <div className="p-8 border-b border-brand-border bg-table-header flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-black text-brand-text uppercase tracking-tight flex items-center gap-3">
                             <Shield className="w-6 h-6 text-brand-primary" />
-                            Credential Management
+                            Employee Credentials
                         </h2>
-                        <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1">Administrator Control Panel</p>
+                        <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1">General Staff Access Control</p>
                     </div>
                 </div>
 
                 <div className="p-8 space-y-8">
-                    {/* Search & Selection */}
                     <div className="bg-brand-bg p-6 rounded-2xl border border-brand-border shadow-inner relative">
                         <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-3 pl-1">Find Employee to Manage</label>
                         <div className="relative group">
@@ -122,33 +173,31 @@ const Settings = () => {
                                 type="text"
                                 className="w-full bg-brand-surface border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-black text-xs focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-sm uppercase tracking-wider placeholder:text-brand-muted/50"
                                 placeholder="TYPE NAME OR EMPLOYEE ID..."
-                                value={searchQuery}
+                                value={empSearchQuery}
                                 onChange={(e) => {
-                                    setSearchQuery(e.target.value);
-                                    setShowResults(true);
+                                    setEmpSearchQuery(e.target.value);
+                                    setEmpShowResults(true);
                                 }}
-                                onFocus={() => setShowResults(true)}
+                                onFocus={() => setEmpShowResults(true)}
                             />
 
-                            {/* Dropdown Results */}
-                            {showResults && (searchQuery || employees.length > 0) && (
+                            {empShowResults && (empSearchQuery || employees.length > 0) && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-brand-surface border border-brand-border rounded-2xl shadow-2xl z-50 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 no-scrollbar">
                                     {Array.isArray(employees) && employees
+                                        .filter(e => e.role !== 'hr' && e.department !== 'Human Resources')
                                         .filter(e => {
                                             const nameStr = e.name || '';
                                             const idStr = e.id || '';
-                                            const roleStr = e.role || '';
-                                            return nameStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                                idStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                                roleStr.toLowerCase().includes(searchQuery.toLowerCase());
+                                            return nameStr.toLowerCase().includes(empSearchQuery.toLowerCase()) ||
+                                                idStr.toLowerCase().includes(empSearchQuery.toLowerCase());
                                         })
                                         .map((emp) => (
                                             <button
                                                 key={emp.id}
                                                 onClick={() => {
                                                     handleSelectEmployee(emp.id);
-                                                    setSearchQuery(`${emp.name} (${emp.id})`);
-                                                    setShowResults(false);
+                                                    setEmpSearchQuery(`${emp.name} (${emp.id})`);
+                                                    setEmpShowResults(false);
                                                 }}
                                                 className="w-full text-left px-6 py-4 hover:bg-brand-primary hover:text-white transition-all border-b border-brand-border last:border-0 flex justify-between items-center group/item"
                                             >
@@ -161,91 +210,160 @@ const Settings = () => {
                                                 </div>
                                             </button>
                                         ))}
-                                    {Array.isArray(employees) && employees.filter(e => {
-                                        const nameStr = e.name || '';
-                                        const idStr = e.id || '';
-                                        return nameStr.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                            idStr.toLowerCase().includes(searchQuery.toLowerCase());
-                                    }).length === 0 && (
-                                            <div className="p-8 text-center text-brand-muted text-[10px] font-black uppercase tracking-widest italic">
-                                                No results found.
-                                            </div>
-                                        )}
                                 </div>
                             )}
                         </div>
-                        {/* Overlay to close results when clicking outside */}
-                        {showResults && <div className="fixed inset-0 z-40" onClick={() => setShowResults(false)} />}
+                        {empShowResults && <div className="fixed inset-0 z-40" onClick={() => setEmpShowResults(false)} />}
                     </div>
 
-                    {selectedEmp && (
-                        <form onSubmit={handleUpdate} className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="space-y-2">
-                                    <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New Username</label>
-                                    <div className="relative group">
-                                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
-                                        <input
-                                            type="text"
-                                            className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
-                                            value={formData.username}
-                                            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                            placeholder="Enter unique username"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New Security Token / Password</label>
-                                    <div className="relative group">
-                                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
-                                        <input
-                                            type={showPassword ? "text" : "password"}
-                                            className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-12 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
-                                            value={formData.password}
-                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            placeholder="••••••••••••"
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-brand-primary/60 hover:text-brand-primary transition-all z-10 flex items-center justify-center rounded-lg hover:bg-brand-primary/5"
-                                            title={showPassword ? "Hide Password" : "Show Password"}
-                                        >
-                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                        </button>
-                                    </div>
+                    {empSelectedId && (
+                        <form onSubmit={handleEmployeeUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New Username</label>
+                                <div className="relative group">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={empFormData.username}
+                                        onChange={(e) => setEmpFormData({ ...empFormData, username: e.target.value })}
+                                        placeholder="Enter unique username"
+                                        required
+                                    />
                                 </div>
                             </div>
-
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-6 border-t border-brand-border">
-                                <div className="text-emerald-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                                    {message && (
-                                        <>
-                                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-                                            {message}
-                                        </>
-                                    )}
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New Password</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type={empShowPassword ? "text" : "password"}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-12 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={empFormData.password}
+                                        onChange={(e) => setEmpFormData({ ...empFormData, password: e.target.value })}
+                                        placeholder="••••••••••••"
+                                        required
+                                    />
+                                    <button type="button" onClick={() => setEmpShowPassword(!empShowPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2">
+                                        {empShowPassword ? <EyeOff className="w-5 h-5 text-brand-muted" /> : <Eye className="w-5 h-5 text-brand-muted" />}
+                                    </button>
                                 </div>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full md:w-auto bg-brand-primary text-white px-10 py-4 rounded-2xl font-black flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-brand-primary/30 disabled:opacity-50 text-[10px] uppercase tracking-[0.2em] border-t border-white/20"
-                                >
-                                    <Save className="w-4 h-4" />
-                                    {loading ? 'Processing...' : 'Sync Credentials'}
+                            </div>
+                            <div className="md:col-span-2 flex items-center justify-between pt-4 border-t border-brand-border">
+                                <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest">{empMessage}</span>
+                                <button type="submit" disabled={empLoading} className="bg-brand-primary text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50">
+                                    {empLoading ? 'Updating...' : 'Sync Employee Credentials'}
                                 </button>
                             </div>
                         </form>
                     )}
+                </div>
+            </div>
 
-                    {!selectedEmp && (
-                        <div className="text-center py-20 px-6 bg-brand-bg rounded-2xl border border-dashed border-brand-border group">
-                            <Shield className="w-12 h-12 text-brand-muted/20 mx-auto mb-4 group-hover:text-brand-primary/20 transition-colors duration-500" />
-                            <p className="text-brand-muted text-xs font-black uppercase tracking-widest italic">Protected Zone: Select an employee to begin synchronization</p>
+            {/* HR Credential Management (NEW SECTION) */}
+            <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-hidden shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-150">
+                <div className="p-8 border-b border-brand-border bg-table-header flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-black text-brand-text uppercase tracking-tight flex items-center gap-3">
+                            <User className="w-6 h-6 text-brand-primary" />
+                            HR Credentials
+                        </h2>
+                        <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1">Human Resources Access Control</p>
+                    </div>
+                </div>
+
+                <div className="p-8 space-y-8">
+                    <div className="bg-brand-bg p-6 rounded-2xl border border-brand-border shadow-inner relative">
+                        <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-3 pl-1">Find HR Member to Manage</label>
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                            <input
+                                type="text"
+                                className="w-full bg-brand-surface border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-black text-xs focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-sm uppercase tracking-wider placeholder:text-brand-muted/50"
+                                placeholder="TYPE NAME OR HR ID..."
+                                value={hrSearchQuery}
+                                onChange={(e) => {
+                                    setHrSearchQuery(e.target.value);
+                                    setHrShowResults(true);
+                                }}
+                                onFocus={() => setHrShowResults(true)}
+                            />
+
+                            {hrShowResults && (hrSearchQuery || employees.length > 0) && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-brand-surface border border-brand-border rounded-2xl shadow-2xl z-50 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 no-scrollbar">
+                                    {Array.isArray(employees) && employees
+                                        .filter(e => e.role === 'hr' || e.department === 'Human Resources')
+                                        .filter(e => {
+                                            const nameStr = e.name || '';
+                                            const idStr = e.id || '';
+                                            return nameStr.toLowerCase().includes(hrSearchQuery.toLowerCase()) ||
+                                                idStr.toLowerCase().includes(hrSearchQuery.toLowerCase());
+                                        })
+                                        .map((hr) => (
+                                            <button
+                                                key={hr.id}
+                                                onClick={() => {
+                                                    handleSelectHR(hr.id);
+                                                    setHrSearchQuery(`${hr.name} (${hr.id})`);
+                                                    setHrShowResults(false);
+                                                }}
+                                                className="w-full text-left px-6 py-4 hover:bg-brand-primary hover:text-white transition-all border-b border-brand-border last:border-0 flex justify-between items-center group/item"
+                                            >
+                                                <div>
+                                                    <p className="text-xs font-black uppercase tracking-wider">{hr.name}</p>
+                                                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest mt-0.5">{hr.role}</p>
+                                                </div>
+                                                <div className="text-[9px] font-mono bg-brand-bg group-hover/item:bg-white/20 px-2 py-1 rounded-lg">
+                                                    {hr.id}
+                                                </div>
+                                            </button>
+                                        ))}
+                                </div>
+                            )}
                         </div>
+                        {hrShowResults && <div className="fixed inset-0 z-40" onClick={() => setHrShowResults(false)} />}
+                    </div>
+
+                    {hrSelectedId && (
+                        <form onSubmit={handleHRUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New HR Username</label>
+                                <div className="relative group">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={hrFormData.username}
+                                        onChange={(e) => setHrFormData({ ...hrFormData, username: e.target.value })}
+                                        placeholder="Enter unique HR username"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New HR Password</label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                    <input
+                                        type={hrShowPassword ? "text" : "password"}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-12 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                        value={hrFormData.password}
+                                        onChange={(e) => setHrFormData({ ...hrFormData, password: e.target.value })}
+                                        placeholder="••••••••••••"
+                                        required
+                                    />
+                                    <button type="button" onClick={() => setHrShowPassword(!hrShowPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2">
+                                        {hrShowPassword ? <EyeOff className="w-5 h-5 text-brand-muted" /> : <Eye className="w-5 h-5 text-brand-muted" />}
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="md:col-span-2 flex items-center justify-between pt-4 border-t border-brand-border">
+                                <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest">{hrMessage}</span>
+                                <button type="submit" disabled={hrLoading} className="bg-brand-primary text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50">
+                                    {hrLoading ? 'Updating...' : 'Sync HR Credentials'}
+                                </button>
+                            </div>
+                        </form>
                     )}
                 </div>
             </div>
