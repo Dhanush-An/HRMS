@@ -120,8 +120,12 @@ const EmployeeHome = () => {
 
     const fetchStats = async (employeeId: string, leaveBalance: any) => {
         try {
-            const totalLeaves = leaveBalance ?
-                (leaveBalance.sick || 0) + (leaveBalance.casual || 0) + (leaveBalance.earned || 0) + (leaveBalance.wfh || 0) + (leaveBalance.paid || 0) : 0;
+            const totalLeaves = (leaveBalance && typeof leaveBalance === 'object') ?
+                (Number(leaveBalance.sick) || 0) + 
+                (Number(leaveBalance.casual) || 0) + 
+                (Number(leaveBalance.earned) || 0) + 
+                (Number(leaveBalance.wfh) || 0) + 
+                (Number(leaveBalance.paid) || 0) : 0;
 
             const taskRes = await api.get(`/api/tasks?employeeId=${employeeId}`);
             const tasks = await taskRes.json();

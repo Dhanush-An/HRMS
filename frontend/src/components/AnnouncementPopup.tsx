@@ -11,6 +11,7 @@ const AnnouncementPopup = ({ items, onDismiss }: AnnouncementPopupProps) => {
     if (items.length === 0) return null;
 
     const currentItem = items[0];
+    if (!currentItem) return null;
     const isPolicy = !!currentItem.lastUpdated;
 
     return (
