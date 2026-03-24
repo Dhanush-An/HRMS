@@ -111,6 +111,12 @@ const EmployeeDashboard = () => {
             const today = new Date().toISOString().split('T')[0];
             const res = await api.get(`/api/attendance?date=${today}`);
             const data = await res.json();
+            
+            if (!Array.isArray(data)) {
+                console.warn("[DASHBOARD] Attendance API did not return an array. Backend might be down or returning an error.");
+                return;
+            }
+
             const record = data.find((r: any) => r.employeeId === employeeId);
 
             if (record) {
