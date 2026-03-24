@@ -81,7 +81,14 @@ const calculateWorkingHours = (checkIn?: string, checkOut?: string, dbWorkHours?
 const EmployeeDashboard = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<any>(() => {
+        const stored = localStorage.getItem('user');
+        try {
+            return stored ? JSON.parse(stored) : null;
+        } catch {
+            return null;
+        }
+    });
     const [isCheckedIn, setIsCheckedIn] = useState(false);
     const [isCheckedOut, setIsCheckedOut] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -377,9 +384,9 @@ const EmployeeDashboard = () => {
                                 </div>
                             </div>
                             <div className="text-left overflow-hidden">
-                                <p className="text-sm font-semibold text-brand-text truncate max-w-[120px]">{user.name}</p>
-                                <p className="text-[10px] text-brand-muted font-bold uppercase tracking-widest truncate max-w-[120px] -mt-0.5">{user.id}</p>
-                                <p className="text-[10px] text-brand-primary font-bold uppercase tracking-widest truncate max-w-[120px] mt-0.5">{user.role}</p>
+                                <p className="text-sm font-semibold text-brand-text truncate max-w-[120px]">{user?.name || 'Employee'}</p>
+                                <p className="text-[10px] text-brand-muted font-bold uppercase tracking-widest truncate max-w-[120px] -mt-0.5">{user?.id || 'ID'}</p>
+                                <p className="text-[10px] text-brand-primary font-bold uppercase tracking-widest truncate max-w-[120px] mt-0.5">{user?.role || 'employee'}</p>
                             </div>
                         </div>
                         <button
