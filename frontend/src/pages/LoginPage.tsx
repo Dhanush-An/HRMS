@@ -47,9 +47,10 @@ const LoginPage: React.FC = () => {
                     console.debug(`[LOGIN DEBUG] Token prefix: ${data.token.substring(0, 10)}...`);
                 }
 
-                if (data.user.role === 'admin') {
+                const role = (data.user.role || 'employee').toLowerCase();
+                if (role === 'admin') {
                     navigate('/admin-dashboard');
-                } else if (data.user.role === 'hr') {
+                } else if (role === 'hr') {
                     navigate('/hr-dashboard');
                 } else {
                     navigate('/employee-dashboard');

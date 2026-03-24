@@ -134,7 +134,7 @@ const AdminDashboard: React.FC = () => {
                             </div>
                             <div className="text-left">
                                 <p className="text-sm font-semibold text-brand-text group-hover:text-brand-primary transition-colors">Admin</p>
-                                <p className="text-xs text-brand-muted italic">Admin</p>
+                                <p className="text-[10px] text-brand-muted uppercase font-black tracking-widest opacity-60 scale-90 -ml-1 mt-0.5">Admin</p>
                             </div>
                         </div>
                         <button

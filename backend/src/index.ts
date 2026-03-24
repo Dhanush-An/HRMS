@@ -117,11 +117,14 @@ app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
     const normalizedEmail = (email || '').trim().toLowerCase();
     const cleanPassword = (password || '').trim();
+    const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const emailRegex = new RegExp(`^${escapeRegex(normalizedEmail)}$`, 'i');
+    const usernameRegex = new RegExp(`^${escapeRegex(email)}$`, 'i');
 
     // 1. Check Admin in MongoDB
     try {
         const admin = await Admin.findOne({
-            email: normalizedEmail
+            email: emailRegex
         });
 
         if (admin) {
@@ -156,7 +159,10 @@ app.post('/api/login', async (req, res) => {
     // 2. Check Employees in MongoDB
     try {
         const user = await Employee.findOne({
-            $or: [{ email: normalizedEmail }, { username: email }]
+            $or: [
+                { email: emailRegex },
+                { username: usernameRegex }
+            ]
         });
 
         if (user) {
@@ -177,7 +183,7 @@ app.post('/api/login', async (req, res) => {
                 const empUser = {
                     id: user.employeeId,
                     name: user.name,
-                    role: user.role,
+                    role: (user.role || 'employee').toLowerCase(),
                     email: user.email,
                     department: user.department
                 };

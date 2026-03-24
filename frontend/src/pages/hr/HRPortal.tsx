@@ -133,7 +133,8 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                             </div>
                             <div className="min-w-0">
                                 <h3 className="font-black text-brand-text text-lg truncate group-hover:text-brand-primary transition-colors">{emp.name}</h3>
-                                <p className="text-xs text-brand-muted font-bold uppercase tracking-widest truncate">{emp.department}</p>
+                                <p className="text-[10px] text-brand-muted font-bold uppercase tracking-widest -mt-1">{emp.employeeId || emp.id}</p>
+                                <p className="text-xs text-brand-muted font-bold uppercase tracking-widest truncate mt-1">{emp.department}</p>
                             </div>
                         </div>
 
@@ -638,7 +639,7 @@ const HRPortal: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold text-brand-text truncate">{user.name || 'HR Manager'}</p>
-                            <p className="text-[10px] text-brand-muted uppercase tracking-widest font-semibold">HR</p>
+                            <p className="text-[10px] text-brand-muted uppercase tracking-widest font-black opacity-60 scale-90 -ml-1 mt-0.5">{user.role || 'HR'}</p>
                         </div>
                         <button onClick={logout} title="Logout" className="p-1.5 hover:bg-rose-500/10 rounded-lg text-brand-muted hover:text-rose-500 transition-colors">
                             <LogOut className="w-4 h-4" />

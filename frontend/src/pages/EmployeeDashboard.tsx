@@ -378,7 +378,8 @@ const EmployeeDashboard = () => {
                             </div>
                             <div className="text-left overflow-hidden">
                                 <p className="text-sm font-semibold text-brand-text truncate max-w-[120px]">{user.name}</p>
-                                <p className="text-xs text-brand-muted truncate max-w-[120px]">{user.role}</p>
+                                <p className="text-[10px] text-brand-muted font-bold uppercase tracking-widest truncate max-w-[120px] -mt-0.5">{user.id}</p>
+                                <p className="text-[10px] text-brand-primary font-bold uppercase tracking-widest truncate max-w-[120px] mt-0.5">{user.role}</p>
                             </div>
                         </div>
                         <button

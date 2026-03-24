@@ -36,12 +36,22 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
         return <Navigate to="/login" replace />;
     }
 
-    const role: string = user.role || 'employee';
+    const role: string = (user.role || 'employee').toLowerCase();
+    const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase());
 
-    if (!allowedRoles.includes(role)) {
+    if (!normalizedAllowedRoles.includes(role)) {
         // Redirect to the user's own home instead of a 403
-        const home = ROLE_HOME[role] || '/login';
-        return <Navigate to={home} replace />;
+        const home = ROLE_HOME[role];
+        
+        if (home) {
+            return <Navigate to={home} replace />;
+        } else {
+            // Fallback for unknown roles: clear session and go to login to avoid loops
+            console.error(`[AUTH] Unknown role: ${role}. Clearing session.`);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            return <Navigate to="/login" replace />;
+        }
     }
 
     return children ? <>{children}</> : <Outlet />;
