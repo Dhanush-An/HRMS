@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Users, Calendar, FileText, Bell,
     LogOut, X, DollarSign, Shield,
     Search, Plus, XCircle, CheckCircle,
-    Mail, Phone, Edit2, Trash2, UserPlus, ClipboardList, Clock,
+    Mail, Phone, Edit2, Trash2, UserPlus, ClipboardList,
 } from 'lucide-react';
 import api from '../../api';
 import logo from '../../assets/antigraviity logo 2.jpg';
@@ -88,12 +88,6 @@ const NAV = [
 // ─── Section: Overview ────────────────────────────────────────────────────────
 const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const [currentTime, setCurrentTime] = useState(new Date());
-    
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
 
     const todayStr = new Date().toISOString().split('T')[0];
     const myRecord = attendance.find((a: any) => a.employeeId === user.id && a.date === todayStr);
@@ -168,43 +162,18 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h2 className="text-2xl font-black text-brand-text">HR Dashboard Overview</h2>
-                <p className="text-brand-muted text-sm mt-1">Real-time snapshot of your workforce.</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                {cards.map(({ label, value, icon: Icon, color }) => (
-                    <div key={label} className="bg-brand-surface border border-brand-border rounded-2xl p-6 hover:border-brand-primary/30 transition-all">
-                        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-4', color)}>
-                            <Icon className="w-5 h-5 text-white" />
-                        </div>
-                        <p className="text-3xl font-black text-brand-text">{value}</p>
-                        <p className="text-xs text-brand-muted uppercase tracking-widest font-bold mt-1">{label}</p>
-                    </div>
-                ))}
-            </div>
-
-            {/* Attendance Marking Widget */}
-            <div className="bg-gradient-to-br from-brand-primary/10 to-blue-500/5 border border-brand-primary/20 rounded-[2rem] p-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-8">
-                <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center shadow-xl">
-                        <Clock className="w-8 h-8 text-brand-primary animate-pulse" />
-                    </div>
-                    <div>
-                        <p className="text-4xl font-black text-brand-text tracking-tighter">
-                            {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </p>
-                        <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.2em] mt-1 opacity-70">
-                            {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-                        </p>
-                    </div>
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div>
+                    <h2 className="text-2xl font-black text-brand-text">HR Dashboard Overview</h2>
+                    <p className="text-brand-muted text-sm mt-1">Real-time snapshot of your workforce.</p>
                 </div>
                 
+                {/* Attendance Marking Widget inline */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                    <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-xl shadow-sm">
+                    <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-xl shadow-sm tracking-tight text-brand-text">
                         {/* Login Details */}
                         <div className="flex flex-col items-start gap-1">
-                            <span className="text-lg font-medium text-brand-text">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
+                            <span className="text-lg font-medium">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
                             {sessionLocation.workMode && (
                                 <span className={cn(
                                     "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
@@ -219,7 +188,7 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                         
                         {/* Logout Details */}
                         <div className="flex flex-col items-start gap-1">
-                            <span className="text-lg font-medium text-brand-text">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
+                            <span className="text-lg font-medium">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
                             {sessionLocation.workLocation && (
                                 <span className="text-[10px] text-brand-muted uppercase font-black tracking-widest">
                                     {sessionLocation.workLocation}
@@ -228,7 +197,7 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                         </div>
 
                         {/* Total Hours Metric */}
-                        <div className="flex items-center justify-center px-4 py-1.5 ml-2 border border-brand-border rounded-xl bg-brand-bg text-sm font-bold text-brand-text shadow-sm">
+                        <div className="flex items-center justify-center px-4 py-1.5 ml-2 border border-brand-border rounded-xl bg-brand-bg text-sm font-bold shadow-sm">
                             {calculateWorkingHours(clockedInTime, clockedOutTime, sessionLocation.workHours)}
                         </div>
                     </div>
@@ -262,6 +231,18 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                         </button>
                     </div>
                 </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                {cards.map(({ label, value, icon: Icon, color }) => (
+                    <div key={label} className="bg-brand-surface border border-brand-border rounded-2xl p-6 hover:border-brand-primary/30 transition-all">
+                        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-4', color)}>
+                            <Icon className="w-5 h-5 text-white" />
+                        </div>
+                        <p className="text-3xl font-black text-brand-text">{value}</p>
+                        <p className="text-xs text-brand-muted uppercase tracking-widest font-bold mt-1">{label}</p>
+                    </div>
+                ))}
             </div>
 
             {/* Recent leave requests */}
