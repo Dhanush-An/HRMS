@@ -31,7 +31,15 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 
 function App() {
-  return (
+  useEffect(() => {
+    const handleError = (event: ErrorEvent) => {
+      console.error('[GLOBAL_ERROR] Uncaught error:', event.error);
+      console.error('[GLOBAL_ERROR] Message:', event.message);
+      console.error('[GLOBAL_ERROR] Stack:', event.error?.stack);
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
+  }, []);
     <ThemeProvider>
       <Router>
         <Routes>
