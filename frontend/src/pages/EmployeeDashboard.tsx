@@ -307,29 +307,7 @@ const EmployeeDashboard = () => {
         { icon: Book, label: 'Company Policies', path: '/employee-dashboard/policies' },
     ];
 
-    console.log('[EMPLOYEE_DASHBOARD] Component Initializing...');
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const { theme, toggleTheme } = useTheme();
-    const navigate = useNavigate();
 
-    const userStr = localStorage.getItem('user');
-    const user = useMemo(() => {
-        try {
-            return userStr ? JSON.parse(userStr) : null;
-        } catch (e) {
-            console.error('[EMPLOYEE_DASHBOARD] Error parsing user:', e);
-            return null;
-        }
-    }, [userStr]);
-
-    useEffect(() => {
-        console.log('[EMPLOYEE_DASHBOARD] Mounted. User:', user);
-        if (!user) {
-            console.warn('[EMPLOYEE_DASHBOARD] No user found, redirecting to login');
-            navigate('/login');
-        }
-    }, [user, navigate]);
 
     if (!user) {
         return (
