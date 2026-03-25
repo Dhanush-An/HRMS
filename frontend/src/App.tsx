@@ -40,6 +40,8 @@ function App() {
     window.addEventListener('error', handleError);
     return () => window.removeEventListener('error', handleError);
   }, []);
+
+  return (
     <ThemeProvider>
       <Router>
         <Routes>

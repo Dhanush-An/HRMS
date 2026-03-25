@@ -221,7 +221,7 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
 };
 
 // ─── Section: Attendance ──────────────────────────────────────────────────────
-const AttendanceSection = ({ attendance }: any) => {
+const AttendanceSection = ({ attendance, employees }: any) => {
     const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
     const today = new Date().toISOString().split('T')[0];
 
@@ -272,7 +272,9 @@ const AttendanceSection = ({ attendance }: any) => {
                     <tbody className="divide-y divide-brand-border">
                         {todayRecords.slice(0, 20).map((rec: any) => (
                             <tr key={rec._id || rec.id} className="hover:bg-brand-bg/40 transition-colors">
-                                <td className="px-4 py-3 text-sm font-medium text-brand-text">{rec.employeeName || rec.name || rec.employeeId}</td>
+                                <td className="px-4 py-3 text-sm font-medium text-brand-text">
+                                    {employees?.find((e: any) => e.id === rec.employeeId)?.name || rec.employeeName || rec.name || rec.employeeId}
+                                </td>
                                 <td className="px-4 py-3 text-xs text-brand-muted">{rec.date}</td>
                                 <td className="px-4 py-3 text-xs text-brand-muted">{rec.checkIn || '—'}</td>
                                 <td className="px-4 py-3 text-xs text-brand-muted">{rec.checkOut || '—'}</td>
