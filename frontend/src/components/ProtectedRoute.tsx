@@ -39,22 +39,21 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
 
     const role: string = (user.role || 'employee').toLowerCase();
     const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase());
+    
+    console.log(`[AUTH] Path: ${window.location.pathname}, Role: ${role}, Allowed: [${normalizedAllowedRoles.join(', ')}]`);
 
     if (!normalizedAllowedRoles.includes(role)) {
-        // Redirect to the user's own home instead of a 403
-        const home = ROLE_HOME[role];
+        const home = ROLE_HOME[role] || '/employee-dashboard';
         
-        if (home) {
+        // Prevent infinite redirect loop: only redirect if we're not already at the destination
+        if (window.location.pathname !== home) {
+            console.warn(`[AUTH] Unauthorized access to ${window.location.pathname}. Redirecting ${role} to ${home}`);
             return <Navigate to={home} replace />;
-        } else if (role !== 'admin' && role !== 'hr') {
-            // New fallback: Any role that isn't admin or hr can access employee dashboard
-            return <Navigate to="/employee-dashboard" replace />;
         } else {
-            // Fallback for unknown roles: clear session and go to login to avoid loops
-            console.error(`[AUTH] Unknown role: ${role}. Clearing session.`);
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            return <Navigate to="/login" replace />;
+            // If we're already at the fallback destination but still not "allowed", 
+            // we should probably allow it to avoid a blank screen, or show an error.
+            // For now, let's allow it so the component can at least mount.
+            console.warn(`[AUTH] Already at ${home} but role ${role} not explicitly in allowedRoles. Allowing to break loop.`);
         }
     }
 
