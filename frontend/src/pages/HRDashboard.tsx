@@ -24,7 +24,7 @@ import {
     Star,
     Award,
     CheckCircle2,
-    Mail, Phone, Edit2, Trash2, UserPlus, Search, XCircle
+    Mail, Phone, Edit2, Trash2, UserPlus, Search, XCircle, ClipboardList
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import logo from '../assets/antigraviity logo 2.jpg';
@@ -74,9 +74,9 @@ const StatCard = ({ title, value, icon: Icon, color, delay }: any) => (
 // ─── Sidebar menu items ──────────────────────────────────────────────────────
 const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', section: 'home' },
+    { icon: ClipboardList, label: 'Assign Task', section: 'tasks' },
     { icon: Users, label: 'HR Team', section: 'team' },
     { icon: Calendar, label: 'Attendance', section: 'attendance' },
-    { icon: FileText, label: 'Assign Task', section: 'tasks' },
     { icon: FileText, label: 'Leave Requests', section: 'leaves' },
     { icon: TrendingUp, label: 'Performance', section: 'performance' },
     { icon: Briefcase, label: 'Recruitment', section: 'recruitment' },

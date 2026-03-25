@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Users, Calendar, FileText, Bell,
     LogOut, X, Building2, DollarSign, Shield,
     Search, Plus, XCircle, CheckCircle,
-    Mail, Phone, Edit2, Trash2, UserPlus,
+    Mail, Phone, Edit2, Trash2, UserPlus, ClipboardList, Clock,
 } from 'lucide-react';
 import api from '../../api';
 import logo from '../../assets/antigraviity logo 2.jpg';
@@ -31,10 +31,10 @@ const Badge = ({ status }: { status: string }) => {
 // ─── Sidebar items ────────────────────────────────────────────────────────────
 const NAV = [
     { id: 'overview',     icon: LayoutDashboard, label: 'Overview' },
+    { id: 'task-assignment', icon: ClipboardList,   label: 'Assign Task' },
     { id: 'employees',    icon: Users,            label: 'Employees' },
     { id: 'attendance',   icon: Calendar,         label: 'Attendance' },
     { id: 'leaves',       icon: FileText,         label: 'Leave Requests' },
-    { id: 'tasks',        icon: FileText,         label: 'Assign Task' },
     { id: 'payroll',      icon: DollarSign,       label: 'Payroll' },
     { id: 'permissions',  icon: Shield,           label: 'Permissions' },
     { id: 'announcements',icon: Bell,             label: 'Announcements' },
@@ -101,6 +101,43 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                         <p className="text-xs text-brand-muted uppercase tracking-widest font-bold mt-1">{label}</p>
                     </div>
                 ))}
+            </div>
+
+            {/* Attendance Marking Widget */}
+            <div className="bg-gradient-to-br from-brand-primary/10 to-blue-500/5 border border-brand-primary/20 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center shadow-xl">
+                        <Clock className="w-8 h-8 text-brand-primary animate-pulse" />
+                    </div>
+                    <div>
+                        <p className="text-4xl font-black text-brand-text tracking-tighter">
+                            {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </p>
+                        <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.2em] mt-1 opacity-70">
+                            {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                        </p>
+                    </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="text-right hidden sm:block">
+                        <p className="text-xs font-bold text-brand-text">Daily Presence</p>
+                        <p className="text-[10px] text-brand-muted uppercase font-black tracking-widest mt-0.5">
+                            {myRecord ? `Checked in at ${myRecord.checkIn}` : 'Not checked in today'}
+                        </p>
+                    </div>
+                    <button 
+                        onClick={markAttendance}
+                        className={cn(
+                            "px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:scale-[1.03] active:scale-95 transition-all text-white border-b-4",
+                            !myRecord ? "bg-brand-primary border-brand-primary/30" : 
+                            !myRecord.checkOut ? "bg-rose-500 border-rose-500/30" : "bg-brand-muted border-brand-border cursor-not-allowed opacity-50"
+                        )}
+                        disabled={!!(myRecord && myRecord.checkOut)}
+                    >
+                        {!myRecord ? 'Check In Now' : !myRecord.checkOut ? 'Check Out Now' : 'Shift Completed'}
+                    </button>
+                </div>
             </div>
 
             {/* Recent leave requests */}
@@ -839,7 +876,7 @@ const HRPortal: React.FC = () => {
             case 'payroll':      return <PayrollSection employees={employees} />;
             case 'permissions':  return <PermissionsSection leaves={leaves} onRefresh={fetchAll} />;
             case 'announcements':return <AnnouncementsSection />;
-            case 'tasks':        return <TasksSection employees={employees} />;
+            case 'task-assignment':return <TasksSection employees={employees} />;
             default:             return null;
         }
     };
