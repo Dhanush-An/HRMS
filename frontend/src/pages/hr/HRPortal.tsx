@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard, Users, Calendar, FileText, Bell,
-    LogOut, X, Building2, DollarSign, Shield,
+    LogOut, X, DollarSign, Shield,
     Search, Plus, XCircle, CheckCircle,
     Mail, Phone, Edit2, Trash2, UserPlus, ClipboardList, Clock,
 } from 'lucide-react';
