@@ -240,7 +240,7 @@ const Attendance = () => {
     // Stats Calculation
     const stats = {
         present: Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0,
-        absent: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Absent').length : 0,
+        absent: Math.max((employees?.length || 0) - (Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0), 0),
         late: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late').length : 0,
         halfDay: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Half Day').length : 0,
     };

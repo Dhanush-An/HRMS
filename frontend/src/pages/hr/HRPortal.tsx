@@ -169,6 +169,19 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
     const [q, setQ] = useState('');
     const [profile, setProfile] = useState<any>(null);
 
+    const generateNextEmployeeId = () => {
+        if (!employees || employees.length === 0) return 'EMP001';
+        let maxId = 0;
+        employees.forEach(emp => {
+            const match = (emp.employeeId || '').match(/^EMP(\d+)$/i);
+            if (match) {
+                const num = parseInt(match[1], 10);
+                if (num > maxId) maxId = num;
+            }
+        });
+        return `EMP${String(maxId + 1).padStart(3, '0')}`;
+    };
+
     const filtered = employees
         .filter(e => e.role !== 'hr' && e.department !== 'Human Resources')
         .filter(e =>
@@ -185,7 +198,7 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                     <p className="text-sm text-brand-muted mt-0.5">View and manage all employee profiles.</p>
                 </div>
                 <button 
-                    onClick={() => setProfile({ isNew: true })}
+                    onClick={() => setProfile({ isNew: true, employeeId: generateNextEmployeeId() })}
                     className="flex items-center gap-2 px-5 py-2.5 bg-brand-primary text-white rounded-2xl text-sm font-black hover:opacity-90 transition-all shadow-xl shadow-brand-primary/20"
                 >
                     <UserPlus className="w-4 h-4" /> Add Employee
@@ -325,6 +338,20 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                                     <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Joining Date</label>
                                     <input name="joiningDate" type="date" defaultValue={profile.joiningDate} required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
                                 </div>
+                            </div>
+                            {profile.isNew && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Username</label>
+                                        <input name="username" required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Password</label>
+                                        <input name="password" type="password" required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
+                                    </div>
+                                </div>
+                            )}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Status</label>
                                     <select name="status" defaultValue={profile.status || 'Active'} className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30">
@@ -354,8 +381,8 @@ const AttendanceSection = ({ attendance, employees }: any) => {
     const today = new Date().toISOString().split('T')[0];
 
     const todayRecords = attendance.filter((a: any) => a.date === today);
-    const presentCount = todayRecords.filter((a: any) => a.status === 'Present').length;
-    const absentCount = todayRecords.filter((a: any) => a.status === 'Absent').length;
+    const presentCount = todayRecords.filter((a: any) => ['Present', 'Late', 'Half Day'].includes(a.status)).length;
+    const absentCount = Math.max((employees?.length || 0) - presentCount, 0);
     const lateCount = todayRecords.filter((a: any) => a.status === 'Late').length;
 
     return (
@@ -486,60 +513,7 @@ const LeavesSection = ({ leaves, onRefresh }: any) => {
     );
 };
 
-// ─── Section: Payroll ─────────────────────────────────────────────────────────
-const PayrollSection = ({ employees }: { employees: any[] }) => {
-    const [q, setQ] = useState('');
-    const filtered = employees.filter(e => e.name?.toLowerCase().includes(q.toLowerCase()));
 
-    const total = (e: any) => {
-        const s = e.salary || {};
-        return (s.base || 0) + (s.hra || 0) + (s.transport || 0) + (s.other || 0);
-    };
-
-    return (
-        <div className="space-y-5">
-            <div>
-                <h2 className="text-2xl font-black text-brand-text">Payroll Management</h2>
-                <p className="text-sm text-brand-muted mt-0.5">View salary details and manage payroll.</p>
-            </div>
-            <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
-                <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search employee…"
-                    className="w-full pl-10 pr-4 py-2.5 bg-brand-surface border border-brand-border rounded-xl text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
-            </div>
-            <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-brand-bg border-b border-brand-border">
-                        <tr>{['Employee', 'Basic', 'HRA', 'Transport', 'Other', 'Total CTC'].map(h => (
-                            <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
-                        ))}</tr>
-                    </thead>
-                    <tbody className="divide-y divide-brand-border">
-                        {filtered.map((emp: any) => {
-                            const s = emp.salary || {};
-                            return (
-                                <tr key={emp._id || emp.id} className="hover:bg-brand-bg/40 transition-colors">
-                                    <td className="px-4 py-3">
-                                        <p className="text-sm font-semibold text-brand-text">{emp.name}</p>
-                                        <p className="text-xs text-brand-muted">{emp.department}</p>
-                                    </td>
-                                    <td className="px-4 py-3 text-sm text-brand-text">₹{(s.base || 0).toLocaleString()}</td>
-                                    <td className="px-4 py-3 text-sm text-brand-text">₹{(s.hra || 0).toLocaleString()}</td>
-                                    <td className="px-4 py-3 text-sm text-brand-text">₹{(s.transport || 0).toLocaleString()}</td>
-                                    <td className="px-4 py-3 text-sm text-brand-text">₹{(s.other || 0).toLocaleString()}</td>
-                                    <td className="px-4 py-3">
-                                        <span className="font-black text-brand-primary text-sm">₹{total(emp).toLocaleString()}</span>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-                {!filtered.length && <p className="px-6 py-8 text-center text-brand-muted text-sm">No employees found.</p>}
-            </div>
-        </div>
-    );
-};
 
 // ─── Section: Permissions ─────────────────────────────────────────────────────
 const PermissionsSection = ({ leaves, onRefresh }: any) => {
