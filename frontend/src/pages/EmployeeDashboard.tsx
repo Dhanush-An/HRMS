@@ -307,9 +307,38 @@ const EmployeeDashboard = () => {
         { icon: Book, label: 'Company Policies', path: '/employee-dashboard/policies' },
     ];
 
-    if (!user || Object.keys(user).length === 0) {
-        console.warn("[EMPLOYEE DASHBOARD] No user data found. Showing loading state.");
-        return <div className="h-screen bg-brand-bg text-brand-text flex items-center justify-center font-bold">Loading Employee Data...</div>;
+    console.log('[EMPLOYEE_DASHBOARD] Component Initializing...');
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const { theme, toggleTheme } = useTheme();
+    const navigate = useNavigate();
+
+    const userStr = localStorage.getItem('user');
+    const user = useMemo(() => {
+        try {
+            return userStr ? JSON.parse(userStr) : null;
+        } catch (e) {
+            console.error('[EMPLOYEE_DASHBOARD] Error parsing user:', e);
+            return null;
+        }
+    }, [userStr]);
+
+    useEffect(() => {
+        console.log('[EMPLOYEE_DASHBOARD] Mounted. User:', user);
+        if (!user) {
+            console.warn('[EMPLOYEE_DASHBOARD] No user found, redirecting to login');
+            navigate('/login');
+        }
+    }, [user, navigate]);
+
+    if (!user) {
+        return (
+            <div style={{ height: '100vh', background: '#0f172a', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', flexDirection: 'column' }}>
+                <h1 style={{ fontSize: '24px' }}>[RESCUE] Loading Dashboard...</h1>
+                <p>If this screen persists, no user data was found in localStorage.</p>
+                <button onClick={() => navigate('/login')} style={{ marginTop: '20px', padding: '10px 20px', background: 'blue' }}>Go to Login</button>
+            </div>
+        );
     }
 
     console.log("[EMPLOYEE DASHBOARD] Rendering dashboard for user:", user.name);
