@@ -4,7 +4,7 @@ import {
     LayoutDashboard, Users, Calendar, FileText, Bell,
     LogOut, X, Building2, DollarSign, Shield,
     Search, Plus, XCircle, CheckCircle,
-    Mail, Phone, Edit2,
+    Mail, Phone, Edit2, Trash2, UserPlus,
 } from 'lucide-react';
 import api from '../../api';
 import logo from '../../assets/antigraviity logo 2.jpg';
@@ -41,9 +41,41 @@ const NAV = [
 ];
 
 // ─── Section: Overview ────────────────────────────────────────────────────────
-const Overview = ({ employees, leaves, attendance }: any) => {
-    const totalEmp = employees.length;
+const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const [currentTime, setCurrentTime] = useState(new Date());
+    
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
     const todayStr = new Date().toISOString().split('T')[0];
+    const myRecord = attendance.find((a: any) => a.employeeId === user.id && a.date === todayStr);
+
+    const markAttendance = async () => {
+        try {
+            if (!myRecord) {
+                // Check-in
+                await api.post('/api/attendance', {
+                    employeeId: user.id,
+                    employeeName: user.name,
+                    date: todayStr,
+                    checkIn: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    status: 'Present'
+                });
+            } else if (!myRecord.checkOut) {
+                // Check-out
+                await api.put(`/api/attendance/${myRecord._id || myRecord.id}`, {
+                    ...myRecord,
+                    checkOut: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+            }
+            onRefresh();
+        } catch (err: any) { alert(err.message); }
+    };
+
+    const totalEmp = employees.length;
     const todayAtt = attendance.filter((a: any) => a.date === todayStr).length;
     const pendingLeaves = leaves.filter((l: any) => l.status === 'Pending').length;
 
@@ -114,6 +146,12 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                     <h2 className="text-2xl font-black text-brand-text">Employee Management</h2>
                     <p className="text-sm text-brand-muted mt-0.5">View and manage all employee profiles.</p>
                 </div>
+                <button 
+                    onClick={() => setProfile({ isNew: true })}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-brand-primary text-white rounded-2xl text-sm font-black hover:opacity-90 transition-all shadow-xl shadow-brand-primary/20"
+                >
+                    <UserPlus className="w-4 h-4" /> Add Employee
+                </button>
             </div>
             <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
@@ -168,52 +206,103 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                         </div>
 
                         {/* 4. Action Section */}
-                        <div className="flex items-center justify-end lg:ml-auto">
+                        <div className="flex items-center gap-2 lg:ml-auto">
                             <button
                                 onClick={(e) => { e.stopPropagation(); setProfile(emp); }}
                                 className="flex items-center gap-2 px-4 py-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-xl text-xs font-bold hover:bg-brand-primary hover:text-white transition-all shadow-sm"
                             >
                                 <Edit2 className="w-3.5 h-3.5" /> Edit
                             </button>
+                            <button
+                                onClick={async (e) => { 
+                                    e.stopPropagation(); 
+                                    if(window.confirm('Delete ' + emp.name + '?')) {
+                                        await api.delete('/api/employees/' + (emp.employeeId || emp.id));
+                                        _onRefresh();
+                                    }
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-rose-500/10 text-rose-600 border border-rose-500/20 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" /> Delete
+                            </button>
                         </div>
                     </div>
                 ))}
             </div>
+
             {!filtered.length && (
                 <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] py-20 text-center">
                     <p className="text-brand-muted text-sm font-medium">No employees found matching your search.</p>
                 </div>
             )}
 
-            {/* Profile modal */}
+            {/* Add/Edit modal */}
             {profile && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setProfile(null)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-start mb-5">
-                            <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-xl font-black">{profile.name?.charAt(0)}</div>
-                                <div>
-                                    <h3 className="font-black text-brand-text text-lg">{profile.name}</h3>
-                                    <p className="text-xs text-brand-primary font-semibold">{profile.role} · {profile.department}</p>
-                                    <p className="text-xs text-brand-muted">{profile.employeeId || profile.id}</p>
-                                </div>
-                            </div>
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-black text-brand-text">{profile.isNew ? 'Add New Employee' : 'Edit Employee'}</h3>
                             <button onClick={() => setProfile(null)} className="text-brand-muted hover:text-brand-text"><XCircle className="w-5 h-5" /></button>
                         </div>
-                        <div className="space-y-3 text-sm">
-                            {[
-                                { icon: Mail, label: 'Email', val: profile.email },
-                                { icon: Phone, label: 'Phone', val: profile.phone || '—' },
-                                { icon: Calendar, label: 'Joined', val: profile.joiningDate },
-                                { icon: Building2, label: 'Status', val: profile.status || 'Active' },
-                            ].map(({ icon: Icon, label, val }) => (
-                                <div key={label} className="flex items-center gap-3 px-3 py-2 bg-brand-bg rounded-xl">
-                                    <Icon className="w-4 h-4 text-brand-primary flex-shrink-0" />
-                                    <span className="text-brand-muted w-16 flex-shrink-0">{label}</span>
-                                    <span className="text-brand-text font-medium">{val}</span>
+                        <form className="space-y-4" onSubmit={async (e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.currentTarget);
+                            const data = Object.fromEntries(formData.entries());
+                            try {
+                                if (profile.isNew) {
+                                    await api.post('/api/employees', { ...data, status: 'Active' });
+                                } else {
+                                    await api.put('/api/employees/' + (profile.employeeId || profile.id), data);
+                                }
+                                setProfile(null);
+                                _onRefresh();
+                            } catch (err: any) { alert(err.response?.data?.message || err.message); }
+                        }}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Full Name</label>
+                                    <input name="name" defaultValue={profile.name} required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
                                 </div>
-                            ))}
-                        </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Employee ID</label>
+                                    <input name="employeeId" defaultValue={profile.employeeId} required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Email</label>
+                                    <input name="email" type="email" defaultValue={profile.email} required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Phone</label>
+                                    <input name="phone" defaultValue={profile.phone} className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Department</label>
+                                    <input name="department" defaultValue={profile.department} required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Role</label>
+                                    <input name="role" defaultValue={profile.role} required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Joining Date</label>
+                                    <input name="joiningDate" type="date" defaultValue={profile.joiningDate} required className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30" />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted mb-1.5 block px-1">Status</label>
+                                    <select name="status" defaultValue={profile.status || 'Active'} className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-sm text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/30">
+                                        <option>Active</option>
+                                        <option>On Break</option>
+                                        <option>Resigned</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 pt-4">
+                                <button type="button" onClick={() => setProfile(null)} className="flex-1 py-3 border border-brand-border text-brand-muted rounded-xl font-bold text-sm hover:bg-brand-bg transition-all">Cancel</button>
+                                <button type="submit" className="flex-1 py-3 bg-brand-primary text-white rounded-xl font-bold text-sm hover:opacity-90 shadow-lg shadow-brand-primary/20 transition-all">
+                                    {profile.isNew ? 'Create Employee' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
@@ -743,7 +832,7 @@ const HRPortal: React.FC = () => {
 
     const renderSection = () => {
         switch (section) {
-            case 'overview':     return <Overview employees={employees} leaves={leaves} attendance={attendance} />;
+            case 'overview':     return <Overview employees={employees} leaves={leaves} attendance={attendance} onRefresh={fetchAll} />;
             case 'employees':    return <EmployeesSection employees={employees} onRefresh={fetchAll} />;
             case 'attendance':   return <AttendanceSection attendance={attendance} employees={employees} />;
             case 'leaves':       return <LeavesSection leaves={leaves} employees={employees} onRefresh={fetchAll} />;
