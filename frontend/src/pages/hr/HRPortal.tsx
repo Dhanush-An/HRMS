@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import api from '../../api';
 import logo from '../../assets/antigraviity logo 2.jpg';
+import AdminPayroll from '../admin/Payroll';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const cn = (...classes: (string | boolean | undefined)[]) =>
@@ -203,42 +204,42 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                     <div
                         key={emp._id || emp.id}
                         onClick={() => setProfile(emp)}
-                        className="bg-[#1a1c2e] border border-brand-border/40 rounded-2xl p-5 hover:border-brand-primary/60 transition-all cursor-pointer group hover:bg-[#22253d] shadow-sm flex flex-col lg:flex-row lg:items-center gap-6"
+                        className="bg-[#1a1c2e] border border-brand-border/40 rounded-xl p-3.5 hover:border-brand-primary/60 transition-all cursor-pointer group hover:bg-[#22253d] shadow-sm flex flex-col lg:flex-row lg:items-center gap-4"
                     >
                         {/* 1. Profile Section */}
-                        <div className="flex items-center gap-4 lg:w-1/4 min-w-[200px]">
-                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-lg font-black shadow-lg shadow-brand-primary/10 flex-shrink-0">
+                        <div className="flex items-center gap-3 lg:w-1/4 min-w-[180px]">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-base font-black shadow-lg shadow-brand-primary/10 flex-shrink-0">
                                 {emp.name?.charAt(0)}
                             </div>
                             <div className="min-w-0">
-                                <h3 className="font-bold text-brand-text truncate group-hover:text-brand-primary transition-colors text-base">{emp.name}</h3>
-                                <p className="text-[11px] text-brand-muted font-bold uppercase tracking-wider mt-0.5">
+                                <h3 className="font-bold text-brand-text truncate group-hover:text-brand-primary transition-colors text-sm">{emp.name}</h3>
+                                <p className="text-[10px] text-brand-muted font-bold uppercase tracking-wider mt-0.5">
                                     {emp.role || 'Staff'} · {emp.department}
                                 </p>
                             </div>
                         </div>
 
                         {/* 2. Contact Section */}
-                        <div className="flex flex-col sm:flex-row lg:flex-row gap-4 lg:flex-1">
-                            <div className="flex items-center gap-3 text-brand-muted text-[13px] font-medium min-w-[180px]">
-                                <Mail className="w-4 h-4 text-brand-primary/70" />
+                        <div className="flex flex-col sm:flex-row lg:flex-row gap-3 lg:flex-1">
+                            <div className="flex items-center gap-2 text-brand-muted text-xs font-medium min-w-[160px]">
+                                <Mail className="w-3.5 h-3.5 text-brand-primary/70" />
                                 <span className="truncate">{emp.email}</span>
                             </div>
-                            <div className="flex items-center gap-3 text-brand-muted text-[13px] font-medium min-w-[120px]">
-                                <Phone className="w-4 h-4 text-brand-primary/70" />
+                            <div className="flex items-center gap-2 text-brand-muted text-xs font-medium min-w-[120px]">
+                                <Phone className="w-3.5 h-3.5 text-brand-primary/70" />
                                 <span>{emp.phone || '—'}</span>
                             </div>
                         </div>
 
                         {/* 3. Status & Date Section */}
-                        <div className="flex items-center gap-8 lg:w-1/4">
+                        <div className="flex items-center gap-6 lg:w-1/4">
                             <div className="hidden sm:block">
-                                <p className="text-[10px] text-brand-muted uppercase tracking-[0.2em] font-black opacity-50 mb-1">Status</p>
+                                <p className="text-[9px] text-brand-muted uppercase tracking-[0.2em] font-black opacity-50 mb-0.5">Status</p>
                                 <Badge status={emp.status || 'Active'} />
                             </div>
                             <div className="hidden sm:block">
-                                <p className="text-[10px] text-brand-muted uppercase tracking-[0.2em] font-black opacity-50 mb-1">Joined</p>
-                                <p className="text-[13px] text-brand-text font-bold">{emp.joiningDate || '—'}</p>
+                                <p className="text-[9px] text-brand-muted uppercase tracking-[0.2em] font-black opacity-50 mb-0.5">Joined</p>
+                                <p className="text-xs text-brand-text font-bold">{emp.joiningDate || '—'}</p>
                             </div>
                         </div>
 
@@ -246,9 +247,9 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                         <div className="flex items-center gap-2 lg:ml-auto">
                             <button
                                 onClick={(e) => { e.stopPropagation(); setProfile(emp); }}
-                                className="flex items-center gap-2 px-4 py-2 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-xl text-xs font-bold hover:bg-brand-primary hover:text-white transition-all shadow-sm"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-lg text-[11px] font-bold hover:bg-brand-primary hover:text-white transition-all shadow-sm"
                             >
-                                <Edit2 className="w-3.5 h-3.5" /> Edit
+                                <Edit2 className="w-3 h-3" /> Edit
                             </button>
                             <button
                                 onClick={async (e) => { 
@@ -258,9 +259,9 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                                         _onRefresh();
                                     }
                                 }}
-                                className="flex items-center gap-2 px-4 py-2 bg-rose-500/10 text-rose-600 border border-rose-500/20 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500/10 text-rose-600 border border-rose-500/20 rounded-lg text-[11px] font-bold hover:bg-rose-500 hover:text-white transition-all shadow-sm"
                             >
-                                <Trash2 className="w-3.5 h-3.5" /> Delete
+                                <Trash2 className="w-3 h-3" /> Delete
                             </button>
                         </div>
                     </div>
@@ -717,7 +718,7 @@ const TasksSection = ({ employees }: { employees: any[] }) => {
         try {
             const res = await api.get('/api/tasks');
             const data = await res.json();
-            setTasks(Array.isArray(data) ? data : []);
+            setTasks(Array.isArray(data) ? data.slice().reverse() : []);
         } catch { /* silent */ }
     }, []);
 
@@ -873,7 +874,7 @@ const HRPortal: React.FC = () => {
             case 'employees':    return <EmployeesSection employees={employees} onRefresh={fetchAll} />;
             case 'attendance':   return <AttendanceSection attendance={attendance} employees={employees} />;
             case 'leaves':       return <LeavesSection leaves={leaves} employees={employees} onRefresh={fetchAll} />;
-            case 'payroll':      return <PayrollSection employees={employees} />;
+            case 'payroll':      return <AdminPayroll />;
             case 'permissions':  return <PermissionsSection leaves={leaves} onRefresh={fetchAll} />;
             case 'announcements':return <AnnouncementsSection />;
             case 'task-assignment':return <TasksSection employees={employees} />;
