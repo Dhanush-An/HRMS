@@ -34,6 +34,7 @@ const NAV = [
     { id: 'employees',    icon: Users,            label: 'Employees' },
     { id: 'attendance',   icon: Calendar,         label: 'Attendance' },
     { id: 'leaves',       icon: FileText,         label: 'Leave Requests' },
+    { id: 'tasks',        icon: FileText,         label: 'Assign Task' },
     { id: 'payroll',      icon: DollarSign,       label: 'Payroll' },
     { id: 'permissions',  icon: Shield,           label: 'Permissions' },
     { id: 'announcements',icon: Bell,             label: 'Announcements' },
@@ -574,6 +575,140 @@ const AnnouncementsSection = () => {
     );
 };
 
+// ─── Section: Tasks ────────────────────────────────────────────────────────────
+const TasksSection = ({ employees }: { employees: any[] }) => {
+    const [tasks, setTasks] = useState<any[]>([]);
+    const [showModal, setShowModal] = useState(false);
+    const [form, setForm] = useState({
+        employeeId: '',
+        projectName: '',
+        description: '',
+        priority: 'Medium',
+        date: new Date().toISOString().split('T')[0]
+    });
+
+    const fetchTasks = useCallback(async () => {
+        try {
+            const res = await api.get('/api/tasks');
+            const data = await res.json();
+            setTasks(Array.isArray(data) ? data : []);
+        } catch { /* silent */ }
+    }, []);
+
+    useEffect(() => { fetchTasks(); }, [fetchTasks]);
+
+    const submit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const res = await api.post('/api/tasks', { ...form, status: 'Pending' });
+            if (res.ok) {
+                setShowModal(false);
+                setForm({ employeeId: '', projectName: '', description: '', priority: 'Medium', date: new Date().toISOString().split('T')[0] });
+                fetchTasks();
+            }
+        } catch (err: any) { alert(err.message); }
+    };
+
+    return (
+        <div className="space-y-5">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-black text-brand-text">Task Management</h2>
+                    <p className="text-sm text-brand-muted mt-0.5">Assign and track tasks for employees.</p>
+                </div>
+                <button onClick={() => setShowModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-brand-primary/20">
+                    <Plus className="w-4 h-4" /> Assign New Task
+                </button>
+            </div>
+            <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
+                <table className="w-full text-left">
+                    <thead className="bg-brand-bg border-b border-brand-border">
+                        <tr>{['Employee', 'Project', 'Activity', 'Priority', 'Status', 'Date'].map(h => (
+                            <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
+                        ))}</tr>
+                    </thead>
+                    <tbody className="divide-y divide-brand-border">
+                        {tasks.map((t: any) => (
+                            <tr key={t._id || t.id} className="hover:bg-brand-bg/40 transition-colors">
+                                <td className="px-4 py-3 text-sm font-semibold text-brand-text">
+                                    {employees.find(e => e.employeeId === t.employeeId)?.name || t.employeeId}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-brand-text">{t.projectName || '—'}</td>
+                                <td className="px-4 py-3 text-xs text-brand-muted max-w-[200px] truncate">{t.description}</td>
+                                <td className="px-4 py-3 text-xs">
+                                    <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border',
+                                        t.priority === 'High' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                                        t.priority === 'Medium' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                        'bg-brand-bg text-brand-muted border-brand-border')}>
+                                        {t.priority}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3"><Badge status={t.status} /></td>
+                                <td className="px-4 py-3 text-xs text-brand-muted">{t.date}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {!tasks.length && (
+                    <div className="py-20 text-center">
+                        <FileText className="w-10 h-10 mx-auto mb-3 text-brand-muted opacity-30" />
+                        <p className="text-brand-muted text-sm border-0 border-transparent">No tasks assigned yet.</p>
+                    </div>
+                )}
+            </div>
+            {showModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 w-full max-w-lg" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-black text-brand-text">Assign New Task</h3>
+                            <button onClick={() => setShowModal(false)}><XCircle className="w-5 h-5 text-brand-muted" /></button>
+                        </div>
+                        <form onSubmit={submit} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">Employee</label>
+                                <select value={form.employeeId} onChange={e => setForm({ ...form, employeeId: e.target.value })} required
+                                    className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none">
+                                    <option value="">Select Employee</option>
+                                    {employees.map(e => <option key={e.id} value={e.employeeId}>{e.name} ({e.employeeId})</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">Project Name</label>
+                                <input value={form.projectName} onChange={e => setForm({ ...form, projectName: e.target.value })}
+                                    className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none" />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">Task Description</label>
+                                <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} required rows={3}
+                                    className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none resize-none" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div><label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">Priority</label>
+                                    <select value={form.priority} onChange={e => setForm({ ...form, priority: e.target.value })}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none">
+                                        <option>Low</option><option>Medium</option><option>High</option>
+                                    </select>
+                                </div>
+                                <div><label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">Due Date</label>
+                                    <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} required
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none" />
+                                </div>
+                            </div>
+                            <div className="flex gap-3 pt-4">
+                                <button type="button" onClick={() => setShowModal(false)}
+                                    className="flex-1 py-3 border border-brand-border text-brand-muted rounded-xl font-bold text-sm hover:bg-brand-bg transition-all">Cancel</button>
+                                <button type="submit"
+                                    className="flex-1 py-3 bg-brand-primary text-white rounded-xl font-bold text-sm hover:opacity-90 shadow-lg shadow-brand-primary/20 transition-all">Assign Task</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // ─── Main HRPortal ────────────────────────────────────────────────────────────
 const HRPortal: React.FC = () => {
     const navigate = useNavigate();
@@ -615,6 +750,7 @@ const HRPortal: React.FC = () => {
             case 'payroll':      return <PayrollSection employees={employees} />;
             case 'permissions':  return <PermissionsSection leaves={leaves} onRefresh={fetchAll} />;
             case 'announcements':return <AnnouncementsSection />;
+            case 'tasks':        return <TasksSection employees={employees} />;
             default:             return null;
         }
     };
