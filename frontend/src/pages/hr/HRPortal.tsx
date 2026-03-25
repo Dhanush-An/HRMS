@@ -14,6 +14,50 @@ import AdminPayroll from '../admin/Payroll';
 const cn = (...classes: (string | boolean | undefined)[]) =>
     classes.filter(Boolean).join(' ');
 
+const formatTimeTo12Hour = (time?: string) => {
+    if (!time || time === '--:--') return '--:--';
+    if (time.toUpperCase().includes('AM') || time.toUpperCase().includes('PM')) {
+        return time;
+    }
+    try {
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        return `${hour12}:${minutes} ${ampm}`;
+    } catch {
+        return time;
+    }
+};
+
+const calculateWorkingHours = (checkIn?: string, checkOut?: string, dbWorkHours?: number) => {
+    if (!checkIn || !checkOut || checkIn === '--:--' || checkOut === '--:--') {
+        return dbWorkHours ? `${dbWorkHours.toFixed(1)} hrs` : '--:--';
+    }
+    try {
+        const parseTime = (t: string) => {
+            const isPM = t.toUpperCase().includes('PM');
+            const [timePart] = t.split(' ');
+            let [h, m] = timePart.split(':').map(Number);
+            if (isPM && h !== 12) h += 12;
+            if (!isPM && h === 12 && t.toUpperCase().includes('AM')) h = 0;
+            return { h, m };
+        };
+        const { h: inH, m: inM } = parseTime(checkIn);
+        const { h: outH, m: outM } = parseTime(checkOut);
+        
+        let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+        if (diffMins < 0) diffMins += 24 * 60;
+        
+        const hrs = Math.floor(diffMins / 60);
+        const mins = diffMins % 60;
+        
+        return `${hrs}h ${mins}m`;
+    } catch {
+        return dbWorkHours ? `${dbWorkHours.toFixed(1)} hrs` : '--:--';
+    }
+};
+
 const Badge = ({ status }: { status: string }) => {
     const map: Record<string, string> = {
         Approved: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
@@ -54,6 +98,17 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
     const todayStr = new Date().toISOString().split('T')[0];
     const myRecord = attendance.find((a: any) => a.employeeId === user.id && a.date === todayStr);
 
+    const isCheckedIn = !!myRecord;
+    const isCheckedOut = !!(myRecord && myRecord.checkOut);
+
+    const clockedInTime = myRecord?.checkIn || '--:--';
+    const clockedOutTime = myRecord?.checkOut || '--:--';
+    const sessionLocation = { 
+        workMode: myRecord?.workMode || 'Work from Office', 
+        workLocation: myRecord?.workLocation || 'Bangalore', 
+        workHours: myRecord?.workHours || 0 
+    };
+
     const markAttendance = async () => {
         try {
             if (!myRecord) {
@@ -62,14 +117,39 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                     employeeId: user.id,
                     employeeName: user.name,
                     date: todayStr,
-                    checkIn: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    checkIn: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
                     status: 'Present'
                 });
             } else if (!myRecord.checkOut) {
                 // Check-out
+                const checkOutStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                
+                let workHours = 0;
+                if (myRecord.checkIn) {
+                    try {
+                        const inTime = formatTimeTo12Hour(myRecord.checkIn);
+                        const outTime = formatTimeTo12Hour(checkOutStr);
+                        const parseTime = (t: string) => {
+                            const isPM = t.toUpperCase().includes('PM');
+                            const [timePart] = t.split(' ');
+                            let [h, m] = timePart.split(':').map(Number);
+                            if (isPM && h !== 12) h += 12;
+                            if (!isPM && h === 12 && t.toUpperCase().includes('AM')) h = 0;
+                            return { h, m };
+                        };
+                        const { h: inH, m: inM } = parseTime(inTime);
+                        const { h: outH, m: outM } = parseTime(outTime);
+                        
+                        let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+                        if (diffMins < 0) diffMins += 24 * 60;
+                        workHours = Number((diffMins / 60).toFixed(2));
+                    } catch { /* ignore */ }
+                }
+
                 await api.put(`/api/attendance/${myRecord._id || myRecord.id}`, {
                     ...myRecord,
-                    checkOut: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    checkOut: checkOutStr,
+                    workHours
                 });
             }
             onRefresh();
@@ -105,7 +185,7 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
             </div>
 
             {/* Attendance Marking Widget */}
-            <div className="bg-gradient-to-br from-brand-primary/10 to-blue-500/5 border border-brand-primary/20 rounded-[2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="bg-gradient-to-br from-brand-primary/10 to-blue-500/5 border border-brand-primary/20 rounded-[2rem] p-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-8">
                 <div className="flex items-center gap-6">
                     <div className="w-16 h-16 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center shadow-xl">
                         <Clock className="w-8 h-8 text-brand-primary animate-pulse" />
@@ -120,24 +200,67 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                     </div>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <div className="text-right hidden sm:block">
-                        <p className="text-xs font-bold text-brand-text">Daily Presence</p>
-                        <p className="text-[10px] text-brand-muted uppercase font-black tracking-widest mt-0.5">
-                            {myRecord ? `Checked in at ${myRecord.checkIn}` : 'Not checked in today'}
-                        </p>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                    <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-xl shadow-sm">
+                        {/* Login Details */}
+                        <div className="flex flex-col items-start gap-1">
+                            <span className="text-lg font-medium text-brand-text">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
+                            {sessionLocation.workMode && (
+                                <span className={cn(
+                                    "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
+                                    sessionLocation.workMode === 'Work from Office'
+                                        ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20"
+                                        : "bg-[#e5dfff] text-[#5b3ae9] border-[#d4cbff]" 
+                                )}>
+                                    {sessionLocation.workMode === 'Work from Office' ? 'Office' : 'Remote'}
+                                </span>
+                            )}
+                        </div>
+                        
+                        {/* Logout Details */}
+                        <div className="flex flex-col items-start gap-1">
+                            <span className="text-lg font-medium text-brand-text">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
+                            {sessionLocation.workLocation && (
+                                <span className="text-[10px] text-brand-muted uppercase font-black tracking-widest">
+                                    {sessionLocation.workLocation}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Total Hours Metric */}
+                        <div className="flex items-center justify-center px-4 py-1.5 ml-2 border border-brand-border rounded-xl bg-brand-bg text-sm font-bold text-brand-text shadow-sm">
+                            {calculateWorkingHours(clockedInTime, clockedOutTime, sessionLocation.workHours)}
+                        </div>
                     </div>
-                    <button 
-                        onClick={markAttendance}
-                        className={cn(
-                            "px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:scale-[1.03] active:scale-95 transition-all text-white border-b-4",
-                            !myRecord ? "bg-brand-primary border-brand-primary/30" : 
-                            !myRecord.checkOut ? "bg-rose-500 border-rose-500/30" : "bg-brand-muted border-brand-border cursor-not-allowed opacity-50"
-                        )}
-                        disabled={!!(myRecord && myRecord.checkOut)}
-                    >
-                        {!myRecord ? 'Check In Now' : !myRecord.checkOut ? 'Check Out Now' : 'Shift Completed'}
-                    </button>
+                    
+                    <div className="w-full sm:w-auto flex bg-brand-surface border border-brand-border rounded-xl p-1 gap-1 shadow-sm">
+                        <button
+                            onClick={!isCheckedIn && !isCheckedOut ? markAttendance : undefined}
+                            disabled={isCheckedIn || isCheckedOut}
+                            className={cn(
+                                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
+                                (isCheckedIn || isCheckedOut)
+                                    ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20 opacity-80 cursor-not-allowed"
+                                    : "bg-emerald-500 hover:opacity-90 text-white shadow-lg shadow-emerald-500/20"
+                            )}
+                        >
+                            <CheckCircle className="w-4 h-4" />
+                            {isCheckedOut ? "Day Completed" : isCheckedIn ? "Logged In" : "Login"}
+                        </button>
+                        <button
+                            onClick={isCheckedIn && !isCheckedOut ? markAttendance : undefined}
+                            disabled={!isCheckedIn || isCheckedOut}
+                            className={cn(
+                                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
+                                !isCheckedIn || isCheckedOut
+                                    ? "text-brand-muted bg-brand-bg opacity-50 cursor-not-allowed border border-brand-border"
+                                    : "bg-rose-500 hover:opacity-90 text-white shadow-lg shadow-rose-500/20"
+                            )}
+                        >
+                            <LogOut className="w-4 h-4" />
+                            {isCheckedOut ? "Logged Out" : "Logout"}
+                        </button>
+                    </div>
                 </div>
             </div>
 
