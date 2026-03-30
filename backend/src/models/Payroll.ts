@@ -26,6 +26,8 @@ const PayrollSchema: Schema = new Schema({
         base: { type: Number, required: true },
         bonus: { type: Number, default: 0 },
         deductions: { type: Number, default: 0 },
+        tax: { type: Number, default: 0 },
+        pf: { type: Number, default: 0 },
         netSalary: { type: Number, required: true }
     }]
 }, {

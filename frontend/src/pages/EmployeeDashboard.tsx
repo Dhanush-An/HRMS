@@ -111,9 +111,11 @@ const EmployeeDashboard = () => {
 
     const fetchTodayAttendance = async (employeeId: string) => {
         try {
-            const today = new Date().toISOString().split('T')[0];
-            const yesterdayDate = new Date();
-            yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+            const now = new Date();
+            const tzOffset = now.getTimezoneOffset() * 60000;
+            const today = new Date(now.getTime() - tzOffset).toISOString().split('T')[0];
+            
+            const yesterdayDate = new Date(now.getTime() - 86400000 - tzOffset);
             const yesterday = yesterdayDate.toISOString().split('T')[0];
 
             const res = await api.get(`/api/attendance?employeeId=${employeeId}&limit=1`);
@@ -272,7 +274,8 @@ const EmployeeDashboard = () => {
         }
 
         try {
-            const today = now.toISOString().split('T')[0];
+            const tzOffset = now.getTimezoneOffset() * 60000;
+            const today = new Date(now.getTime() - tzOffset).toISOString().split('T')[0];
             const res = await api.post('/api/attendance', {
                 employeeId: user.id,
                 employeeName: user.name,
@@ -295,8 +298,9 @@ const EmployeeDashboard = () => {
             setAttendanceId(data.id);
             setSessionLocation({ workMode: loginOptions.workMode, workLocation: loginOptions.workLocation, workHours: 0 });
             setIsLoginModalOpen(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error checking in:", error);
+            alert(error.message || "Failed to check in. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -582,9 +586,9 @@ const EmployeeDashboard = () => {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="relative bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden"
+                            className="relative bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col max-h-[90vh]"
                         >
-                            <div className="p-8 border-b border-brand-border bg-gradient-to-br from-brand-primary/10 to-transparent">
+                            <div className="p-8 md:p-10 border-b border-brand-border bg-gradient-to-br from-brand-primary/10 to-transparent shrink-0">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-4">
                                         <div className="p-3 bg-brand-primary rounded-xl shadow-lg shadow-brand-primary/20">
@@ -604,11 +608,11 @@ const EmployeeDashboard = () => {
                                 </div>
                             </div>
 
-                            <div className="p-8 space-y-8">
+                            <div className="p-8 md:p-10 space-y-8 md:space-y-10 overflow-y-auto no-scrollbar">
                                 {/* Work Mode Selection */}
-                                <div className="space-y-4">
+                                <div className="space-y-5">
                                     <label className="text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Working Environment</label>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-5">
                                         {[
                                             { id: 'Work from Office', icon: Building2, label: 'Office' },
                                             { id: 'Work from Home', icon: Home, label: 'Remote' }
@@ -617,18 +621,18 @@ const EmployeeDashboard = () => {
                                                 key={mode.id}
                                                 onClick={() => setLoginOptions(prev => ({ ...prev, workMode: mode.id }))}
                                                 className={cn(
-                                                    "flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all group",
+                                                    "flex flex-col items-center gap-4 p-8 rounded-2xl border-2 transition-all group",
                                                     loginOptions.workMode === mode.id
                                                         ? "bg-brand-primary-light border-brand-primary shadow-lg shadow-brand-primary/10"
                                                         : "bg-brand-bg border-brand-border hover:border-brand-primary/50"
                                                 )}
                                             >
                                                 <mode.icon className={cn(
-                                                    "w-6 h-6",
+                                                    "w-7 h-7",
                                                     loginOptions.workMode === mode.id ? "text-brand-primary" : "text-brand-muted group-hover:text-brand-primary"
                                                 )} />
                                                 <span className={cn(
-                                                    "text-xs font-black uppercase tracking-widest",
+                                                    "text-sm font-black uppercase tracking-widest",
                                                     loginOptions.workMode === mode.id ? "text-brand-primary" : "text-brand-muted"
                                                 )}>{mode.label}</span>
                                             </button>
@@ -637,21 +641,21 @@ const EmployeeDashboard = () => {
                                 </div>
 
                                 {/* Location Selection */}
-                                <div className="space-y-4">
+                                <div className="space-y-5">
                                     <label className="text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Assigned Branch</label>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-5">
                                         {['Chennai', 'Bangalore'].map((loc) => (
                                             <button
                                                 key={loc}
                                                 onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc }))}
                                                 className={cn(
-                                                    "flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all font-bold",
+                                                    "flex flex-col items-center justify-center gap-3 py-6 rounded-2xl border-2 transition-all font-bold",
                                                     loginOptions.workLocation === loc
                                                         ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
                                                         : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
                                                 )}
                                             >
-                                                <MapPin className="w-4 h-4" />
+                                                <MapPin className="w-5 h-5" />
                                                 <span className="text-sm">{loc}</span>
                                             </button>
                                         ))}
@@ -659,32 +663,37 @@ const EmployeeDashboard = () => {
                                 </div>
 
                                 {/* Shift Selection */}
-                                <div className="space-y-4">
+                                <div className="space-y-5">
                                     <label className="text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Shift Type</label>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-2 gap-5">
                                         {[
-                                            { id: 'Day Shift', icon: Sun, label: 'Day Shift (9AM - 6PM)' },
-                                            { id: 'Night Shift', icon: Moon, label: 'Night Shift (8PM - 5:30AM)' }
+                                            { id: 'Day Shift', icon: Sun, label: 'Day Shift', time: '9AM - 6PM' },
+                                            { id: 'Night Shift', icon: Moon, label: 'Night Shift', time: '8PM - 5:30AM' }
                                         ].map((shift) => (
                                             <button
                                                 key={shift.id}
                                                 onClick={() => setLoginOptions(prev => ({ ...prev, shiftType: shift.id }))}
                                                 className={cn(
-                                                    "flex flex-col items-center gap-2 py-4 px-2 rounded-xl border-2 transition-all font-bold",
+                                                    "flex flex-col items-center gap-3 py-6 px-3 rounded-2xl border-2 transition-all font-bold",
                                                     loginOptions.shiftType === shift.id
                                                         ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
                                                         : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
                                                 )}
                                             >
-                                                <shift.icon className="w-5 h-5" />
-                                                <span className="text-xs text-center">{shift.label}</span>
+                                                <shift.icon className="w-6 h-6" />
+                                                <div className="flex flex-col gap-1 items-center">
+                                                    <span className="text-sm">{shift.label}</span>
+                                                    <span className={cn(
+                                                        "text-[10px] font-black tracking-wider uppercase opacity-80",
+                                                    )}>{shift.time}</span>
+                                                </div>
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="p-8 bg-brand-bg/50 border-t border-brand-border flex gap-4">
+                            <div className="p-8 md:p-10 bg-brand-bg/50 border-t border-brand-border flex gap-4 shrink-0">
                                 <button
                                     onClick={() => setIsLoginModalOpen(false)}
                                     disabled={isSubmitting}
