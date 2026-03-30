@@ -373,6 +373,7 @@ const Attendance = () => {
                             <tr className="bg-table-header border-b border-brand-border">
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
+                                <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Shift</th>
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check In</th>
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check Out</th>
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Work Hours</th>
@@ -422,6 +423,20 @@ const Attendance = () => {
                                                 </span>
                                             </div>
                                         </td>
+                                        <td className="px-4 py-4 whitespace-nowrap">
+                                            {record?.shiftType ? (
+                                                <span className={cn(
+                                                    "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border",
+                                                    record.shiftType === 'Day Shift'
+                                                        ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                                        : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                                                )}>
+                                                    {record.shiftType === 'Day Shift' ? 'Day' : 'Night'}
+                                                </span>
+                                            ) : (
+                                                <span className="text-[10px] font-bold text-brand-muted">—</span>
+                                            )}
+                                        </td>
                                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
                                             <div className="flex flex-col gap-1">
                                                 <span>{formatTimeTo12Hour(record?.checkIn)}</span>
@@ -433,16 +448,6 @@ const Attendance = () => {
                                                             : "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
                                                     )}>
                                                         {record.workMode === 'Work from Office' ? 'Office' : 'Remote'}
-                                                    </span>
-                                                )}
-                                                {record?.shiftType && (
-                                                    <span className={cn(
-                                                        "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border w-fit",
-                                                        record.shiftType === 'Day Shift'
-                                                            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                                                            : "bg-slate-500/10 text-slate-400 border-slate-500/20"
-                                                    )}>
-                                                        {record.shiftType === 'Day Shift' ? 'Day' : 'Night'}
                                                     </span>
                                                 )}
                                             </div>

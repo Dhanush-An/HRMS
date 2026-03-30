@@ -112,7 +112,11 @@ const EmployeeDashboard = () => {
     const fetchTodayAttendance = async (employeeId: string) => {
         try {
             const today = new Date().toISOString().split('T')[0];
-            const res = await api.get(`/api/attendance?date=${today}`);
+            const yesterdayDate = new Date();
+            yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+            const yesterday = yesterdayDate.toISOString().split('T')[0];
+
+            const res = await api.get(`/api/attendance?employeeId=${employeeId}&limit=1`);
             const data = await res.json();
             
             if (!Array.isArray(data)) {
@@ -120,19 +124,27 @@ const EmployeeDashboard = () => {
                 return;
             }
 
-            const record = data.find((r: any) => r.employeeId === employeeId);
+            const record = data.length > 0 ? data[0] : null;
 
             if (record) {
-                setAttendanceId(record.id);
-                setClockedInTime(record.checkIn || '--:--');
-                setClockedOutTime(record.checkOut || '--:--');
-                setSessionLocation({ workMode: record.workMode || '', workLocation: record.workLocation || '', workHours: record.workHours || 0 });
-                if (record.checkOut) {
-                    setIsCheckedIn(false);
-                    setIsCheckedOut(true);
-                } else {
-                    setIsCheckedIn(true);
-                    setIsCheckedOut(false);
+                const isOvernightShift = record.date === yesterday && record.shiftType === 'Night Shift' && !record.checkOut;
+                
+                if (record.date === today || isOvernightShift) {
+                    setAttendanceId(record.id);
+                    setClockedInTime(record.checkIn || '--:--');
+                    setClockedOutTime(record.checkOut || '--:--');
+                    setSessionLocation({ workMode: record.workMode || '', workLocation: record.workLocation || '', workHours: record.workHours || 0 });
+                    if (record.checkOut) {
+                        setIsCheckedIn(false);
+                        setIsCheckedOut(true);
+                    } else {
+                        setIsCheckedIn(true);
+                        setIsCheckedOut(false);
+                        // Also restore previous shift option if resuming
+                        if (record.shiftType === 'Night Shift') {
+                            setLoginOptions(prev => ({ ...prev, shiftType: 'Night Shift' }));
+                        }
+                    }
                 }
             }
         } catch (error) {
@@ -302,7 +314,9 @@ const EmployeeDashboard = () => {
                 const [inH, inM] = clockedInTime.split(':').map(Number);
                 const outH = now.getHours();
                 const outM = now.getMinutes();
-                workHours = Number(((outH * 60 + outM - (inH * 60 + inM)) / 60).toFixed(2));
+                let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+                if (diffMins < 0) diffMins += 24 * 60;
+                workHours = Number((diffMins / 60).toFixed(2));
             }
 
             await api.put(`/api/attendance/${attendanceId}`, {

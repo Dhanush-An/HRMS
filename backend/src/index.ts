@@ -397,11 +397,12 @@ app.get('/api/employees/:id/location', async (req, res) => {
 
 // GET attendance (optional filter by date)
 app.get('/api/attendance', async (req, res) => {
-    const { date } = req.query;
+    const { date, employeeId, limit } = req.query;
     try {
         const query: any = {};
         if (date) query.date = date;
-        const attendance = await Attendance.find(query);
+        if (employeeId) query.employeeId = employeeId;
+        const attendance = await Attendance.find(query).sort({ createdAt: -1 }).limit(Number(limit) || 0);
         res.json(attendance);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
