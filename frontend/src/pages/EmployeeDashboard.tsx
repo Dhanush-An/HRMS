@@ -309,6 +309,9 @@ const EmployeeDashboard = () => {
     const handleCheckOut = async () => {
         if (!attendanceId) return;
 
+        const isConfirm = window.confirm("Are you sure you want to Check Out for today? You will not be able to log back in for this shift.");
+        if (!isConfirm) return;
+
         const now = new Date();
         const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
@@ -545,7 +548,7 @@ const EmployeeDashboard = () => {
                                         )}
                                     >
                                         <CheckCircle2 className="w-4 h-4" />
-                                        {isCheckedOut ? "Day Completed" : isCheckedIn ? "Logged In" : "Login"}
+                                        {isCheckedOut ? "Shift Completed" : isCheckedIn ? "Checked In" : "Check In"}
                                     </button>
                                     <button
                                         onClick={handleCheckOut}
@@ -558,7 +561,7 @@ const EmployeeDashboard = () => {
                                         )}
                                     >
                                         <LogOut className="w-4 h-4" />
-                                        {isCheckedOut ? "Logged Out" : "Logout"}
+                                        {isCheckedOut ? "Checked Out" : "Check Out"}
                                     </button>
                                 </div>
                             </div>

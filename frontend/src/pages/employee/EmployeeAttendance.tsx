@@ -13,6 +13,7 @@ interface AttendanceRecord {
     workHours?: number;
     workMode?: string;
     workLocation?: string;
+    shiftType?: string;
 }
 
 const formatTimeTo12Hour = (time?: string) => {
@@ -201,18 +202,28 @@ const EmployeeAttendance = () => {
                         </div>
                     )}
 
-                    {record && (
-                        <div className="mt-auto absolute bottom-1 md:bottom-3 left-1 md:left-3 right-1 md:right-3 space-y-0.5 md:space-y-1.5">
-                            <span className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-brand-muted">
-                                {record.checkIn ? formatTimeTo12Hour(record.checkIn) : '--:--'}
-                            </span>
-                            <div className="h-0.5 md:h-1 w-full bg-brand-border rounded-full overflow-hidden">
+                    {record && !record.isWeeklyOff && (
+                        <div className="mt-auto absolute bottom-1 md:bottom-2 left-1 md:left-2 right-1 md:right-2 space-y-0 md:space-y-1">
+                            {record.shiftType && (
+                                <span className={cn(
+                                    "block text-[6px] md:text-[8px] font-black uppercase truncate",
+                                    record.shiftType === 'Night Shift' ? "text-brand-primary" : "text-amber-500"
+                                )}>
+                                    {record.shiftType === 'Night Shift' ? 'Night' : 'Day'}
+                                </span>
+                            )}
+                            <div className="flex justify-between items-center text-[7px] md:text-[9px] font-black uppercase tracking-widest text-brand-muted">
+                                <span>{record.checkIn ? formatTimeTo12Hour(record.checkIn) : '--:--'}</span>
+                                <span className="opacity-50">-</span>
+                                <span>{record.checkOut ? formatTimeTo12Hour(record.checkOut) : '--:--'}</span>
+                            </div>
+                            <div className="h-0.5 md:h-1 w-full bg-brand-border rounded-full overflow-hidden mt-0.5">
                                 <div
                                     className={cn("h-full",
                                         record.status === 'Present' ? "bg-status-approved" :
                                             record.status === 'Late' ? "bg-brand-primary" : "bg-brand-muted"
                                     )}
-                                    style={{ width: record.workHours ? `${(record.workHours / 9) * 100}%` : '0%' }}
+                                    style={{ width: record.workHours ? `${Math.min((record.workHours / 9) * 100, 100)}%` : '0%' }}
                                 />
                             </div>
                         </div>
