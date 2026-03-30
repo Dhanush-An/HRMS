@@ -42,6 +42,7 @@ interface AttendanceRecord {
     };
     workMode?: string;
     workLocation?: string;
+    shiftType?: string;
 }
 
 const formatTimeTo12Hour = (time?: string) => {
@@ -434,6 +435,16 @@ const Attendance = () => {
                                                         {record.workMode === 'Work from Office' ? 'Office' : 'Remote'}
                                                     </span>
                                                 )}
+                                                {record?.shiftType && (
+                                                    <span className={cn(
+                                                        "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border w-fit",
+                                                        record.shiftType === 'Day Shift'
+                                                            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                                            : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                                                    )}>
+                                                        {record.shiftType === 'Day Shift' ? 'Day' : 'Night'}
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
@@ -510,6 +521,9 @@ const Attendance = () => {
                                             <span className="text-brand-text font-bold text-xs">{formatTimeTo12Hour(record?.checkIn)}</span>
                                             {record?.workMode && (
                                                 <span className="text-[9px] font-black text-brand-primary uppercase">{record.workMode === 'Work from Office' ? 'Office' : 'Remote'}</span>
+                                            )}
+                                            {record?.shiftType && (
+                                                <span className="text-[9px] font-black text-brand-muted uppercase">{record.shiftType === 'Day Shift' ? 'Day' : 'Night'}</span>
                                             )}
                                         </div>
                                     </div>

@@ -19,7 +19,9 @@ import {
     Home,
     MapPin,
     ChevronRight,
-    Loader2
+    Loader2,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import logo from '../assets/antigraviity logo 2.jpg';
@@ -102,7 +104,8 @@ const EmployeeDashboard = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [loginOptions, setLoginOptions] = useState({
         workMode: 'Work from Office',
-        workLocation: 'Chennai'
+        workLocation: 'Chennai',
+        shiftType: 'Day Shift'
     });
 
 
@@ -223,17 +226,37 @@ const EmployeeDashboard = () => {
         const now = new Date();
         const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-        const tenThirty = new Date();
-        tenThirty.setHours(10, 30, 0, 0);
-
-        const onePM = new Date();
-        onePM.setHours(13, 0, 0, 0);
-
         let status = 'Present';
-        if (now > onePM) {
-            status = 'Half Day';
-        } else if (now > tenThirty) {
-            status = 'Late';
+
+        if (loginOptions.shiftType === 'Day Shift') {
+            const tenThirty = new Date();
+            tenThirty.setHours(10, 30, 0, 0);
+
+            const onePM = new Date();
+            onePM.setHours(13, 0, 0, 0);
+
+            if (now > onePM) {
+                status = 'Half Day';
+            } else if (now > tenThirty) {
+                status = 'Late';
+            }
+        } else {
+            // Night Shift logic
+            // Shift is 8 PM to 5:30 AM
+            // Attendance login time <= 8:20 PM is present, else late
+            const eightTwentyPM = new Date();
+            eightTwentyPM.setHours(20, 20, 0, 0);
+
+            const ninePM = new Date();
+            ninePM.setHours(21, 0, 0, 0);
+
+            if (now > ninePM) {
+                // User stated "9pm after i login mard as late"
+                status = 'Late';
+            } else if (now > eightTwentyPM) {
+                // General "late" buffer over 20 mins
+                status = 'Late';
+            }
         }
 
         try {
@@ -246,6 +269,7 @@ const EmployeeDashboard = () => {
                 checkIn: timeString,
                 workMode: loginOptions.workMode,
                 workLocation: loginOptions.workLocation,
+                shiftType: loginOptions.shiftType,
                 location: {
                     lat: loginLocation.latitude,
                     lng: loginLocation.longitude
@@ -615,6 +639,31 @@ const EmployeeDashboard = () => {
                                             >
                                                 <MapPin className="w-4 h-4" />
                                                 <span className="text-sm">{loc}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Shift Selection */}
+                                <div className="space-y-4">
+                                    <label className="text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Shift Type</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {[
+                                            { id: 'Day Shift', icon: Sun, label: 'Day Shift (9AM - 6PM)' },
+                                            { id: 'Night Shift', icon: Moon, label: 'Night Shift (8PM - 5:30AM)' }
+                                        ].map((shift) => (
+                                            <button
+                                                key={shift.id}
+                                                onClick={() => setLoginOptions(prev => ({ ...prev, shiftType: shift.id }))}
+                                                className={cn(
+                                                    "flex flex-col items-center gap-2 py-4 px-2 rounded-xl border-2 transition-all font-bold",
+                                                    loginOptions.shiftType === shift.id
+                                                        ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
+                                                        : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
+                                                )}
+                                            >
+                                                <shift.icon className="w-5 h-5" />
+                                                <span className="text-xs text-center">{shift.label}</span>
                                             </button>
                                         ))}
                                     </div>

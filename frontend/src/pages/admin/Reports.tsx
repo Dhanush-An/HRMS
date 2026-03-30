@@ -30,7 +30,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
     const [showModal, setShowModal] = useState(false);
 
     // Filters
-    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const [selectedDate, setSelectedDate] = useState('');
     const [selectedEmployee, setSelectedEmployee] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -50,12 +50,18 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
     const fetchData = async () => {
         setLoading(true);
         try {
+            const url = `/api/tasks?${selectedDate ? `date=${selectedDate}&` : ''}${selectedEmployee ? `employeeId=${selectedEmployee}` : ''}`;
             const [taskRes, empRes] = await Promise.all([
-                api.get(`/api/tasks?date=${selectedDate}${selectedEmployee ? `&employeeId=${selectedEmployee}` : ''}`),
+                api.get(url),
                 api.get('/api/employees')
             ]);
 
-            setTasks(await taskRes.json());
+            const tasksData = await taskRes.json();
+            // Sort by date newest first
+            if (Array.isArray(tasksData)) {
+                tasksData.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            }
+            setTasks(tasksData);
             setEmployees(await empRes.json());
         } catch (error) {
             console.error("Error fetching data:", error);
@@ -140,14 +146,17 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
 
             {/* Filters */}
             <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 flex flex-wrap gap-6 items-center shadow-sm">
-                <div className="flex items-center gap-3 bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-brand-primary/20 transition-all">
+                <div className="flex items-center gap-3 bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 focus-within:ring-2 focus-within:ring-brand-primary/20 transition-all min-w-[180px]">
                     <Calendar className="w-4 h-4 text-brand-muted" />
                     <input
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="bg-transparent text-brand-text text-sm font-bold focus:outline-none cursor-pointer"
+                        className="bg-transparent text-brand-text text-sm font-bold focus:outline-none cursor-pointer flex-1"
                     />
+                    {selectedDate && (
+                        <button onClick={() => setSelectedDate('')} className="text-[10px] font-black text-brand-muted hover:text-rose-500 uppercase tracking-widest">Clear</button>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-3 bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 flex-1 focus-within:ring-2 focus-within:ring-brand-primary/20 transition-all">

@@ -1,16 +1,33 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     LayoutDashboard, Users, Calendar, FileText, Bell,
     LogOut, X, DollarSign, Shield,
     Search, Plus, XCircle, CheckCircle,
     Mail, Phone, Edit2, Trash2, UserPlus, ClipboardList,
+    Building2, Home, MapPin, Loader2, ChevronRight, Clock
 } from 'lucide-react';
 import api from '../../api';
 import logo from '../../assets/antigraviity logo 2.jpg';
 import AdminPayroll from '../admin/Payroll';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
+const BRANCH_LOCATIONS = {
+    'Bangalore': { lat: 12.971667, lng: 77.507778 },
+    'Chennai': { lat: 13.0827, lng: 80.2707 } 
+};
+
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371e3;
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+};
+
 const cn = (...classes: (string | boolean | undefined)[]) =>
     classes.filter(Boolean).join(' ');
 
@@ -98,54 +115,120 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
     const clockedInTime = myRecord?.checkIn || '--:--';
     const clockedOutTime = myRecord?.checkOut || '--:--';
     const sessionLocation = { 
-        workMode: myRecord?.workMode || 'Work from Office', 
-        workLocation: myRecord?.workLocation || 'Bangalore', 
+        workMode: myRecord?.workMode || '', 
+        workLocation: myRecord?.workLocation || '', 
         workHours: myRecord?.workHours || 0 
     };
 
-    const markAttendance = async () => {
-        try {
-            if (!myRecord) {
-                // Check-in
-                await api.post('/api/attendance', {
-                    employeeId: user.id,
-                    employeeName: user.name,
-                    date: todayStr,
-                    checkIn: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-                    status: 'Present'
-                });
-            } else if (!myRecord.checkOut) {
-                // Check-out
-                const checkOutStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-                
-                let workHours = 0;
-                if (myRecord.checkIn) {
-                    try {
-                        const inTime = formatTimeTo12Hour(myRecord.checkIn);
-                        const outTime = formatTimeTo12Hour(checkOutStr);
-                        const parseTime = (t: string) => {
-                            const isPM = t.toUpperCase().includes('PM');
-                            const [timePart] = t.split(' ');
-                            let [h, m] = timePart.split(':').map(Number);
-                            if (isPM && h !== 12) h += 12;
-                            if (!isPM && h === 12 && t.toUpperCase().includes('AM')) h = 0;
-                            return { h, m };
-                        };
-                        const { h: inH, m: inM } = parseTime(inTime);
-                        const { h: outH, m: outM } = parseTime(outTime);
-                        
-                        let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
-                        if (diffMins < 0) diffMins += 24 * 60;
-                        workHours = Number((diffMins / 60).toFixed(2));
-                    } catch { /* ignore */ }
-                }
+    // Modal State
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [loginOptions, setLoginOptions] = useState({
+        workMode: 'Work from Office',
+        workLocation: 'Bangalore'
+    });
 
-                await api.put(`/api/attendance/${myRecord._id || myRecord.id}`, {
-                    ...myRecord,
-                    checkOut: checkOutStr,
-                    workHours
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const markAttendance = async () => {
+        if (!myRecord) {
+            setIsLoginModalOpen(true);
+        } else if (!myRecord.checkOut) {
+            handleCheckOut();
+        }
+    };
+
+    const confirmCheckIn = async () => {
+        if (!user) return;
+        setIsSubmitting(true);
+
+        let loginLocation: { latitude?: number; longitude?: number } = { latitude: undefined, longitude: undefined };
+
+        try {
+            const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 8000
                 });
+            });
+            loginLocation = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+        } catch (err: any) {
+            if (loginOptions.workMode === 'Work from Office') {
+                alert("Location required: Office login requires GPS access. Please enable location in your browser.");
+                setIsSubmitting(false);
+                return;
             }
+        }
+
+        if (loginOptions.workMode === 'Work from Office' && loginLocation.latitude && loginLocation.longitude) {
+            const branch = BRANCH_LOCATIONS[loginOptions.workLocation as keyof typeof BRANCH_LOCATIONS];
+            if (branch) {
+                const distance = calculateDistance(loginLocation.latitude, loginLocation.longitude, branch.lat, branch.lng);
+                if (distance > 500) {
+                    alert(`Access Denied: You are ${distance.toFixed(0)}m away. You must be within 500m of the ${loginOptions.workLocation} office to check-in.`);
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+        }
+
+        try {
+            const timeString = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            await api.post('/api/attendance', {
+                employeeId: user.id,
+                employeeName: user.name,
+                date: todayStr,
+                checkIn: timeString,
+                status: 'Present',
+                workMode: loginOptions.workMode,
+                workLocation: loginOptions.workLocation,
+                location: { lat: loginLocation.latitude, lng: loginLocation.longitude }
+            });
+            setIsLoginModalOpen(false);
+            onRefresh();
+        } catch (err: any) { alert(err.message); }
+        finally { setIsSubmitting(false); }
+    };
+
+    const handleCheckOut = async () => {
+        if (!myRecord) return;
+        try {
+            const checkOutStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            
+            let workHours = 0;
+            if (myRecord.checkIn) {
+                try {
+                    const inTime = formatTimeTo12Hour(myRecord.checkIn);
+                    const outTime = formatTimeTo12Hour(checkOutStr);
+                    const parseTime = (t: string) => {
+                        const isPM = t.toUpperCase().includes('PM');
+                        const [timePart] = t.split(' ');
+                        let [h, m] = timePart.split(':').map(Number);
+                        if (isPM && h !== 12) h += 12;
+                        if (!isPM && h === 12 && t.toUpperCase().includes('AM')) h = 0;
+                        return { h, m };
+                    };
+                    const { h: inH, m: inM } = parseTime(inTime);
+                    const { h: outH, m: outM } = parseTime(outTime);
+                    let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+                    if (diffMins < 0) diffMins += 24 * 60;
+                    workHours = Number((diffMins / 60).toFixed(2));
+                } catch { /* ignore */ }
+            }
+
+            await api.put(`/api/attendance/${myRecord._id || myRecord.id}`, {
+                ...myRecord,
+                checkOut: checkOutStr,
+                workHours
+            });
             onRefresh();
         } catch (err: any) { alert(err.message); }
     };
@@ -161,89 +244,242 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
     ];
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                <div>
-                    <h2 className="text-2xl font-black text-brand-text">HR Dashboard Overview</h2>
-                    <p className="text-brand-muted text-sm mt-1">Real-time snapshot of your workforce.</p>
-                </div>
-                
-                {/* Attendance Marking Widget inline */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                    <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-xl shadow-sm tracking-tight text-brand-text">
-                        {/* Login Details */}
-                        <div className="flex flex-col items-start gap-1">
-                            <span className="text-lg font-medium">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
-                            {sessionLocation.workMode && (
-                                <span className={cn(
-                                    "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                                    sessionLocation.workMode === 'Work from Office'
-                                        ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20"
-                                        : "bg-[#e5dfff] text-[#5b3ae9] border-[#d4cbff]" 
-                                )}>
-                                    {sessionLocation.workMode === 'Work from Office' ? 'Office' : 'Remote'}
-                                </span>
-                            )}
-                        </div>
-                        
-                        {/* Logout Details */}
-                        <div className="flex flex-col items-start gap-1">
-                            <span className="text-lg font-medium">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
-                            {sessionLocation.workLocation && (
-                                <span className="text-[10px] text-brand-muted uppercase font-black tracking-widest">
-                                    {sessionLocation.workLocation}
-                                </span>
-                            )}
-                        </div>
+        <div className="space-y-8">
+            <div className="flex flex-col gap-1">
+                <h2 className="text-2xl font-black text-brand-text tracking-tight">HR Dashboard Overview</h2>
+                <p className="text-brand-muted text-sm font-medium">Real-time snapshot of your workforce today.</p>
+            </div>
 
-                        {/* Total Hours Metric */}
-                        <div className="flex items-center justify-center px-4 py-1.5 ml-2 border border-brand-border rounded-xl bg-brand-bg text-sm font-bold shadow-sm">
-                            {calculateWorkingHours(clockedInTime, clockedOutTime, sessionLocation.workHours)}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {cards.map(({ label, value, icon: Icon, color }) => (
+                    <div key={label} className="bg-brand-surface border border-brand-border rounded-[2rem] p-6 hover:border-brand-primary/30 transition-all flex items-center justify-between group shadow-sm">
+                        <div className="space-y-1">
+                            <div className={cn('w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-lg', color)}>
+                                <Icon className="w-6 h-6 text-white" />
+                            </div>
+                            <p className="text-4xl font-black text-brand-text tracking-tighter">{value}</p>
+                            <p className="text-[11px] text-brand-muted uppercase tracking-[0.2em] font-black opacity-80">{label}</p>
                         </div>
                     </div>
-                    
-                    <div className="w-full sm:w-auto flex bg-brand-surface border border-brand-border rounded-xl p-1 gap-1 shadow-sm">
+                ))}
+            </div>
+
+            {/* Premium Attendance Card */}
+            <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group border-b-4 border-b-brand-primary/20">
+                <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 pointer-events-none" />
+                
+                <div className="flex flex-col xl:flex-row items-center gap-12 relative z-10">
+                    {/* Live Clock Section */}
+                    <div className="flex items-center gap-6 min-w-[320px] pr-12 border-brand-border border-b xl:border-b-0 xl:border-r pb-8 xl:pb-0">
+                        <div className="w-16 h-16 bg-brand-primary/10 rounded-2xl flex items-center justify-center shadow-inner relative overflow-hidden">
+                            <div className="absolute inset-0 bg-brand-primary/5 animate-pulse" />
+                            <Clock className="w-8 h-8 text-brand-primary relative z-10" />
+                        </div>
+                        <div>
+                            <p className="text-5xl font-black text-brand-text tracking-tighter tabular-nums">
+                                {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true })}
+                            </p>
+                            <div className="flex flex-col mt-1">
+                                <p className="text-[11px] font-black text-brand-primary uppercase tracking-[0.4em] opacity-80">
+                                    {currentTime.toLocaleDateString('en-US', { weekday: 'long' })}
+                                </p>
+                                <p className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.1em] mt-0.5">
+                                    {currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Operational Details Section */}
+                    <div className="flex-1 flex flex-wrap items-center justify-center xl:justify-start gap-10">
+                        {/* Check-in Box */}
+                        <div className="space-y-4 flex flex-col items-center">
+                            <div className="bg-brand-bg border border-brand-border px-6 py-4 rounded-3xl min-w-[160px] flex flex-col items-center justify-center gap-2 shadow-inner group/box transition-all hover:bg-brand-surface">
+                                <span className="text-xl font-bold text-brand-text tabular-nums">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
+                                {sessionLocation.workMode && (
+                                    <span className={cn(
+                                        "text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-lg shadow-sm border",
+                                        sessionLocation.workMode === 'Work from Office'
+                                            ? "bg-brand-primary text-white border-brand-primary/20"
+                                            : "bg-indigo-600 text-white border-indigo-500/20" 
+                                    )}>
+                                        {sessionLocation.workMode === 'Work from Office' ? 'OFFICE' : 'REMOTE'}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Check-out & Location Box */}
+                        <div className="space-y-4 flex flex-col items-center">
+                            <div className="bg-brand-bg border border-brand-border px-6 py-4 rounded-3xl min-w-[160px] flex flex-col items-center justify-center gap-2 shadow-inner transition-all hover:bg-brand-surface">
+                                <span className="text-xl font-bold text-brand-text tabular-nums">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
+                                <span className="text-[10px] text-brand-muted font-black uppercase tracking-[0.2em] opacity-60">
+                                    {sessionLocation.workLocation || (isCheckedIn && !isCheckedOut ? 'ACTIVE' : 'IDLE')}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Productivity Score / Hours */}
+                        <div className="px-6 py-5 bg-brand-bg border-2 border-brand-border/50 rounded-[2rem] flex flex-col items-center justify-center gap-1 shadow-md hover:border-brand-primary/30 transition-colors">
+                            <span className="text-2xl font-black text-brand-text tracking-tighter">
+                                {calculateWorkingHours(clockedInTime, clockedOutTime, sessionLocation.workHours)}
+                            </span>
+                            <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest">Duration</span>
+                        </div>
+                    </div>
+
+                    {/* Quick Access Buttons */}
+                    <div className="flex bg-brand-bg border border-brand-border rounded-[2rem] p-2 gap-2 shadow-inner">
                         <button
                             onClick={!isCheckedIn && !isCheckedOut ? markAttendance : undefined}
                             disabled={isCheckedIn || isCheckedOut}
                             className={cn(
-                                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
+                                "flex items-center justify-center gap-3 px-8 py-4 rounded-3xl text-sm font-black tracking-tight transition-all active:scale-95 group/btn",
                                 (isCheckedIn || isCheckedOut)
                                     ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20 opacity-80 cursor-not-allowed"
-                                    : "bg-emerald-500 hover:opacity-90 text-white shadow-lg shadow-emerald-500/20"
+                                    : "bg-brand-primary hover:bg-brand-primary/90 text-white shadow-xl shadow-brand-primary/30"
                             )}
                         >
-                            <CheckCircle className="w-4 h-4" />
-                            {isCheckedOut ? "Day Completed" : isCheckedIn ? "Logged In" : "Login"}
+                            <CheckCircle className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
+                            {isCheckedOut ? "Day Completed" : isCheckedIn ? "Logged In" : "Login Session"}
                         </button>
                         <button
                             onClick={isCheckedIn && !isCheckedOut ? markAttendance : undefined}
                             disabled={!isCheckedIn || isCheckedOut}
                             className={cn(
-                                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
+                                "flex items-center justify-center gap-3 px-8 py-4 rounded-3xl text-sm font-black tracking-tight transition-all active:scale-95 border group/btn",
                                 !isCheckedIn || isCheckedOut
-                                    ? "text-brand-muted bg-brand-bg opacity-50 cursor-not-allowed border border-brand-border"
-                                    : "bg-rose-500 hover:opacity-90 text-white shadow-lg shadow-rose-500/20"
+                                    ? "text-brand-muted border-brand-border opacity-50 cursor-not-allowed"
+                                    : "bg-brand-surface hover:bg-brand-bg border-brand-border text-brand-text hover:text-brand-primary hover:border-brand-primary/30 shadow-sm"
                             )}
                         >
-                            <LogOut className="w-4 h-4" />
-                            {isCheckedOut ? "Logged Out" : "Logout"}
+                            <LogOut className="w-5 h-5 group-hover/btn:-translate-x-1 transition-transform" />
+                            {isCheckedOut ? "Logged Out" : "End Session"}
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                {cards.map(({ label, value, icon: Icon, color }) => (
-                    <div key={label} className="bg-brand-surface border border-brand-border rounded-2xl p-6 hover:border-brand-primary/30 transition-all">
-                        <div className={cn('w-10 h-10 rounded-xl flex items-center justify-center mb-4', color)}>
-                            <Icon className="w-5 h-5 text-white" />
-                        </div>
-                        <p className="text-3xl font-black text-brand-text">{value}</p>
-                        <p className="text-xs text-brand-muted uppercase tracking-widest font-bold mt-1">{label}</p>
+            {/* Attendance Check-in Modal */}
+            <AnimatePresence>
+                {isLoginModalOpen && (
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                            onClick={() => !isSubmitting && setIsLoginModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden"
+                        >
+                            <div className="p-8 border-b border-brand-border bg-gradient-to-br from-brand-primary/10 to-transparent">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-brand-primary rounded-xl shadow-lg shadow-brand-primary/20">
+                                            <CheckCircle className="w-6 h-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-2xl font-black text-brand-text tracking-tighter">Attendance Check-in</h3>
+                                            <p className="text-brand-muted text-[10px] font-black uppercase tracking-widest mt-0.5 opacity-60">Session Authorization</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => !isSubmitting && setIsLoginModalOpen(false)}
+                                        className="p-2 hover:bg-brand-bg rounded-xl transition-colors text-brand-muted hover:text-brand-text"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="p-8 space-y-8">
+                                <div className="space-y-4">
+                                    <label className="text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Working Environment</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {[
+                                            { id: 'Work from Office', icon: Building2, label: 'Office' },
+                                            { id: 'Work from Home', icon: Home, label: 'Remote' }
+                                        ].map((mode) => (
+                                            <button
+                                                key={mode.id}
+                                                onClick={() => setLoginOptions(prev => ({ ...prev, workMode: mode.id }))}
+                                                className={cn(
+                                                    "flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all group",
+                                                    loginOptions.workMode === mode.id
+                                                        ? "bg-brand-primary-light border-brand-primary shadow-lg shadow-brand-primary/10"
+                                                        : "bg-brand-bg border-brand-border hover:border-brand-primary/50"
+                                                )}
+                                            >
+                                                <mode.icon className={cn(
+                                                    "w-6 h-6",
+                                                    loginOptions.workMode === mode.id ? "text-brand-primary" : "text-brand-muted group-hover:text-brand-primary"
+                                                )} />
+                                                <span className={cn(
+                                                    "text-xs font-black uppercase tracking-widest",
+                                                    loginOptions.workMode === mode.id ? "text-brand-primary" : "text-brand-muted"
+                                                )}>{mode.label}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <label className="text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Assigned Branch</label>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {['Chennai', 'Bangalore'].map((loc) => (
+                                            <button
+                                                key={loc}
+                                                onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc }))}
+                                                className={cn(
+                                                    "flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all font-bold",
+                                                    loginOptions.workLocation === loc
+                                                        ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
+                                                        : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
+                                                )}
+                                            >
+                                                <MapPin className="w-4 h-4" />
+                                                <span className="text-sm">{loc}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-8 bg-brand-bg/50 border-t border-brand-border flex gap-4">
+                                <button
+                                    onClick={() => setIsLoginModalOpen(false)}
+                                    disabled={isSubmitting}
+                                    className="flex-1 py-4 px-6 rounded-2xl border border-brand-border font-black text-[10px] uppercase tracking-widest text-brand-muted hover:bg-brand-surface transition-all disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmCheckIn}
+                                    disabled={isSubmitting}
+                                    className="flex-[2] py-4 px-6 bg-brand-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                >
+                                    {isSubmitting ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Syncing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Authorize & Login
+                                            <ChevronRight className="w-4 h-4" />
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </motion.div>
                     </div>
-                ))}
-            </div>
+                )}
+            </AnimatePresence>
 
             {/* Recent leave requests */}
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
