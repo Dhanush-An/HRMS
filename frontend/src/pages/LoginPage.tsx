@@ -128,12 +128,6 @@ const LoginPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex justify-end">
-                        <button type="button" className="text-[#6366f1] font-semibold text-sm hover:underline">
-                            Forgot Password?
-                        </button>
-                    </div>
-
                     {error && (
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
