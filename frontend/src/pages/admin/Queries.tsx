@@ -5,8 +5,6 @@ import {
     Clock,
     CheckCircle2,
     AlertCircle,
-    Filter,
-    MoreHorizontal,
     Trash2,
     Check
 } from 'lucide-react';
