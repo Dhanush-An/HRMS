@@ -346,6 +346,31 @@ app.put('/api/admin/credentials', authorizeRoles('admin'), async (req, res) => {
     }
 });
 
+// GET Admin Dashboard Stats
+app.get('/api/admin/stats', authorizeRoles('admin'), async (req, res) => {
+    try {
+        const [totalEmployees, pendingRequests, payrollData, tasks] = await Promise.all([
+            Employee.countDocuments(),
+            Leave.countDocuments({ status: 'Pending' }),
+            Payroll.aggregate([
+                { $unwind: '$records' },
+                { $group: { _id: null, total: { $sum: '$records.netSalary' } } }
+            ]),
+            Task.distinct('projectName', { projectName: { $ne: null, $exists: true } })
+        ]);
+
+        res.json({
+            totalEmployees,
+            totalPayroll: payrollData[0]?.total || 0,
+            activeProjects: tasks.filter(name => name && typeof name === 'string' && name.trim() !== '').length,
+            pendingRequests
+        });
+    } catch (error: any) {
+        console.error('[ERROR] Failed to fetch admin stats:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // Update Employee Location
 app.put('/api/employees/:id/location', async (req, res) => {
     const { id } = req.params;

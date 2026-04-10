@@ -38,40 +38,17 @@ const AdminHome = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const [empRes, payRes, leaveRes, taskRes] = await Promise.all([
-                    api.get('/api/employees'),
-                    api.get('/api/payroll'),
-                    api.get('/api/leaves'),
-                    api.get('/api/tasks')
-                ]);
-
-                const [employees, payroll, leaves, tasks] = await Promise.all([
-                    empRes.json(),
-                    payRes.json(),
-                    leaveRes.json(),
-                    taskRes.json()
-                ]);
-
-                // Calculate Total Payroll
-                const totalPayroll = Array.isArray(payroll) ? payroll.reduce((total: number, p: any) => {
-                    if (!p || !Array.isArray(p.records)) return total;
-                    return total + p.records.reduce((s: number, r: any) => s + (Number(r.netSalary) || 0), 0);
-                }, 0) : 0;
-
-                // Calculate Active Projects
-                const activeProjects = new Set(
-                    (Array.isArray(tasks) ? tasks : [])
-                        .filter((t: any) => t && typeof t.projectName === 'string')
-                        .map((t: any) => t.projectName.trim())
-                        .filter(Boolean)
-                ).size;
-
-                setStats({
-                    totalEmployees: Array.isArray(employees) ? employees.length : 0,
-                    totalPayroll,
-                    activeProjects,
-                    pendingRequests: Array.isArray(leaves) ? leaves.filter((l: any) => l && l.status === 'Pending').length : 0
-                });
+                const res = await api.get('/api/admin/stats');
+                const data = await res.json();
+                
+                if (data) {
+                    setStats({
+                        totalEmployees: data.totalEmployees || 0,
+                        totalPayroll: data.totalPayroll || 0,
+                        activeProjects: data.activeProjects || 0,
+                        pendingRequests: data.pendingRequests || 0
+                    });
+                }
             } catch (error) {
                 console.error("Error fetching admin stats:", error);
             } finally {
