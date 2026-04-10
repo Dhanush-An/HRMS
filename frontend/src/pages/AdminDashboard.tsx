@@ -17,6 +17,7 @@ import {
     Moon,
     Menu,
     X,
+    HelpCircle
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -52,6 +53,7 @@ const AdminDashboard: React.FC = () => {
         { icon: Bell, label: 'Announcements', path: '/admin-dashboard/announcements' },
         { icon: ShieldCheck, label: 'Policies', path: '/admin-dashboard/policies' },
         { icon: BarChart2, label: 'Reports', path: '/admin-dashboard/reports' },
+        { icon: HelpCircle, label: 'Queries', path: '/admin-dashboard/queries' },
         { icon: Settings, label: 'Settings', path: '/admin-dashboard/settings' },
     ];
 

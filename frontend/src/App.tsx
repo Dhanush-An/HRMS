@@ -15,6 +15,7 @@ import Reports from './pages/admin/Reports';
 import Announcements from './pages/admin/Announcements';
 import AdminPolicies from './pages/admin/AdminPolicies';
 import HR from './pages/admin/HR';
+import Queries from './pages/admin/Queries';
 import HRDashboard from './pages/HRDashboard';
 import HRPortal from './pages/hr/HRPortal';
 import EmployeeHome from './pages/employee/EmployeeHome';
@@ -26,6 +27,7 @@ import EmployeeDocuments from './pages/employee/EmployeeDocuments';
 import CompanyPolicies from './pages/employee/CompanyPolicies';
 import EmployeePayroll from './pages/employee/EmployeePayroll';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
+import EmployeeQueries from './pages/employee/EmployeeQueries';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -63,6 +65,7 @@ function App() {
             <Route path="hr" element={<HR />} />
             <Route path="hr-dashboard" element={<HRDashboard />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="queries" element={<Queries />} />
           </Route>
 
           {/* Employee Routes */}
@@ -77,6 +80,7 @@ function App() {
             <Route path="payroll" element={<EmployeePayroll />} />
             <Route path="leaves" element={<Leaves />} />
             <Route path="attendance" element={<EmployeeAttendance />} />
+            <Route path="queries" element={<EmployeeQueries />} />
           </Route>
 
           {/* HR Routes */}

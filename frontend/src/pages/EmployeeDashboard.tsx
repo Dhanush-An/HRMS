@@ -21,7 +21,8 @@ import {
     ChevronRight,
     Loader2,
     Sun,
-    Moon
+    Moon,
+    HelpCircle
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import logo from '../assets/antigraviity logo 2.jpg';
@@ -349,6 +350,7 @@ const EmployeeDashboard = () => {
         { icon: FileText, label: 'Payroll', path: '/employee-dashboard/payroll' },
         { icon: Megaphone, label: 'Announcements', path: '/employee-dashboard/announcements' },
         { icon: File, label: 'Documents', path: '/employee-dashboard/documents' },
+        { icon: HelpCircle, label: 'Queries', path: '/employee-dashboard/queries' },
         { icon: Book, label: 'Company Policies', path: '/employee-dashboard/policies' },
     ];
 

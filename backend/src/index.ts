@@ -16,6 +16,8 @@ import Task from './models/Task';
 import Policy from './models/Policy';
 import DocumentModel from './models/Document';
 import Admin from './models/Admin';
+import Query from './models/Query';
+
 import multer from 'multer';
 import dns from 'dns';
 
@@ -798,6 +800,67 @@ app.put('/api/tasks/:id', async (req, res) => {
 });
 
 // --- POLICIES ROUTES ---
+
+
+// --- QUERY ROUTES ---
+
+app.get('/api/queries', async (req, res) => {
+    const { employeeId } = req.query;
+    try {
+        const query: any = {};
+        if (employeeId) query.employeeId = employeeId;
+        const queries = await Query.find(query).sort({ createdAt: -1 });
+        res.json(queries);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/queries', async (req, res) => {
+    try {
+        const newQuery = new Query({
+            ...req.body,
+            status: 'Pending',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+        await newQuery.save();
+        res.status(201).json(newQuery);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/queries/:id', authorizeRoles('admin', 'hr'), async (req, res) => {
+    try {
+        const { status } = req.body;
+        const updatedQuery = await Query.findByIdAndUpdate(
+            req.params.id,
+            { status, updatedAt: new Date() },
+            { new: true }
+        );
+        if (updatedQuery) {
+            res.json(updatedQuery);
+        } else {
+            res.status(404).json({ message: 'Query not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.delete('/api/queries/:id', authorizeRoles('admin'), async (req, res) => {
+    try {
+        const result = await Query.findByIdAndDelete(req.params.id);
+        if (result) {
+            res.json({ message: 'Query deleted' });
+        } else {
+            res.status(404).json({ message: 'Query not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 app.get('/api/policies', async (req, res) => {
     try {
