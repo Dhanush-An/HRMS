@@ -377,7 +377,7 @@ const Payroll = () => {
                                             </td>
                                             <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">
                                                 <div className="flex flex-col">
-                                                    <span className="line-through opacity-40 text-[10px]">₹{((emp.salary?.base || 0) + (emp.salary?.other || 0)).toLocaleString()}</span>
+                                                    <span className="line-through opacity-40 text-[10px]">₹{((emp.salary?.base || 0) + (emp.salary?.other || 0) - (emp.salary?.pf || 0) - (emp.salary?.tax || 0)).toLocaleString()}</span>
                                                     <span className="text-brand-text font-black">₹{Math.round(actualBase).toLocaleString()}</span>
                                                 </div>
                                             </td>
