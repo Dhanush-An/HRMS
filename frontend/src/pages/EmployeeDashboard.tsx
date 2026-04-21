@@ -625,105 +625,111 @@ const EmployeeDashboard = () => {
                                 <div className="flex items-center gap-3">
                                     <p className="text-xs text-brand-muted uppercase font-bold tracking-widest">{user.role}</p>
                                 </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                                <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-xl shadow-sm">
-                                    {/* Login Details */}
-                                    <div className="flex flex-col items-start gap-1">
-                                        <span className="text-lg font-medium text-brand-text">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
-                                        {sessionLocation.workMode && (
-                                            <span className={cn(
-                                                "text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border",
-                                                sessionLocation.workMode === 'Work from Office'
-                                                    ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20"
-                                                    : "bg-[#e5dfff] text-[#5b3ae9] border-[#d4cbff]" 
-                                            )}>
-                                                {sessionLocation.workMode === 'Work from Office' ? 'Office' : 'Remote'}
-                                            </span>
-                                        )}
+                                <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-6 mt-4">
+                                    {/* Session Info Card */}
+                                    <div className="flex items-center gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-2xl shadow-sm">
+                                        <div className="flex items-center gap-4">
+                                            <div className="flex flex-col min-w-[70px]">
+                                                <span className="text-[9px] font-black text-brand-muted uppercase tracking-[0.2em] mb-1">Clock In</span>
+                                                <span className="text-sm font-black text-brand-text">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
+                                            </div>
+                                            <div className="h-8 w-px bg-brand-border" />
+                                            <div className="flex flex-col min-w-[70px]">
+                                                <span className="text-[9px] font-black text-brand-muted uppercase tracking-[0.2em] mb-1">Status</span>
+                                                {sessionLocation.workMode ? (
+                                                    <span className={cn(
+                                                        "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border w-fit",
+                                                        sessionLocation.workMode === 'Work from Office'
+                                                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                                            : "bg-brand-primary/10 text-brand-primary border-brand-primary/20"
+                                                    )}>
+                                                        {sessionLocation.workMode === 'Work from Office' ? 'Office' : 'Remote'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest">—</span>
+                                                )}
+                                            </div>
+                                            <div className="h-8 w-px bg-brand-border" />
+                                            <div className="flex flex-col min-w-[80px]">
+                                                <span className="text-[9px] font-black text-brand-muted uppercase tracking-[0.2em] mb-1">Worked</span>
+                                                <span className="text-sm font-black text-brand-primary">
+                                                    {calculateWorkingHours(clockedInTime, clockedOutTime, sessionLocation.workHours)}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    
-                                    {/* Logout Details */}
-                                    <div className="flex flex-col items-start gap-1">
-                                        <span className="text-lg font-medium text-brand-text">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
-                                        {sessionLocation.workLocation && (
-                                            <span className="text-[10px] text-brand-muted uppercase font-black tracking-widest">
-                                                {sessionLocation.workLocation}
-                                            </span>
-                                        )}
-                                    </div>
 
-                                    {/* Total Hours Metric */}
-                                    <div className="flex items-center justify-center px-4 py-1.5 ml-2 border border-brand-border rounded-xl bg-brand-bg text-sm font-bold text-brand-text">
-                                        {calculateWorkingHours(clockedInTime, clockedOutTime, sessionLocation.workHours)}
+                                    {/* Controls Group */}
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        {/* Main Actions */}
+                                        <div className="flex bg-brand-surface border border-brand-border rounded-2xl p-1 shadow-sm">
+                                            <button
+                                                onClick={() => {
+                                                    if (!isCheckedIn && !isCheckedOut) {
+                                                        handleCheckIn();
+                                                    }
+                                                }}
+                                                disabled={isCheckedIn || isCheckedOut}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all",
+                                                    (isCheckedIn || isCheckedOut)
+                                                        ? "bg-brand-bg text-brand-muted opacity-50 cursor-not-allowed"
+                                                        : "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95"
+                                                )}
+                                            >
+                                                <CheckCircle2 className="w-4 h-4" />
+                                                {isCheckedOut ? "Shift End" : isCheckedIn ? "At Work" : "Check In"}
+                                            </button>
+                                            <button
+                                                onClick={handleCheckOut}
+                                                disabled={!isCheckedIn || isCheckedOut}
+                                                className={cn(
+                                                    "flex items-center gap-2 px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all",
+                                                    !isCheckedIn || isCheckedOut
+                                                        ? "text-brand-muted opacity-30 cursor-not-allowed"
+                                                        : "bg-rose-500 text-white shadow-lg shadow-rose-500/20 hover:scale-[1.02] active:scale-95"
+                                                )}
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                {isCheckedOut ? "Finished" : "Check Out"}
+                                            </button>
+                                        </div>
+
+                                        {/* Break Actions */}
+                                        {isCheckedIn && !isCheckedOut && (
+                                            <div className="flex bg-brand-surface border border-brand-border rounded-2xl p-1 shadow-sm animate-in slide-in-from-right-4 duration-500">
+                                                <button
+                                                    onClick={() => handleBreakAction('Break')}
+                                                    disabled={!!activeBreak && activeBreak.type !== 'Break'}
+                                                    className={cn(
+                                                        "flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                                        activeBreak?.type === 'Break'
+                                                            ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                                                            : "text-brand-muted hover:text-brand-text hover:bg-brand-bg",
+                                                        activeBreak && activeBreak.type !== 'Break' ? "opacity-30 cursor-not-allowed" : ""
+                                                    )}
+                                                >
+                                                    <Clock className={cn("w-3.5 h-3.5", activeBreak?.type === 'Break' ? "animate-pulse" : "")} />
+                                                    {activeBreak?.type === 'Break' ? "End" : "Break"}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBreakAction('Lunch')}
+                                                    disabled={!!activeBreak && activeBreak.type !== 'Lunch'}
+                                                    className={cn(
+                                                        "flex items-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                                                        activeBreak?.type === 'Lunch'
+                                                            ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                                                            : "text-brand-muted hover:text-brand-text hover:bg-brand-bg",
+                                                        activeBreak && activeBreak.type !== 'Lunch' ? "opacity-30 cursor-not-allowed" : ""
+                                                    )}
+                                                >
+                                                    <Sun className={cn("w-3.5 h-3.5", activeBreak?.type === 'Lunch' ? "animate-pulse" : "")} />
+                                                    {activeBreak?.type === 'Lunch' ? "End" : "Lunch"}
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="w-full sm:w-auto flex bg-brand-surface border border-brand-border rounded-xl p-1 gap-1 shadow-sm">
-                                    <button
-                                        onClick={() => {
-                                            if (!isCheckedIn && !isCheckedOut) {
-                                                handleCheckIn();
-                                            }
-                                        }}
-                                        disabled={isCheckedIn || isCheckedOut}
-                                        className={cn(
-                                            "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
-                                            (isCheckedIn || isCheckedOut)
-                                                ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/20 opacity-80 cursor-not-allowed"
-                                                : "bg-status-approved hover:opacity-90 text-white shadow-lg shadow-status-approved/20"
-                                        )}
-                                    >
-                                        <CheckCircle2 className="w-4 h-4" />
-                                        {isCheckedOut ? "Shift Completed" : isCheckedIn ? "Checked In" : "Check In"}
-                                    </button>
-                                    <button
-                                        onClick={handleCheckOut}
-                                        disabled={!isCheckedIn || isCheckedOut}
-                                        className={cn(
-                                            "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
-                                            !isCheckedIn || isCheckedOut
-                                                ? "text-brand-muted bg-brand-bg opacity-50 cursor-not-allowed border border-brand-border"
-                                                : "bg-status-rejected hover:opacity-90 text-white shadow-lg shadow-status-rejected/20"
-                                        )}
-                                    >
-                                        <LogOut className="w-4 h-4" />
-                                        {isCheckedOut ? "Checked Out" : "Check Out"}
-                                    </button>
-                                </div>
-
-                                {isCheckedIn && !isCheckedOut && (
-                                    <div className="w-full sm:w-auto flex bg-brand-surface border border-brand-border rounded-xl p-1 gap-1 shadow-sm">
-                                        <button
-                                            onClick={() => handleBreakAction('Break')}
-                                            className={cn(
-                                                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
-                                                activeBreak?.type === 'Break'
-                                                    ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
-                                                    : "text-brand-muted hover:text-brand-text hover:bg-brand-bg",
-                                                activeBreak && activeBreak.type !== 'Break' ? "opacity-50 cursor-not-allowed" : ""
-                                            )}
-                                            disabled={!!activeBreak && activeBreak.type !== 'Break'}
-                                        >
-                                            <Clock className={cn("w-4 h-4", activeBreak?.type === 'Break' ? "animate-pulse" : "")} />
-                                            {activeBreak?.type === 'Break' ? "End Break" : "Short Break"}
-                                        </button>
-                                        <button
-                                            onClick={() => handleBreakAction('Lunch')}
-                                            className={cn(
-                                                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
-                                                activeBreak?.type === 'Lunch'
-                                                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                                                    : "text-brand-muted hover:text-brand-text hover:bg-brand-bg",
-                                                activeBreak && activeBreak.type !== 'Lunch' ? "opacity-50 cursor-not-allowed" : ""
-                                            )}
-                                            disabled={!!activeBreak && activeBreak.type !== 'Lunch'}
-                                        >
-                                            <Sun className={cn("w-4 h-4", activeBreak?.type === 'Lunch' ? "animate-pulse" : "")} />
-                                            {activeBreak?.type === 'Lunch' ? "End Lunch" : "Lunch Time"}
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         </header>
                     )}
