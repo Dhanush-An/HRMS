@@ -183,13 +183,12 @@ const Payroll = () => {
 
     const handleGeneratePayroll = async () => {
         const records = employees.map(emp => {
-            const { netSalary, tax, pf } = calculateNetSalary(emp);
-            const salary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
+            const { netSalary, tax, pf, actualBase } = calculateNetSalary(emp);
 
             return {
                 employeeId: emp.id,
                 name: emp.name,
-                base: salary.base,
+                base: Number(actualBase.toFixed(2)),
                 bonus: processData[emp.id]?.bonus || 0,
                 tax,
                 pf,
