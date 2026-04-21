@@ -619,13 +619,8 @@ const EmployeeDashboard = () => {
                 <main className="flex-1 overflow-y-auto relative no-scrollbar bg-brand-bg">
                     {/* Header */}
                     {(location.pathname === '/employee-dashboard' || location.pathname === '/employee-dashboard/') && (
-                        <header className="sticky top-0 z-30 flex flex-col items-stretch p-4 md:p-6 border-b border-brand-border bg-brand-bg/80 backdrop-blur-xl gap-4 md:flex-row md:items-center md:justify-between">
-                            <div className="text-left">
-                                <h2 className="text-lg font-bold text-brand-text leading-tight mb-1">Welcome, {user.name}</h2>
-                                <div className="flex items-center gap-3">
-                                    <p className="text-xs text-brand-muted uppercase font-bold tracking-widest">{user.role}</p>
-                                </div>
-                                <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-6 mt-4">
+                        <header className="sticky top-0 z-30 flex flex-col items-stretch p-4 md:p-6 border-b border-brand-border bg-brand-bg/80 backdrop-blur-xl gap-4 md:flex-row md:items-center md:justify-end">
+                            <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-6 w-full justify-end">
                                     {/* Session Info Card */}
                                     <div className="flex items-center gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-2xl shadow-sm">
                                         <div className="flex items-center gap-4">
@@ -730,7 +725,6 @@ const EmployeeDashboard = () => {
                                         )}
                                     </div>
                                 </div>
-                            </div>
                         </header>
                     )}
 

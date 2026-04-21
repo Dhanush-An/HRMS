@@ -185,11 +185,38 @@ const EmployeeHome = () => {
                 items={pendingNotifications} 
                 onDismiss={handleDismissNotification} 
             />
-            {/* Greeting */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                <div>
-                    <p className="text-brand-muted font-medium italic text-base md:text-lg leading-relaxed max-w-2xl">"{dailyQuote.text}"</p>
-                    <p className="text-brand-primary font-black uppercase tracking-widest text-[10px] mt-2">— {dailyQuote.author}</p>
+            {/* Premium Hero Section */}
+            <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary/20 to-blue-500/20 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                <div className="relative space-y-5">
+                    <div className="flex flex-col">
+                        <span className="text-brand-primary font-black uppercase tracking-[0.4em] text-[10px] mb-4 animate-in fade-in slide-in-from-left-4 duration-700 block">Antigraviity • Human Resources</span>
+                        <h1 className="text-4xl md:text-6xl font-black text-brand-text tracking-tighter leading-[0.9] animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                            Welcome Back, <br className="md:hidden" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-blue-400">
+                                {currentUser?.name?.split(' ')[0] || 'Member'}
+                            </span>
+                        </h1>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-6 animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-200">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-brand-surface border border-brand-border rounded-2xl shadow-sm">
+                            <Briefcase className="w-4 h-4 text-brand-primary/60" />
+                            <span className="text-[10px] font-black text-brand-text uppercase tracking-widest leading-none">
+                                {currentUser?.role || 'Team Member'}
+                            </span>
+                        </div>
+                        
+                        <div className="h-6 w-px bg-brand-border hidden md:block" />
+                        
+                        <div className="max-w-xl">
+                            <p className="text-brand-muted font-medium italic text-base md:text-lg leading-relaxed flex items-start gap-3">
+                                <span className="text-3xl text-brand-primary/20 -mt-2">"</span>
+                                <span>{dailyQuote.text}</span>
+                                <span className="text-3xl text-brand-primary/20 self-end -mb-4">"</span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
