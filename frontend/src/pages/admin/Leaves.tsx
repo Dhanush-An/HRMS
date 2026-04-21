@@ -307,7 +307,7 @@ const Leaves = () => {
 
                             {/* Content Table */}
                             {/* Content Table - Desktop */}
-                            <div className="hidden lg:block bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden no-scrollbar">
+                            <div className="hidden lg:block bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-x-auto no-scrollbar">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
@@ -357,20 +357,22 @@ const Leaves = () => {
                                                 </td>
                                                 <td className="px-4 py-6 whitespace-nowrap text-right">
                                                     {isAdmin && leave.status === 'Pending' && (
-                                                        <div className="flex justify-end gap-3 transition-opacity">
+                                                        <div className="flex justify-end gap-2">
                                                             <button
                                                                 onClick={() => handleStatusUpdate(leave.id, 'Approved')}
-                                                                className="w-10 h-10 flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-2xl transition-all shadow-sm active:scale-90"
+                                                                className="flex items-center gap-2 px-3 py-2 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-emerald-600 active:scale-95 shadow-lg shadow-emerald-500/20"
                                                                 title="Approve"
                                                             >
-                                                                <CheckCircle className="w-5 h-5" />
+                                                                <CheckCircle className="w-4 h-4" />
+                                                                Approve
                                                             </button>
                                                             <button
                                                                 onClick={() => handleStatusUpdate(leave.id, 'Rejected')}
-                                                                className="w-10 h-10 flex items-center justify-center bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white rounded-2xl transition-all shadow-sm active:scale-90"
+                                                                className="flex items-center gap-2 px-3 py-2 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-rose-600 active:scale-95 shadow-lg shadow-rose-500/20"
                                                                 title="Reject"
                                                             >
-                                                                <XCircle className="w-5 h-5" />
+                                                                <XCircle className="w-4 h-4" />
+                                                                Reject
                                                             </button>
                                                         </div>
                                                     )}
