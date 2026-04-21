@@ -45,6 +45,7 @@ const Payroll = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [payrollHistory, setPayrollHistory] = useState<PayrollRecord[]>([]);
     const [attendanceData, setAttendanceData] = useState<any[]>([]);
+    const [leavesData, setLeavesData] = useState<any[]>([]);
 
     // Process State
     const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toLocaleString('default', { month: '2-digit' }));
@@ -53,18 +54,21 @@ const Payroll = () => {
 
     const fetchData = async () => {
         try {
-            const [historyRes, empRes, attRes] = await Promise.all([
+            const [historyRes, empRes, attRes, leavesRes] = await Promise.all([
                 api.get('/api/payroll'),
                 api.get('/api/employees'),
-                api.get('/api/attendance')
+                api.get('/api/attendance'),
+                api.get('/api/leaves')
             ]);
             const historyData = await historyRes.json();
             const employeesData = await empRes.json();
             const attData = await attRes.json();
+            const leavesJson = await leavesRes.json();
 
             setPayrollHistory(historyData);
             setEmployees(employeesData);
             setAttendanceData(attData);
+            setLeavesData(leavesJson);
 
             // Initialize process data
             const initialProcessData: any = {};
@@ -102,23 +106,51 @@ const Payroll = () => {
     };
 
     const calculateAttendanceStats = (empId: string) => {
-        const monthNum = selectedMonth; // e.g. "04"
-        const prefix = `${selectedYear}-${monthNum}`;
+        const monthNum = parseInt(selectedMonth);
+        const prefix = `${selectedYear}-${selectedMonth}`;
         const records = attendanceData.filter(r => 
             (r.employeeId === empId || r.employeeName === empId) && 
             r.date.startsWith(prefix)
         );
 
+        // Calculate Sundays in month
+        let sundays = 0;
+        const date = new Date(selectedYear, monthNum - 1, 1);
+        while (date.getMonth() === monthNum - 1) {
+            if (date.getDay() === 0) sundays++;
+            date.setDate(date.getDate() + 1);
+        }
+
+        // Differentiate Present and Absent days
         const present = records.filter(r => r.status === 'Present').length;
         const halfDay = records.filter(r => r.status === 'Half Day').length;
-        const totalPayableDays = present + (halfDay * 0.5);
+        const absents = records.filter(r => r.status === 'Absent');
+        
+        // Check for penalties (unapproved leaves)
+        let penalties = 0;
+        absents.forEach(abs => {
+            // Check if there is an approved leave for this date
+            const hasApprovedLeave = leavesData.find(l => 
+                l.employeeId === empId && 
+                l.status === 'Approved' &&
+                abs.date >= l.startDate && 
+                abs.date <= l.endDate
+            );
 
-        return { present, halfDay, totalPayableDays };
+            if (!hasApprovedLeave) {
+                penalties++; // Deduct one extra day for unapproved absence
+            }
+        });
+
+        // Sundays are counted as Present (Paid Off)
+        const totalPayableDays = Math.max(0, present + (halfDay * 0.5) + sundays - penalties);
+
+        return { present, halfDay, sundays, penalties, totalPayableDays };
     };
 
     const calculateNetSalary = (emp: Employee) => {
         const salary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
-        const { present, halfDay, totalPayableDays } = calculateAttendanceStats(emp.id);
+        const { present, halfDay, sundays, penalties, totalPayableDays } = calculateAttendanceStats(emp.id);
         
         // Calculate base per day (assuming 30 days month)
         const dailyBase = salary.base / 30;
@@ -139,7 +171,7 @@ const Payroll = () => {
             totalEarnings,
             actualBase,
             totalPayableDays,
-            presentData: { present, halfDay, totalPayableDays },
+            presentData: { present, halfDay, sundays, penalties, totalPayableDays },
             tax,
             pf,
             netSalary: totalEarnings + bonus - deductions - tax - pf
@@ -334,7 +366,11 @@ const Payroll = () => {
                                                 <div className="flex flex-col">
                                                     <span className="text-[10px] font-black text-status-approved uppercase">P: {presentData.present}</span>
                                                     <span className="text-[10px] font-black text-status-pending uppercase">H: {presentData.halfDay}</span>
-                                                    <span className="text-[9px] font-bold text-brand-muted uppercase tracking-tighter">{presentData.totalPayableDays} Days</span>
+                                                    <span className="text-[10px] font-black text-brand-primary uppercase">Sun: {presentData.sundays}</span>
+                                                    {presentData.penalties > 0 && (
+                                                        <span className="text-[10px] font-black text-status-rejected uppercase">Penalty: -{presentData.penalties}d</span>
+                                                    )}
+                                                    <span className="text-[9px] font-bold text-brand-muted uppercase tracking-tighter border-t border-brand-border mt-1 pt-1">{presentData.totalPayableDays} Days</span>
                                                 </div>
                                             </td>
                                             <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">
