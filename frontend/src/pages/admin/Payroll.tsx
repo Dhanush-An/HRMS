@@ -44,23 +44,27 @@ const Payroll = () => {
     const [activeTab, setActiveTab] = useState<'structure' | 'process' | 'history'>('structure');
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [payrollHistory, setPayrollHistory] = useState<PayrollRecord[]>([]);
+    const [attendanceData, setAttendanceData] = useState<any[]>([]);
 
     // Process State
-    const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toLocaleString('default', { month: 'long' }));
+    const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toLocaleString('default', { month: '2-digit' }));
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [processData, setProcessData] = useState<{ [key: string]: { bonus: number, deductions: number, tax?: number, pf?: number } }>({});
 
     const fetchData = async () => {
         try {
-            const [historyRes, empRes] = await Promise.all([
+            const [historyRes, empRes, attRes] = await Promise.all([
                 api.get('/api/payroll'),
-                api.get('/api/employees')
+                api.get('/api/employees'),
+                api.get('/api/attendance')
             ]);
             const historyData = await historyRes.json();
             const employeesData = await empRes.json();
+            const attData = await attRes.json();
 
             setPayrollHistory(historyData);
             setEmployees(employeesData);
+            setAttendanceData(attData);
 
             // Initialize process data
             const initialProcessData: any = {};
@@ -97,9 +101,30 @@ const Payroll = () => {
         }
     };
 
+    const calculateAttendanceStats = (empId: string) => {
+        const monthNum = selectedMonth; // e.g. "04"
+        const prefix = `${selectedYear}-${monthNum}`;
+        const records = attendanceData.filter(r => 
+            (r.employeeId === empId || r.employeeName === empId) && 
+            r.date.startsWith(prefix)
+        );
+
+        const present = records.filter(r => r.status === 'Present').length;
+        const halfDay = records.filter(r => r.status === 'Half Day').length;
+        const totalPayableDays = present + (halfDay * 0.5);
+
+        return { present, halfDay, totalPayableDays };
+    };
+
     const calculateNetSalary = (emp: Employee) => {
         const salary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
-        const totalEarnings = salary.base + salary.hra + salary.transport + salary.other;
+        const { present, halfDay, totalPayableDays } = calculateAttendanceStats(emp.id);
+        
+        // Calculate base per day (assuming 30 days month)
+        const dailyBase = salary.base / 30;
+        const actualBase = dailyBase * totalPayableDays;
+        
+        const totalEarnings = actualBase + salary.hra + salary.transport + salary.other;
         const bonus = processData[emp.id]?.bonus || 0;
         const deductions = processData[emp.id]?.deductions || 0;
         const pf = processData[emp.id]?.pf || 0;
@@ -112,6 +137,9 @@ const Payroll = () => {
 
         return {
             totalEarnings,
+            actualBase,
+            totalPayableDays,
+            presentData: { present, halfDay, totalPayableDays },
             tax,
             pf,
             netSalary: totalEarnings + bonus - deductions - tax - pf
@@ -243,8 +271,21 @@ const Payroll = () => {
                                     onChange={(e) => setSelectedMonth(e.target.value)}
                                     className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2 text-brand-text font-bold text-sm focus:ring-2 focus:ring-brand-primary outline-none transition-all appearance-none pr-8"
                                 >
-                                    {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'].map(m => (
-                                        <option key={m} value={m} className="bg-brand-surface text-brand-text">{m}</option>
+                                    {[
+                                        { v: '01', l: 'January' },
+                                        { v: '02', l: 'February' },
+                                        { v: '03', l: 'March' },
+                                        { v: '04', l: 'April' },
+                                        { v: '05', l: 'May' },
+                                        { v: '06', l: 'June' },
+                                        { v: '07', l: 'July' },
+                                        { v: '08', l: 'August' },
+                                        { v: '09', l: 'September' },
+                                        { v: '10', l: 'October' },
+                                        { v: '11', l: 'November' },
+                                        { v: '12', l: 'December' }
+                                    ].map(m => (
+                                        <option key={m.v} value={m.v} className="bg-brand-surface text-brand-text">{m.l}</option>
                                     ))}
                                 </select>
                             </div>
@@ -274,7 +315,8 @@ const Payroll = () => {
                             <thead>
                                 <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
                                     <th className="px-2 py-4">Employee</th>
-                                    <th className="px-2 py-4">Base</th>
+                                    <th className="px-2 py-4">Attendance</th>
+                                    <th className="px-2 py-4">Base (Earned)</th>
                                     <th className="px-2 py-4">Bonus (+)</th>
                                     <th className="px-2 py-4">Deductions (-)</th>
                                     <th className="px-2 py-4">PF (-)</th>
@@ -284,11 +326,23 @@ const Payroll = () => {
                             </thead>
                             <tbody className="divide-y divide-brand-border">
                                 {Array.isArray(employees) && employees.map((emp) => {
-                                    const { netSalary, tax } = calculateNetSalary(emp);
+                                    const { netSalary, tax, actualBase, presentData } = calculateNetSalary(emp);
                                     return (
                                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
                                             <td className="px-2 py-4 whitespace-nowrap text-brand-text font-bold truncate max-w-[120px]">{emp.name}</td>
-                                            <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">₹{(emp.salary?.base || 0).toLocaleString()}</td>
+                                            <td className="px-2 py-4 whitespace-nowrap">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-black text-status-approved uppercase">P: {presentData.present}</span>
+                                                    <span className="text-[10px] font-black text-status-pending uppercase">H: {presentData.halfDay}</span>
+                                                    <span className="text-[9px] font-bold text-brand-muted uppercase tracking-tighter">{presentData.totalPayableDays} Days</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">
+                                                <div className="flex flex-col">
+                                                    <span className="line-through opacity-40 text-[10px]">₹{(emp.salary?.base || 0).toLocaleString()}</span>
+                                                    <span className="text-brand-text font-black">₹{Math.round(actualBase).toLocaleString()}</span>
+                                                </div>
+                                            </td>
                                             <td className="px-2 py-4 whitespace-nowrap">
                                                 <input
                                                     type="number"

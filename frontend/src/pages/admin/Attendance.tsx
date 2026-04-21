@@ -432,14 +432,19 @@ const Attendance = () => {
                                         </td>
                                         <td className="px-4 py-4 whitespace-nowrap">
                                             {record?.shiftType ? (
-                                                <span className={cn(
-                                                    "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border",
-                                                    record.shiftType === 'Day Shift'
-                                                        ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                                                        : "bg-slate-500/10 text-slate-400 border-slate-500/20"
-                                                )}>
-                                                    {record.shiftType === 'Day Shift' ? 'Day' : 'Night'}
-                                                </span>
+                                                <div className="flex flex-col items-start gap-1">
+                                                    <span className={cn(
+                                                        "text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border",
+                                                        record.shiftType === 'Day Shift'
+                                                            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                                            : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                                                    )}>
+                                                        {record.shiftType === 'Day Shift' ? 'Day' : 'Night'}
+                                                    </span>
+                                                    <span className="text-[8px] font-bold text-brand-muted uppercase opacity-60">
+                                                        Lunch: {record.shiftType === 'Day Shift' ? '1:00-2:00 PM' : '12:30-1:30 AM'}
+                                                    </span>
+                                                </div>
                                             ) : (
                                                 <span className="text-[10px] font-bold text-brand-muted">—</span>
                                             )}

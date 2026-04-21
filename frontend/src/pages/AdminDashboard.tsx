@@ -46,7 +46,7 @@ const AdminDashboard: React.FC = () => {
         { icon: Building2, label: 'HR', path: '/admin-dashboard/hr' },
         { icon: Users, label: 'Employees', path: '/admin-dashboard/employees' },
         { icon: Calendar, label: 'Attendance', path: '/admin-dashboard/attendance' },
-        { icon: DollarSign, label: 'Payroll', path: '/admin-dashboard/payroll' },
+        { icon: DollarSign, label: 'Salary', path: '/admin-dashboard/payroll' },
         { icon: FileText, label: 'Leaves', path: '/admin-dashboard/leaves' },
         { icon: TrendingUp, label: 'Performance', path: '/admin-dashboard/performance' },
         { icon: File, label: 'Documents', path: '/admin-dashboard/documents' },

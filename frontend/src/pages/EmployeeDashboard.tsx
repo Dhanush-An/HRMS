@@ -323,19 +323,19 @@ const EmployeeDashboard = () => {
 
         let status = 'Present';
         if (loginOptions.shiftType === 'Day Shift') {
-            const tenThirty = new Date();
-            tenThirty.setHours(10, 30, 0, 0);
-            const onePM = new Date();
-            onePM.setHours(13, 0, 0, 0);
-            if (now > onePM) status = 'Half Day';
-            else if (now > tenThirty) status = 'Late';
+            const nineFifteen = new Date();
+            nineFifteen.setHours(9, 15, 0, 0);
+            
+            if (now > nineFifteen) {
+                status = 'Half Day';
+            }
         } else {
-            const eightTwentyPM = new Date();
-            eightTwentyPM.setHours(20, 20, 0, 0);
-            const ninePM = new Date();
-            ninePM.setHours(21, 0, 0, 0);
-            if (now > ninePM) status = 'Late';
-            else if (now > eightTwentyPM) status = 'Late';
+            const eightFortyFivePM = new Date();
+            eightFortyFivePM.setHours(20, 45, 0, 0);
+
+            if (now > eightFortyFivePM) {
+                status = 'Half Day';
+            }
         }
 
         try {
@@ -742,8 +742,8 @@ const EmployeeDashboard = () => {
                                             <label className="text-[10px] md:text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Shift Type</label>
                                             <div className="grid grid-cols-2 gap-3 md:gap-4">
                                                 {[
-                                                    { id: 'Day Shift', icon: Sun, label: 'Day Shift', time: '9AM - 6PM' },
-                                                    { id: 'Night Shift', icon: Moon, label: 'Night Shift', time: '8PM - 5:30AM' }
+                                                    { id: 'Day Shift', icon: Sun, label: 'Day Shift', time: '9AM - 6:30PM' },
+                                                    { id: 'Night Shift', icon: Moon, label: 'Night Shift', time: '8:30PM - 5:30AM' }
                                                 ].map((shift) => (
                                                     <button
                                                         key={shift.id}
