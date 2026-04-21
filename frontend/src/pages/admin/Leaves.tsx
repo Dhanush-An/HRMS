@@ -357,7 +357,7 @@ const Leaves = () => {
                                                 </td>
                                                 <td className="px-4 py-6 whitespace-nowrap text-right">
                                                     {isAdmin && leave.status === 'Pending' && (
-                                                        <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <div className="flex justify-end gap-3 transition-opacity">
                                                             <button
                                                                 onClick={() => handleStatusUpdate(leave.id, 'Approved')}
                                                                 className="w-10 h-10 flex items-center justify-center bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-2xl transition-all shadow-sm active:scale-90"
