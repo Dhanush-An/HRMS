@@ -212,7 +212,7 @@ const Attendance = () => {
                 r.status,
                 r.checkIn || '-',
                 r.checkOut || '-',
-                r.workHours ? `${r.workHours} hrs` : '-'
+                calculateWorkingHours(r.checkIn, r.checkOut, r.workHours)
             ];
         });
 
@@ -235,7 +235,7 @@ const Attendance = () => {
                 Status: r.status,
                 'Check In': r.checkIn || '-',
                 'Check Out': r.checkOut || '-',
-                'Work Hours': r.workHours || 0
+                'Work Hours': calculateWorkingHours(r.checkIn, r.checkOut, r.workHours)
             };
         });
 
