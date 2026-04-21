@@ -258,8 +258,8 @@ const Payroll = () => {
                             </thead>
                             <tbody className="divide-y divide-brand-border">
                                 {Array.isArray(employees) && employees.map((emp) => {
-                                    const salary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
-                                    const gross = salary.base + salary.hra + salary.transport + salary.other;
+                                    const salary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
+                                    const gross = (salary.base || 0) + (salary.other || 0);
                                     return (
                                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
                                             <td className="px-2 py-4 whitespace-nowrap">
