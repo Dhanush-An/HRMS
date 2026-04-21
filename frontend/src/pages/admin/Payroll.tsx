@@ -365,7 +365,7 @@ const Payroll = () => {
                                 <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
                                     <th className="px-2 py-4">Employee</th>
                                     <th className="px-2 py-4">Attendance</th>
-                                    <th className="px-2 py-4">Base (Earned)</th>
+                                    <th className="px-2 py-4">Gross (Earned)</th>
                                     <th className="px-2 py-4">Bonus (+)</th>
                                     <th className="px-2 py-4">PF (-)</th>
                                     <th className="px-2 py-4">Tax (-)</th>
@@ -391,7 +391,7 @@ const Payroll = () => {
                                             </td>
                                             <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">
                                                 <div className="flex flex-col">
-                                                    <span className="line-through opacity-40 text-[10px]">₹{(emp.salary?.base || 0).toLocaleString()}</span>
+                                                    <span className="line-through opacity-40 text-[10px]">₹{((emp.salary?.base || 0) + (emp.salary?.hra || 0) + (emp.salary?.transport || 0) + (emp.salary?.other || 0)).toLocaleString()}</span>
                                                     <span className="text-brand-text font-black">₹{Math.round(actualBase).toLocaleString()}</span>
                                                 </div>
                                             </td>
@@ -471,7 +471,7 @@ const Payroll = () => {
                                         <thead>
                                             <tr className="bg-table-header border-b border-brand-border text-[10px] font-black uppercase text-brand-muted tracking-widest">
                                                 <th className="px-2 py-3">Employee</th>
-                                                <th className="px-2 py-3 text-right">Base</th>
+                                                <th className="px-2 py-3 text-right">Gross</th>
                                                 <th className="px-2 py-3 text-right">Bonus</th>
                                                 <th className="px-2 py-3 text-right">PF</th>
                                                 <th className="px-2 py-3 text-right">Tax</th>
