@@ -14,6 +14,12 @@ export interface IAttendance extends Document {
     workLocation?: string;
     shiftType?: string;
     faceImage?: string;
+    breaks?: Array<{
+        type: 'Break' | 'Lunch';
+        startTime: string;
+        endTime?: string;
+        duration?: number;
+    }>;
 }
 
 const AttendanceSchema: Schema = new Schema({
@@ -29,7 +35,13 @@ const AttendanceSchema: Schema = new Schema({
     location: {
         lat: { type: Number },
         lng: { type: Number }
-    }
+    },
+    breaks: [{
+        type: { type: String, enum: ['Break', 'Lunch'] },
+        startTime: { type: String },
+        endTime: { type: String },
+        duration: { type: Number }
+    }]
 }, {
     timestamps: true,
     toJSON: {

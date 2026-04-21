@@ -103,6 +103,8 @@ const EmployeeDashboard = () => {
     const [clockedOutTime, setClockedOutTime] = useState('--:--');
     const [attendanceId, setAttendanceId] = useState<string | null>(null);
     const [sessionLocation, setSessionLocation] = useState({ workMode: '', workLocation: '', workHours: 0 });
+    const [activeBreak, setActiveBreak] = useState<{ type: 'Break' | 'Lunch', startTime: string } | null>(null);
+    const [breakHistory, setBreakHistory] = useState<any[]>([]);
 
     // Login Options Modal State
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -148,6 +150,15 @@ const EmployeeDashboard = () => {
                     setClockedInTime(record.checkIn || '--:--');
                     setClockedOutTime(record.checkOut || '--:--');
                     setSessionLocation({ workMode: record.workMode || '', workLocation: record.workLocation || '', workHours: record.workHours || 0 });
+                    setBreakHistory(record.breaks || []);
+                    
+                    // Check for ongoing break
+                    const ongoing = record.breaks?.find((b: any) => !b.endTime);
+                    if (ongoing) {
+                        setActiveBreak({ type: ongoing.type, startTime: ongoing.startTime });
+                    } else {
+                        setActiveBreak(null);
+                    }
                     if (record.checkOut) {
                         setIsCheckedIn(false);
                         setIsCheckedOut(true);
@@ -409,6 +420,52 @@ const EmployeeDashboard = () => {
         }
     };
 
+    const handleBreakAction = async (type: 'Break' | 'Lunch') => {
+        if (!attendanceId) return;
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+        try {
+            let updatedBreaks = [...breakHistory];
+
+            if (activeBreak) {
+                // Ending ongoing break
+                const breakIndex = updatedBreaks.findIndex(b => !b.endTime);
+                if (breakIndex !== -1) {
+                    const start = updatedBreaks[breakIndex].startTime;
+                    const [sH, sM] = start.split(':').map(Number);
+                    const [eH, eM] = timeString.split(':').map(Number);
+                    
+                    let diffMins = (eH * 60 + eM) - (sH * 60 + sM);
+                    if (diffMins < 0) diffMins += 24 * 60;
+
+                    updatedBreaks[breakIndex] = {
+                        ...updatedBreaks[breakIndex],
+                        endTime: timeString,
+                        duration: diffMins
+                    };
+                }
+                setActiveBreak(null);
+            } else {
+                // Starting new break
+                updatedBreaks.push({
+                    type,
+                    startTime: timeString
+                });
+                setActiveBreak({ type, startTime: timeString });
+            }
+
+            await api.put(`/api/attendance/${attendanceId}`, {
+                breaks: updatedBreaks
+            });
+            setBreakHistory(updatedBreaks);
+
+        } catch (error) {
+            console.error("Error updating break:", error);
+            alert("Failed to update break session.");
+        }
+    };
+
     const menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/employee-dashboard' },
         { icon: FileText, label: 'Daily Reports', path: '/employee-dashboard/tasks' },
@@ -634,6 +691,39 @@ const EmployeeDashboard = () => {
                                         {isCheckedOut ? "Checked Out" : "Check Out"}
                                     </button>
                                 </div>
+
+                                {isCheckedIn && !isCheckedOut && (
+                                    <div className="w-full sm:w-auto flex bg-brand-surface border border-brand-border rounded-xl p-1 gap-1 shadow-sm">
+                                        <button
+                                            onClick={() => handleBreakAction('Break')}
+                                            className={cn(
+                                                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
+                                                activeBreak?.type === 'Break'
+                                                    ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20"
+                                                    : "text-brand-muted hover:text-brand-text hover:bg-brand-bg",
+                                                activeBreak && activeBreak.type !== 'Break' ? "opacity-50 cursor-not-allowed" : ""
+                                            )}
+                                            disabled={!!activeBreak && activeBreak.type !== 'Break'}
+                                        >
+                                            <Clock className={cn("w-4 h-4", activeBreak?.type === 'Break' ? "animate-pulse" : "")} />
+                                            {activeBreak?.type === 'Break' ? "End Break" : "Short Break"}
+                                        </button>
+                                        <button
+                                            onClick={() => handleBreakAction('Lunch')}
+                                            className={cn(
+                                                "flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95",
+                                                activeBreak?.type === 'Lunch'
+                                                    ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
+                                                    : "text-brand-muted hover:text-brand-text hover:bg-brand-bg",
+                                                activeBreak && activeBreak.type !== 'Lunch' ? "opacity-50 cursor-not-allowed" : ""
+                                            )}
+                                            disabled={!!activeBreak && activeBreak.type !== 'Lunch'}
+                                        >
+                                            <Sun className={cn("w-4 h-4", activeBreak?.type === 'Lunch' ? "animate-pulse" : "")} />
+                                            {activeBreak?.type === 'Lunch' ? "End Lunch" : "Lunch Time"}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </header>
                     )}

@@ -45,6 +45,12 @@ interface AttendanceRecord {
     workLocation?: string;
     shiftType?: string;
     faceImage?: string;
+    breaks?: Array<{
+        type: 'Break' | 'Lunch';
+        startTime: string;
+        endTime?: string;
+        duration?: number;
+    }>;
 }
 
 const formatTimeTo12Hour = (time?: string) => {
@@ -90,6 +96,7 @@ const Attendance = () => {
     // Report State
     const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
     const [searchQuery, setSearchQuery] = useState('');
+    const [activeTab, setActiveTab] = useState<'attendance' | 'breaks'>('attendance');
 
     // Map Modal State
     const [mapModal, setMapModal] = useState<{ isOpen: boolean; empName: string; lat: number; lng: number }>({
@@ -255,13 +262,41 @@ const Attendance = () => {
 
     return (
         <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-4">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-brand-text tracking-tight">Attendance Management</h1>
                     <p className="text-brand-muted font-medium text-sm md:text-base">Track and monitor employee presence in real-time.</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-brand-surface p-2 rounded-2xl border border-brand-border shadow-sm backdrop-blur-md w-full lg:w-auto">
+                <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
+                    <div className="flex bg-brand-surface p-1 rounded-xl border border-brand-border shadow-sm">
+                        <button
+                            onClick={() => setActiveTab('attendance')}
+                            className={cn(
+                                "px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
+                                activeTab === 'attendance'
+                                    ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20"
+                                    : "text-brand-muted hover:text-brand-text"
+                            )}
+                        >
+                            Attendance
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('breaks')}
+                            className={cn(
+                                "px-6 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all",
+                                activeTab === 'breaks'
+                                    ? "bg-brand-primary text-white shadow-lg shadow-brand-primary/20"
+                                    : "text-brand-muted hover:text-brand-text"
+                            )}
+                        >
+                            Break Logs
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4 bg-brand-surface p-2 rounded-2xl border border-brand-border shadow-sm backdrop-blur-md w-full lg:w-auto ml-auto">
                     {/* Compact Date/Report Bar */}
                     <div className="flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border border-brand-border group hover:border-brand-primary/30 transition-all cursor-pointer w-full sm:w-auto">
                         <Calendar className="w-4 h-4 text-brand-muted group-hover:text-brand-primary transition-colors" />
@@ -303,7 +338,9 @@ const Attendance = () => {
                 </div>
             </div>
 
-            {/* Stats Cards */}
+            {activeTab === 'attendance' ? (
+                <>
+                    {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-brand-surface border border-brand-border p-6 rounded-2xl shadow-sm hover:shadow-md transition-all group">
                     <div className="flex justify-between items-start">
@@ -584,6 +621,90 @@ const Attendance = () => {
                     })}
                 </div>
             </div>
+        </>
+    ) : (
+            <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm animate-in zoom-in-95 duration-200">
+                <div className="p-6 border-b border-brand-border flex flex-col md:flex-row justify-between gap-4">
+                    <div className="relative group flex-1 max-w-md">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="Search employee or break type..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-brand-bg border border-brand-border rounded-xl py-3 pl-12 pr-4 text-sm font-bold text-brand-text focus:ring-2 focus:ring-brand-primary/50 focus:border-transparent outline-none transition-all"
+                        />
+                    </div>
+                </div>
+                <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-[0.2em]">
+                                <th className="px-6 py-4">Employee</th>
+                                <th className="px-6 py-4">Date</th>
+                                <th className="px-6 py-4">Break Type</th>
+                                <th className="px-6 py-4">Start Time</th>
+                                <th className="px-6 py-4">End Time</th>
+                                <th className="px-6 py-4 text-right">Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-brand-border">
+                            {attendance
+                                .filter(record => record.date === selectedDate)
+                                .flatMap(record => {
+                                    const emp = employees.find(e => e.id === record.employeeId);
+                                    return (record.breaks || []).map((b, idx) => ({ 
+                                        ...b, 
+                                        empName: emp?.name || 'Unknown',
+                                        empRole: (emp as any)?.role || (emp as any)?.department || 'Staff',
+                                        date: record.date,
+                                        id: `${record.id}-${idx}` 
+                                    }));
+                                })
+                                .filter(b => 
+                                    b.empName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                    b.type.toLowerCase().includes(searchQuery.toLowerCase())
+                                )
+                                .map((b) => (
+                                    <tr key={b.id} className="hover:bg-brand-bg transition-colors group">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-bold text-brand-text">{b.empName}</div>
+                                            <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider">{b.empRole}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-brand-text">{b.date}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={cn(
+                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
+                                                b.type === 'Lunch' 
+                                                    ? "bg-orange-500/10 text-orange-500 border-orange-500/20"
+                                                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                            )}>
+                                                {b.type}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-brand-text">{formatTimeTo12Hour(b.startTime)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-brand-text">{b.endTime ? formatTimeTo12Hour(b.endTime) : '-'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                                            {b.duration ? (
+                                                <span className="text-sm font-black text-brand-primary">{b.duration}m</span>
+                                            ) : (
+                                                <span className="text-xs font-bold text-status-pending italic">In Progress</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            {attendance.filter(r => r.date === selectedDate).every(r => !(r.breaks && r.breaks.length)) && (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-brand-muted font-bold italic">
+                                        No break logs found for this date.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        )}
 
             {/* Map Modal */}
             {mapModal.isOpen && (
