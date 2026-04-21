@@ -374,7 +374,7 @@ const Payroll = () => {
                             </thead>
                             <tbody className="divide-y divide-brand-border">
                                 {Array.isArray(employees) && employees.map((emp) => {
-                                    const { netSalary, tax, actualBase, presentData } = calculateNetSalary(emp);
+                                    const { netSalary, actualBase, presentData } = calculateNetSalary(emp);
                                     return (
                                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
                                             <td className="px-2 py-4 whitespace-nowrap text-brand-text font-bold truncate max-w-[120px]">{emp.name}</td>
