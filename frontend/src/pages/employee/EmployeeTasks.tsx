@@ -24,6 +24,7 @@ interface Task {
     date: string;
     status: 'Pending' | 'In Progress' | 'Completed';
     priority: 'Low' | 'Medium' | 'High';
+    type: 'Task' | 'Work Report';
 }
 
 const EmployeeTasks = () => {
@@ -108,7 +109,7 @@ const EmployeeTasks = () => {
         try {
             const response = isEditing
                 ? await api.put(`/api/tasks/${editingTaskId}`, { ...formData, employeeId: currentEmployeeId })
-                : await api.post('/api/tasks', { ...formData, employeeId: currentEmployeeId });
+                : await api.post('/api/tasks', { ...formData, type: 'Work Report', employeeId: currentEmployeeId });
 
             if (response.ok) {
                 setShowModal(false);
@@ -206,6 +207,12 @@ const EmployeeTasks = () => {
                                                             "bg-brand-bg border-brand-border text-brand-muted"
                                                 )}>
                                                     {task.priority} Priority
+                                                </div>
+                                                <div className={cn(
+                                                    "px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest",
+                                                    task.type === 'Task' ? "bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/20" : "bg-teal-500/10 text-teal-600 border-teal-500/20"
+                                                )}>
+                                                    {task.type || 'Work Report'}
                                                 </div>
                                             </div>
 

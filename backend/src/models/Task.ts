@@ -7,6 +7,7 @@ export interface ITask extends Document {
     status: 'Pending' | 'In Progress' | 'Completed';
     date: string;
     priority: 'Low' | 'Medium' | 'High';
+    type: 'Task' | 'Work Report';
 }
 
 const TaskSchema: Schema = new Schema({
@@ -15,7 +16,8 @@ const TaskSchema: Schema = new Schema({
     employeeId: { type: String, required: true },
     status: { type: String, enum: ['Pending', 'In Progress', 'Completed'], default: 'Pending' },
     date: { type: String, required: true },
-    priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' }
+    priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
+    type: { type: String, enum: ['Task', 'Work Report'], default: 'Work Report' }
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

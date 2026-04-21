@@ -336,7 +336,6 @@ const Attendance = () => {
                         </div>
                     </div>
                 </div>
-            </div>
 
             {activeTab === 'attendance' ? (
                 <>

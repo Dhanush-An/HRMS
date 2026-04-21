@@ -7,6 +7,7 @@ import {
     Search,
     Users
 } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
 interface Task {
     id: string;
@@ -15,6 +16,7 @@ interface Task {
     date: string;
     status: 'Pending' | 'In Progress' | 'Completed';
     priority: 'Low' | 'Medium' | 'High';
+    type: 'Task' | 'Work Report';
 }
 
 interface Employee {
@@ -73,7 +75,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
     const handleAddTask = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await api.post('/api/tasks', formData);
+            const response = await api.post('/api/tasks', { ...formData, type: 'Task' });
 
             if (response.ok) {
                 setShowModal(false);
@@ -85,6 +87,9 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                     priority: 'Medium',
                     status: 'Pending'
                 });
+                // After successful POST, the backend sets type: 'Task' if we send it
+                // Actually, I should update the POST call too.
+                // handleAddTask uses formData, so I'll update handleAddTask logic.
                 // Removed localhost notification
             }
         } catch (error) {
@@ -212,7 +217,15 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                                         <tr key={task.id} className="hover:bg-brand-bg/30 transition-colors group">
                                             <td className="px-4 py-6 whitespace-nowrap">
                                                 <div className="text-brand-text font-black text-sm">{getEmployeeName(task.employeeId)}</div>
-                                                <div className="text-[9px] text-brand-muted font-bold uppercase tracking-widest mt-0.5">Assigned: {task.date}</div>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className={cn(
+                                                        "text-[9px] font-black px-2 py-0.5 rounded-full border tracking-widest uppercase",
+                                                        task.type === 'Task' ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20" : "bg-teal-500/10 text-teal-600 border-teal-500/20"
+                                                    )}>
+                                                        {task.type || 'Work Report'}
+                                                    </span>
+                                                    <div className="text-[9px] text-brand-muted font-bold uppercase tracking-widest">Assigned: {task.date}</div>
+                                                </div>
                                             </td>
                                             <td className="px-4 py-6 text-brand-text font-medium text-sm max-w-md italic">
                                                 "{task.description}"
