@@ -292,62 +292,69 @@ const EmployeeAttendance = () => {
                                 <h3 className="text-sm font-black text-brand-text tracking-widest uppercase">Monthly Vita</h3>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center p-3 md:p-4 bg-status-approved/5 rounded-xl border border-status-approved/10">
-                                    <div className="flex items-center gap-2 md:gap-3">
-                                        <div className="p-1.5 md:p-2 bg-status-approved/10 rounded-lg">
-                                            <CheckCircle className="w-3.5 h-3.5 md:w-4 h-4 text-status-approved" />
+                            {(() => {
+                                const yearMonth = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+                                const monthlyAttendance = Array.isArray(attendance) ? attendance.filter(r => r.date.startsWith(yearMonth)) : [];
+                                
+                                return (
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center p-3 md:p-4 bg-status-approved/5 rounded-xl border border-status-approved/10">
+                                            <div className="flex items-center gap-2 md:gap-3">
+                                                <div className="p-1.5 md:p-2 bg-status-approved/10 rounded-lg">
+                                                    <CheckCircle className="w-3.5 h-3.5 md:w-4 h-4 text-status-approved" />
+                                                </div>
+                                                <span className="text-[10px] md:text-xs font-bold text-brand-text">Present</span>
+                                            </div>
+                                            <span className="text-xl md:text-2xl font-black text-status-approved">
+                                                {monthlyAttendance.filter(r => r.status === 'Present').length}
+                                            </span>
                                         </div>
-                                        <span className="text-[10px] md:text-xs font-bold text-brand-text">Present</span>
-                                    </div>
-                                    <span className="text-xl md:text-2xl font-black text-status-approved">
-                                        {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Present') : []).length}
-                                    </span>
-                                </div>
 
-                                <div className="flex justify-between items-center p-4 bg-status-rejected/5 rounded-xl border border-status-rejected/10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-status-rejected/10 rounded-lg">
-                                            <XCircle className="w-4 h-4 text-status-rejected" />
+                                        <div className="flex justify-between items-center p-4 bg-status-rejected/5 rounded-xl border border-status-rejected/10">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-status-rejected/10 rounded-lg">
+                                                    <XCircle className="w-4 h-4 text-status-rejected" />
+                                                </div>
+                                                <span className="text-xs font-bold text-brand-text">Leaves</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-status-rejected">
+                                                {monthlyAttendance.filter(r => r.status === 'Absent' || r.status === 'Leave').length}
+                                            </span>
                                         </div>
-                                        <span className="text-xs font-bold text-brand-text">Leaves</span>
-                                    </div>
-                                    <span className="text-2xl font-black text-status-rejected">
-                                        {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Absent' || r.status === 'Leave') : []).length}
-                                    </span>
-                                </div>
 
-                                <div className="flex justify-between items-center p-4 bg-status-pending/5 rounded-xl border border-status-pending/10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-status-pending/10 rounded-lg">
-                                            <Clock className="w-4 h-4 text-status-pending" />
+                                        <div className="flex justify-between items-center p-4 bg-status-pending/5 rounded-xl border border-status-pending/10">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-status-pending/10 rounded-lg">
+                                                    <Clock className="w-4 h-4 text-status-pending" />
+                                                </div>
+                                                <span className="text-xs font-bold text-brand-text">Late/Half</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-status-pending">
+                                                {monthlyAttendance.filter(r => r.status === 'Late' || r.status === 'Half Day').length}
+                                            </span>
                                         </div>
-                                        <span className="text-xs font-bold text-brand-text">Late/Half</span>
-                                    </div>
-                                    <span className="text-2xl font-black text-status-pending">
-                                        {(Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late' || r.status === 'Half Day') : []).length}
-                                    </span>
-                                </div>
 
-                                <div className="flex justify-between items-center p-4 bg-brand-primary/5 rounded-xl border border-brand-primary/10">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-brand-primary/10 rounded-lg">
-                                            <Clock className="w-4 h-4 text-brand-primary" />
+                                        <div className="flex justify-between items-center p-4 bg-brand-primary/5 rounded-xl border border-brand-primary/10">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-brand-primary/10 rounded-lg">
+                                                    <Clock className="w-4 h-4 text-brand-primary" />
+                                                </div>
+                                                <span className="text-xs font-bold text-brand-text">Weekly Off</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-brand-primary">
+                                                {(() => {
+                                                    const daysInMonth = getDaysInMonth(currentDate);
+                                                    let sundays = 0;
+                                                    for (let i = 1; i <= daysInMonth; i++) {
+                                                        if (new Date(currentDate.getFullYear(), currentDate.getMonth(), i).getDay() === 0) sundays++;
+                                                    }
+                                                    return sundays;
+                                                })()}
+                                            </span>
                                         </div>
-                                        <span className="text-xs font-bold text-brand-text">Weekly Off</span>
                                     </div>
-                                    <span className="text-2xl font-black text-brand-primary">
-                                        {(() => {
-                                            const daysInMonth = getDaysInMonth(currentDate);
-                                            let sundays = 0;
-                                            for (let i = 1; i <= daysInMonth; i++) {
-                                                if (new Date(currentDate.getFullYear(), currentDate.getMonth(), i).getDay() === 0) sundays++;
-                                            }
-                                            return sundays;
-                                        })()}
-                                    </span>
-                                </div>
-                            </div>
+                                );
+                            })()}
                         </div>
 
                         {/* Selected Day Expanded Details */}
