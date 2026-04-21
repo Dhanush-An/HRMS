@@ -151,24 +151,26 @@ const Payroll = () => {
         const salary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
         const { present, halfDay, sundays, penalties, totalPayableDays } = calculateAttendanceStats(emp.id);
         
-        // Calculate base per day (assuming 30 days month)
-        const dailyBase = salary.base / 30;
-        const actualBase = dailyBase * totalPayableDays;
+        // Calculate Total Gross first
+        const totalGross = salary.base + salary.hra + salary.transport + salary.other;
         
-        const totalEarnings = actualBase + salary.hra + salary.transport + salary.other;
+        // Pro-rate the Total Gross (assuming 30 days month)
+        const dailyRate = totalGross / 30;
+        const earnedSalary = dailyRate * totalPayableDays;
+        
         const bonus = processData[emp.id]?.bonus || 0;
         
         const pf = (salary as any).pf ?? 0;
         const tax = (salary as any).tax ?? 0;
 
         return {
-            totalEarnings,
-            actualBase,
+            totalEarnings: earnedSalary + bonus,
+            actualBase: earnedSalary,
             totalPayableDays,
             presentData: { present, halfDay, sundays, penalties, totalPayableDays },
             tax,
             pf,
-            netSalary: totalEarnings + bonus - tax - pf
+            netSalary: earnedSalary + bonus - tax - pf
         };
     };
 
