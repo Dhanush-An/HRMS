@@ -10,9 +10,9 @@ import api from '../../api';
 
 interface SalaryStructure {
     base: number;
-    hra: number;
-    transport: number;
     other: number;
+    pf: number;
+    tax: number;
 }
 
 interface Employee {
@@ -89,7 +89,7 @@ const Payroll = () => {
         const emp = employees.find(e => e.id === empId);
         if (!emp) return;
 
-        const currentSalary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
+        const currentSalary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
         const updatedSalary = { ...currentSalary, [field]: Number(value) };
 
         // Optimistic update
@@ -148,11 +148,11 @@ const Payroll = () => {
     };
 
     const calculateNetSalary = (emp: Employee) => {
-        const salary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
+        const salary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
         const { present, halfDay, sundays, penalties, totalPayableDays } = calculateAttendanceStats(emp.id);
         
-        // Calculate Total Gross first
-        const totalGross = salary.base + salary.hra + salary.transport + salary.other;
+        // Calculate Total Gross (Earnings only)
+        const totalGross = salary.base + salary.other;
         
         // Pro-rate the Total Gross (assuming 30 days month)
         const dailyRate = totalGross / 30;
@@ -160,8 +160,8 @@ const Payroll = () => {
         
         const bonus = processData[emp.id]?.bonus || 0;
         
-        const pf = (salary as any).pf ?? 0;
-        const tax = (salary as any).tax ?? 0;
+        const pf = salary.pf || 0;
+        const tax = salary.tax || 0;
 
         return {
             totalEarnings: earnedSalary + bonus,
@@ -174,32 +174,18 @@ const Payroll = () => {
         };
     };
 
-    const handleProcessUpdate = async (empId: string, field: 'bonus' | 'tax' | 'pf', value: number) => {
+    const handleProcessUpdate = async (empId: string, field: 'bonus', value: number) => {
         // Update local process state
         setProcessData(prev => ({
             ...prev,
             [empId]: { ...prev[empId], [field]: value }
         }));
-
-        // If it's tax or pf, persist to employee salary config
-        if (field === 'tax' || field === 'pf') {
-            const emp = employees.find(e => e.id === empId);
-            if (emp) {
-                const currentSalary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
-                const updatedSalary = { ...currentSalary, [field]: value };
-                try {
-                    await api.put(`/api/employees/${empId}/salary`, updatedSalary);
-                } catch (error) {
-                    console.error(`Error persisting ${field}:`, error);
-                }
-            }
-        }
     };
 
     const handleGeneratePayroll = async () => {
         const records = employees.map(emp => {
             const { netSalary, tax, pf } = calculateNetSalary(emp);
-            const salary = emp.salary || { base: 0, hra: 0, transport: 0, other: 0 };
+            const salary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
 
             return {
                 employeeId: emp.id,
@@ -264,8 +250,8 @@ const Payroll = () => {
                                 <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-[0.2em]">
                                     <th className="px-2 py-4">Employee</th>
                                     <th className="px-2 py-4">Base</th>
-                                    <th className="px-2 py-4">HRA</th>
-                                    <th className="px-2 py-4">Transport</th>
+                                    <th className="px-2 py-4">PF/ESI (-)</th>
+                                    <th className="px-2 py-4">Tax (-)</th>
                                     <th className="px-2 py-4">Other</th>
                                     <th className="px-2 py-4 text-right whitespace-nowrap">Total Gross</th>
                                 </tr>
@@ -280,7 +266,7 @@ const Payroll = () => {
                                                 <div className="text-sm font-bold text-brand-text truncate max-w-[120px]">{emp.name}</div>
                                                 <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider truncate max-w-[120px]">{emp.role}</div>
                                             </td>
-                                            {['base', 'hra', 'transport', 'other'].map((field) => (
+                                            {['base', 'pf', 'tax', 'other'].map((field) => (
                                                 <td key={field} className="px-2 py-4 whitespace-nowrap">
                                                     <div className="relative group/input">
                                                         <span className="absolute left-2 top-1/2 -translate-y-1/2 text-brand-muted group-focus-within/input:text-brand-primary text-[10px] font-bold">₹</span>
@@ -288,7 +274,10 @@ const Payroll = () => {
                                                             type="number"
                                                             value={salary[field as keyof SalaryStructure] || ''}
                                                             onChange={(e) => handleSalaryUpdate(emp.id, field as keyof SalaryStructure, e.target.value)}
-                                                            className="w-24 bg-brand-bg border border-brand-border rounded-lg py-2 pl-5 pr-1 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/50 focus:border-transparent transition-all outline-none"
+                                                            className={cn(
+                                                                "w-24 bg-brand-bg border border-brand-border rounded-lg py-2 pl-5 pr-1 font-bold text-xs focus:ring-2 focus:border-transparent transition-all outline-none",
+                                                                (field === 'pf' || field === 'tax') ? "text-status-rejected focus:ring-status-rejected/50" : "text-brand-text focus:ring-brand-primary/50"
+                                                            )}
                                                             placeholder="0"
                                                         />
                                                     </div>
@@ -367,8 +356,6 @@ const Payroll = () => {
                                     <th className="px-2 py-4">Attendance</th>
                                     <th className="px-2 py-4">Gross (Earned)</th>
                                     <th className="px-2 py-4">Bonus (+)</th>
-                                    <th className="px-2 py-4">PF (-)</th>
-                                    <th className="px-2 py-4">Tax (-)</th>
                                     <th className="px-2 py-4 text-right">Net Payable</th>
                                 </tr>
                             </thead>
@@ -391,7 +378,7 @@ const Payroll = () => {
                                             </td>
                                             <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">
                                                 <div className="flex flex-col">
-                                                    <span className="line-through opacity-40 text-[10px]">₹{((emp.salary?.base || 0) + (emp.salary?.hra || 0) + (emp.salary?.transport || 0) + (emp.salary?.other || 0)).toLocaleString()}</span>
+                                                    <span className="line-through opacity-40 text-[10px]">₹{((emp.salary?.base || 0) + (emp.salary?.other || 0)).toLocaleString()}</span>
                                                     <span className="text-brand-text font-black">₹{Math.round(actualBase).toLocaleString()}</span>
                                                 </div>
                                             </td>
@@ -401,24 +388,6 @@ const Payroll = () => {
                                                     value={processData[emp.id]?.bonus || ''}
                                                     onChange={(e) => handleProcessUpdate(emp.id, 'bonus', Number(e.target.value))}
                                                     className="w-24 bg-brand-bg border border-brand-border rounded-lg px-2 py-1.5 text-status-approved font-bold text-sm focus:ring-2 focus:ring-status-approved outline-none tracking-tight"
-                                                    placeholder="0"
-                                                />
-                                            </td>
-                                            <td className="px-2 py-4 whitespace-nowrap">
-                                                <input
-                                                    type="number"
-                                                    value={processData[emp.id]?.pf !== undefined ? processData[emp.id]?.pf : (emp.salary as any)?.pf || ''}
-                                                    onChange={(e) => handleProcessUpdate(emp.id, 'pf', Number(e.target.value))}
-                                                    className="w-24 bg-brand-bg border border-brand-border rounded-lg px-2 py-1.5 text-status-rejected font-bold text-sm focus:ring-2 focus:ring-status-rejected outline-none tracking-tight"
-                                                    placeholder="0"
-                                                />
-                                            </td>
-                                            <td className="px-2 py-4 whitespace-nowrap">
-                                                <input
-                                                    type="number"
-                                                    value={processData[emp.id]?.tax !== undefined ? processData[emp.id]?.tax : (emp.salary as any)?.tax || ''}
-                                                    onChange={(e) => handleProcessUpdate(emp.id, 'tax', Number(e.target.value))}
-                                                    className="w-24 bg-brand-bg border border-brand-border rounded-lg px-2 py-1.5 text-status-rejected font-bold text-sm focus:ring-2 focus:ring-status-rejected outline-none tracking-tight"
                                                     placeholder="0"
                                                 />
                                             </td>
@@ -473,8 +442,6 @@ const Payroll = () => {
                                                 <th className="px-2 py-3">Employee</th>
                                                 <th className="px-2 py-3 text-right">Gross</th>
                                                 <th className="px-2 py-3 text-right">Bonus</th>
-                                                <th className="px-2 py-3 text-right">PF</th>
-                                                <th className="px-2 py-3 text-right">Tax</th>
                                                 <th className="px-2 py-3 text-right">Net Pay</th>
                                                 <th className="px-2 py-3 text-right">Action</th>
                                             </tr>
@@ -485,8 +452,6 @@ const Payroll = () => {
                                                     <td className="px-2 py-4 text-sm font-bold text-brand-text truncate max-w-[120px] whitespace-nowrap">{record.name}</td>
                                                     <td className="px-2 py-4 text-sm text-right font-medium text-brand-muted whitespace-nowrap">₹{record.base.toLocaleString()}</td>
                                                     <td className="px-2 py-4 text-xs text-right font-bold text-status-approved whitespace-nowrap">+₹{record.bonus.toLocaleString()}</td>
-                                                    <td className="px-2 py-4 text-xs text-right font-bold text-status-rejected whitespace-nowrap">-₹{(record.pf || 0).toLocaleString()}</td>
-                                                    <td className="px-2 py-4 text-xs text-right font-bold text-status-rejected whitespace-nowrap">-₹{(record.tax || 0).toLocaleString()}</td>
                                                     <td className="px-2 py-4 text-sm text-right font-black text-status-approved whitespace-nowrap">₹{record.netSalary.toLocaleString()}</td>
                                                     <td className="px-2 py-4 text-right">
                                                         <button
