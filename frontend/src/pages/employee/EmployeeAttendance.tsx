@@ -106,13 +106,29 @@ const EmployeeAttendance = () => {
 
         if (!record) {
             const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-            if (date.getDay() === 0) { // Sunday
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const isWeeklyOff = date.getDay() === 0;
+
+            if (isWeeklyOff) {
                 return {
                     id: `sunday-${dateStr}`,
                     employeeId: '',
                     date: dateStr,
                     status: 'Leave' as const,
                     isWeeklyOff: true
+                } as any;
+            }
+
+            // If the date is in the past and no record exists, mark as Absent
+            if (date < today) {
+                return {
+                    id: `absent-${dateStr}`,
+                    employeeId: '',
+                    date: dateStr,
+                    status: 'Absent' as const,
+                    isSynthetic: true
                 } as any;
             }
         }
@@ -152,9 +168,12 @@ const EmployeeAttendance = () => {
                     statusStyles = "bg-status-approved/10 border-status-approved/20 hover:bg-status-approved/20";
                 } else if (record.status === 'Absent' || record.status === 'Leave') {
                     const isSunday = (record as any).isWeeklyOff;
-                    statusStyles = isSunday
+                    const isSyntheticAbsent = (record as any).isSynthetic;
+                    statusStyles = (isSunday)
                         ? "bg-brand-primary/5 border-brand-primary/10 hover:bg-brand-primary/10"
-                        : "bg-status-rejected/10 border-status-rejected/20 hover:bg-status-rejected/20";
+                        : (isSyntheticAbsent)
+                            ? "bg-status-rejected/5 border-status-rejected/10 hover:bg-status-rejected/20"
+                            : "bg-status-rejected/10 border-status-rejected/20 hover:bg-status-rejected/20";
                 } else if (record.status === 'Half Day') {
                     statusStyles = "bg-status-pending/10 border-status-pending/20 hover:bg-status-pending/20";
                 } else if (record.status === 'Late') {
@@ -202,7 +221,7 @@ const EmployeeAttendance = () => {
                         </div>
                     )}
 
-                    {record && !record.isWeeklyOff && (
+                    {record && !record.isWeeklyOff && !record.isSynthetic && (
                         <div className="mt-auto absolute bottom-1 md:bottom-2 left-1 md:left-2 right-1 md:right-2 space-y-0 md:space-y-1">
                             {record.shiftType && (
                                 <span className={cn(
@@ -226,6 +245,14 @@ const EmployeeAttendance = () => {
                                     style={{ width: record.workHours ? `${Math.min((record.workHours / 9) * 100, 100)}%` : '0%' }}
                                 />
                             </div>
+                        </div>
+                    )}
+
+                    {record && record.isSynthetic && (
+                        <div className="mt-auto absolute bottom-1 md:bottom-2 left-1 md:left-2 right-1 md:right-2">
+                             <div className="text-center py-1 bg-status-rejected/10 rounded-lg border border-status-rejected/10">
+                                <span className="text-[7px] md:text-[9px] font-black uppercase tracking-tighter text-status-rejected opacity-80">Absent</span>
+                             </div>
                         </div>
                     )}
                 </div>
