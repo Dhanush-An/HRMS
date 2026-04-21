@@ -151,15 +151,14 @@ const Payroll = () => {
         const salary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
         const { present, halfDay, sundays, penalties, totalPayableDays } = calculateAttendanceStats(emp.id);
         
-        // Calculate Total Gross (Earnings only)
-        const totalGross = salary.base + salary.other;
+        // Calculate Total Gross (Earnings minus Deductions)
+        const totalGross = (salary.base || 0) + (salary.other || 0) - (salary.pf || 0) - (salary.tax || 0);
         
         // Pro-rate the Total Gross (assuming 30 days month)
         const dailyRate = totalGross / 30;
         const earnedSalary = dailyRate * totalPayableDays;
         
         const bonus = processData[emp.id]?.bonus || 0;
-        
         const pf = salary.pf || 0;
         const tax = salary.tax || 0;
 
@@ -170,7 +169,7 @@ const Payroll = () => {
             presentData: { present, halfDay, sundays, penalties, totalPayableDays },
             tax,
             pf,
-            netSalary: earnedSalary + bonus - tax - pf
+            netSalary: earnedSalary + bonus 
         };
     };
 
