@@ -247,8 +247,8 @@ const EmployeeDashboard = () => {
 
                 console.log(`[GEOFENCE] Distance to ${loginOptions.workLocation} branch: ${distance.toFixed(2)}m`);
 
-                if (distance > 500) {
-                    alert(`Access Denied: You are ${distance.toFixed(0)}m away. You must be within 500m of the office to check-in.`);
+                if (distance > 50) {
+                    alert(`Access Denied: You are ${distance.toFixed(0)}m away. You must be within 50m of the office to check-in.`);
                     setIsSubmitting(false);
                     return;
                 }
