@@ -10,7 +10,8 @@ import {
     AlertCircle,
     MapPin,
     X,
-    Maximize2
+    Maximize2,
+    User
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -43,6 +44,7 @@ interface AttendanceRecord {
     workMode?: string;
     workLocation?: string;
     shiftType?: string;
+    faceImage?: string;
 }
 
 const formatTimeTo12Hour = (time?: string) => {
@@ -95,6 +97,11 @@ const Attendance = () => {
         empName: '',
         lat: 0,
         lng: 0
+    });
+    const [faceModal, setFaceModal] = useState<{ isOpen: boolean; img: string; name: string }>({
+        isOpen: false,
+        img: '',
+        name: ''
     });
 
     const fetchData = async () => {
@@ -468,17 +475,28 @@ const Attendance = () => {
                                             </span>
                                         </td>
                                         <td className="px-4 py-4 whitespace-nowrap text-right">
-                                            {record?.location ? (
-                                                <button
-                                                    onClick={() => handleViewLocation(emp.id, emp.name, record.location)}
-                                                    className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all"
-                                                    title="View Location"
-                                                >
-                                                    <MapPin className="w-4 h-4" />
-                                                </button>
-                                            ) : (
-                                                <span className="text-brand-muted text-[10px] font-black uppercase tracking-widest opacity-40">Pending</span>
-                                            )}
+                                            <div className="flex justify-end gap-2">
+                                                {record?.faceImage && (
+                                                    <button
+                                                        onClick={() => setFaceModal({ isOpen: true, img: record.faceImage!, name: emp.name })}
+                                                        className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all"
+                                                        title="View ID Capture"
+                                                    >
+                                                        <User className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                {record?.location ? (
+                                                    <button
+                                                        onClick={() => handleViewLocation(emp.id, emp.name, record.location)}
+                                                        className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all"
+                                                        title="View Location"
+                                                    >
+                                                        <MapPin className="w-4 h-4" />
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-brand-muted text-[10px] font-black uppercase tracking-widest opacity-40">Pending</span>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 );
@@ -628,6 +646,58 @@ const Attendance = () => {
                             >
                                 <Maximize2 className="w-4 h-4" />
                                 Open in Full Maps
+                            </button>
+                        </div>
+                    </div>
+                </div>
+             )}
+
+            {/* Face ID Modal */}
+            {faceModal.isOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div
+                        className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        onClick={() => setFaceModal(prev => ({ ...prev, isOpen: false }))}
+                    />
+                    <div className="relative bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                        <div className="p-6 border-b border-brand-border flex justify-between items-center bg-brand-surface/80 backdrop-blur-xl">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-brand-primary rounded-2xl shadow-lg shadow-brand-primary/20">
+                                    <User className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-[10px] font-black text-brand-muted uppercase tracking-[0.2em] mb-0.5">Session Identification</h3>
+                                    <p className="text-xl font-black text-brand-text tracking-tighter">{faceModal.name}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setFaceModal(prev => ({ ...prev, isOpen: false }))}
+                                className="p-2 hover:bg-brand-bg rounded-xl transition-colors group"
+                            >
+                                <X className="w-5 h-5 text-brand-muted group-hover:text-brand-text" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            <div className="relative aspect-video rounded-3xl overflow-hidden border-2 border-brand-primary/20 bg-black group/img">
+                                <img
+                                    src={faceModal.img}
+                                    alt="Face ID Capture"
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                />
+                                <div className="absolute inset-0 pointer-events-none border-[20px] border-black/10" />
+                                <div className="absolute top-4 right-4 px-3 py-1 bg-brand-primary/80 backdrop-blur-sm rounded-full">
+                                    <span className="text-[8px] font-black text-white uppercase tracking-widest">Verified Capture</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-6 bg-brand-bg/50 border-t border-brand-border flex justify-end">
+                            <button
+                                onClick={() => setFaceModal(prev => ({ ...prev, isOpen: false }))}
+                                className="px-8 py-3 bg-brand-surface border border-brand-border text-brand-text rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-brand-surface transition-all active:scale-95"
+                            >
+                                Close Preview
                             </button>
                         </div>
                     </div>

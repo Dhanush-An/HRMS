@@ -13,6 +13,7 @@ export interface IAttendance extends Document {
     workMode?: string;
     workLocation?: string;
     shiftType?: string;
+    faceImage?: string;
 }
 
 const AttendanceSchema: Schema = new Schema({
@@ -24,6 +25,7 @@ const AttendanceSchema: Schema = new Schema({
     workMode: { type: String },
     workLocation: { type: String },
     shiftType: { type: String },
+    faceImage: { type: String },
     location: {
         lat: { type: Number },
         lng: { type: Number }

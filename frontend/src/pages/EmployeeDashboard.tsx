@@ -22,8 +22,12 @@ import {
     Loader2,
     Sun,
     Moon,
-    HelpCircle
+    HelpCircle,
+    Camera,
+    RefreshCw,
+    UserCheck
 } from 'lucide-react';
+import { useRef } from 'react';
 import { cn } from '../utils/cn';
 import logo from '../assets/antigraviity logo 2.jpg';
 
@@ -109,6 +113,13 @@ const EmployeeDashboard = () => {
         shiftType: 'Day Shift'
     });
 
+    // Face Capture State
+    const [modalStep, setModalStep] = useState<'options' | 'face-capture'>('options');
+    const [capturedImage, setCapturedImage] = useState<string | null>(null);
+    const [lastValidatedLocation, setLastValidatedLocation] = useState<{ lat?: number; lng?: number } | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const streamRef = useRef<MediaStream | null>(null);
+
 
     const fetchTodayAttendance = async (employeeId: string) => {
         try {
@@ -174,7 +185,18 @@ const EmployeeDashboard = () => {
     }, []); // Empty deps: only run once on mount
 
     const handleCheckIn = () => {
+        setModalStep('options');
+        setCapturedImage(null);
         setIsLoginModalOpen(true);
+    };
+
+    const closeModal = () => {
+        if (!isSubmitting) {
+            stopCamera();
+            setIsLoginModalOpen(false);
+            setModalStep('options');
+            setCapturedImage(null);
+        }
     };
 
     const confirmCheckIn = async () => {
@@ -233,50 +255,97 @@ const EmployeeDashboard = () => {
             }
         } else if (loginOptions.workMode === 'Work from Office' && !loginLocation.latitude) {
             // This case should be handled by the catch block above, but as a safety measure:
-            alert("Location required: Please enable GPS to check-in from the office.");
             setIsSubmitting(false);
             return;
         }
 
+        setLastValidatedLocation({ lat: loginLocation.latitude, lng: loginLocation.longitude });
+
+        // Instead of API call, move to Face Capture
+        setModalStep('face-capture');
+        setIsSubmitting(false);
+        startCamera();
+    };
+
+    const startCamera = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
+            });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            streamRef.current = stream;
+        } catch (err) {
+            console.error("Camera error:", err);
+            alert("Could not access camera. Please ensure you have granted permission.");
+            setModalStep('options');
+        }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+    };
+
+    const captureAndSubmit = async () => {
+        if (!videoRef.current || !user) return;
+        setIsSubmitting(true);
+
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = videoRef.current.videoWidth;
+            canvas.height = videoRef.current.videoHeight;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(videoRef.current, 0, 0);
+                const imageData = canvas.toDataURL('image/jpeg', 0.8);
+                setCapturedImage(imageData);
+                
+                // Stop camera before final submission
+                stopCamera();
+
+                // Now proceed with API call
+                await finalCheckIn(imageData);
+            }
+        } catch (err) {
+            console.error("Capture error:", err);
+            alert("Failed to capture image. Please try again.");
+            setIsSubmitting(false);
+        }
+    };
+
+    const finalCheckIn = async (faceImage: string) => {
         const now = new Date();
         const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
         let status = 'Present';
-
         if (loginOptions.shiftType === 'Day Shift') {
             const tenThirty = new Date();
             tenThirty.setHours(10, 30, 0, 0);
-
             const onePM = new Date();
             onePM.setHours(13, 0, 0, 0);
-
-            if (now > onePM) {
-                status = 'Half Day';
-            } else if (now > tenThirty) {
-                status = 'Late';
-            }
+            if (now > onePM) status = 'Half Day';
+            else if (now > tenThirty) status = 'Late';
         } else {
-            // Night Shift logic
-            // Shift is 8 PM to 5:30 AM
-            // Attendance login time <= 8:20 PM is present, else late
             const eightTwentyPM = new Date();
             eightTwentyPM.setHours(20, 20, 0, 0);
-
             const ninePM = new Date();
             ninePM.setHours(21, 0, 0, 0);
-
-            if (now > ninePM) {
-                // User stated "9pm after i login mard as late"
-                status = 'Late';
-            } else if (now > eightTwentyPM) {
-                // General "late" buffer over 20 mins
-                status = 'Late';
-            }
+            if (now > ninePM) status = 'Late';
+            else if (now > eightTwentyPM) status = 'Late';
         }
 
         try {
+            // Use the already validated location
+            const lat = lastValidatedLocation?.lat;
+            const lng = lastValidatedLocation?.lng;
+
             const tzOffset = now.getTimezoneOffset() * 60000;
             const today = new Date(now.getTime() - tzOffset).toISOString().split('T')[0];
+            
             const res = await api.post('/api/attendance', {
                 employeeId: user.id,
                 employeeName: user.name,
@@ -286,10 +355,8 @@ const EmployeeDashboard = () => {
                 workMode: loginOptions.workMode,
                 workLocation: loginOptions.workLocation,
                 shiftType: loginOptions.shiftType,
-                location: {
-                    lat: loginLocation.latitude,
-                    lng: loginLocation.longitude
-                }
+                faceImage, // NEW: sending the captured image
+                location: { lat, lng }
             });
             const data = await res.json();
 
@@ -299,6 +366,7 @@ const EmployeeDashboard = () => {
             setAttendanceId(data.id);
             setSessionLocation({ workMode: loginOptions.workMode, workLocation: loginOptions.workLocation, workHours: 0 });
             setIsLoginModalOpen(false);
+            setModalStep('options');
         } catch (error: any) {
             console.error("Error checking in:", error);
             alert(error.message || "Failed to check in. Please try again.");
@@ -585,7 +653,7 @@ const EmployeeDashboard = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className="absolute inset-0 bg-black/80 backdrop-blur-xl"
-                            onClick={() => !isSubmitting && setIsLoginModalOpen(false)}
+                            onClick={closeModal}
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -605,7 +673,7 @@ const EmployeeDashboard = () => {
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => !isSubmitting && setIsLoginModalOpen(false)}
+                                        onClick={closeModal}
                                         className="p-2 hover:bg-brand-bg rounded-xl transition-colors text-brand-muted hover:text-brand-text"
                                     >
                                         <X className="w-4 h-4" />
@@ -614,115 +682,192 @@ const EmployeeDashboard = () => {
                             </div>
 
                             <div className="p-5 md:p-6 space-y-5 md:space-y-6 overflow-y-auto no-scrollbar">
-                                {/* Work Mode Selection */}
-                                <div className="space-y-2.5">
-                                    <label className="text-[10px] md:text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Working Environment</label>
-                                    <div className="grid grid-cols-2 gap-3 md:gap-4">
-                                        {[
-                                            { id: 'Work from Office', icon: Building2, label: 'Office' },
-                                            { id: 'Work from Home', icon: Home, label: 'Remote' }
-                                        ].map((mode) => (
-                                            <button
-                                                key={mode.id}
-                                                onClick={() => setLoginOptions(prev => ({ ...prev, workMode: mode.id }))}
-                                                className={cn(
-                                                    "flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl border-2 transition-all group",
-                                                    loginOptions.workMode === mode.id
-                                                        ? "bg-brand-primary-light border-brand-primary shadow-lg shadow-brand-primary/10"
-                                                        : "bg-brand-bg border-brand-border hover:border-brand-primary/50"
-                                                )}
-                                            >
-                                                <mode.icon className={cn(
-                                                    "w-5 h-5 md:w-6 md:h-6",
-                                                    loginOptions.workMode === mode.id ? "text-brand-primary" : "text-brand-muted group-hover:text-brand-primary"
-                                                )} />
-                                                <span className={cn(
-                                                    "text-xs md:text-sm font-black uppercase tracking-widest",
-                                                    loginOptions.workMode === mode.id ? "text-brand-primary" : "text-brand-muted"
-                                                )}>{mode.label}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                {modalStep === 'options' ? (
+                                    <>
+                                        {/* Work Mode Selection */}
+                                        <div className="space-y-2.5">
+                                            <label className="text-[10px] md:text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Working Environment</label>
+                                            <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                                {[
+                                                    { id: 'Work from Office', icon: Building2, label: 'Office' },
+                                                    { id: 'Work from Home', icon: Home, label: 'Remote' }
+                                                ].map((mode) => (
+                                                    <button
+                                                        key={mode.id}
+                                                        onClick={() => setLoginOptions(prev => ({ ...prev, workMode: mode.id }))}
+                                                        className={cn(
+                                                            "flex flex-col items-center gap-2 p-3 md:p-4 rounded-xl border-2 transition-all group",
+                                                            loginOptions.workMode === mode.id
+                                                                ? "bg-brand-primary-light border-brand-primary shadow-lg shadow-brand-primary/10"
+                                                                : "bg-brand-bg border-brand-border hover:border-brand-primary/50"
+                                                        )}
+                                                    >
+                                                        <mode.icon className={cn(
+                                                            "w-5 h-5 md:w-6 md:h-6",
+                                                            loginOptions.workMode === mode.id ? "text-brand-primary" : "text-brand-muted group-hover:text-brand-primary"
+                                                        )} />
+                                                        <span className={cn(
+                                                            "text-xs md:text-sm font-black uppercase tracking-widest",
+                                                            loginOptions.workMode === mode.id ? "text-brand-primary" : "text-brand-muted"
+                                                        )}>{mode.label}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
 
-                                {/* Location Selection */}
-                                <div className="space-y-2.5">
-                                    <label className="text-[10px] md:text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Assigned Branch</label>
-                                    <div className="grid grid-cols-2 gap-3 md:gap-4">
-                                        {['Chennai', 'Bangalore'].map((loc) => (
-                                            <button
-                                                key={loc}
-                                                onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc }))}
-                                                className={cn(
-                                                    "flex flex-col items-center justify-center gap-2 py-3 md:py-4 rounded-xl border-2 transition-all font-bold",
-                                                    loginOptions.workLocation === loc
-                                                        ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
-                                                        : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
-                                                )}
-                                            >
-                                                <MapPin className="w-4 h-4 md:w-5 md:h-5" />
-                                                <span className="text-xs md:text-sm">{loc}</span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
+                                        {/* Location Selection */}
+                                        <div className="space-y-2.5">
+                                            <label className="text-[10px] md:text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Assigned Branch</label>
+                                            <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                                {['Chennai', 'Bangalore'].map((loc) => (
+                                                    <button
+                                                        key={loc}
+                                                        onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc }))}
+                                                        className={cn(
+                                                            "flex flex-col items-center justify-center gap-2 py-3 md:py-4 rounded-xl border-2 transition-all font-bold",
+                                                            loginOptions.workLocation === loc
+                                                                ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
+                                                                : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
+                                                        )}
+                                                    >
+                                                        <MapPin className="w-4 h-4 md:w-5 md:h-5" />
+                                                        <span className="text-xs md:text-sm">{loc}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
 
-                                {/* Shift Selection */}
-                                <div className="space-y-2.5">
-                                    <label className="text-[10px] md:text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Shift Type</label>
-                                    <div className="grid grid-cols-2 gap-3 md:gap-4">
-                                        {[
-                                            { id: 'Day Shift', icon: Sun, label: 'Day Shift', time: '9AM - 6PM' },
-                                            { id: 'Night Shift', icon: Moon, label: 'Night Shift', time: '8PM - 5:30AM' }
-                                        ].map((shift) => (
-                                            <button
-                                                key={shift.id}
-                                                onClick={() => setLoginOptions(prev => ({ ...prev, shiftType: shift.id }))}
-                                                className={cn(
-                                                    "flex flex-col items-center gap-1.5 py-3 md:py-4 px-2 rounded-xl border-2 transition-all font-bold",
-                                                    loginOptions.shiftType === shift.id
-                                                        ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
-                                                        : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
-                                                )}
-                                            >
-                                                <shift.icon className="w-4 h-4 md:w-5 md:h-5" />
-                                                <div className="flex flex-col gap-0.5 items-center">
-                                                    <span className="text-xs md:text-sm">{shift.label}</span>
-                                                    <span className={cn(
-                                                        "text-[9px] font-black tracking-wider uppercase opacity-80",
-                                                    )}>{shift.time}</span>
-                                                </div>
-                                            </button>
-                                        ))}
+                                        {/* Shift Selection */}
+                                        <div className="space-y-2.5">
+                                            <label className="text-[10px] md:text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Shift Type</label>
+                                            <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                                {[
+                                                    { id: 'Day Shift', icon: Sun, label: 'Day Shift', time: '9AM - 6PM' },
+                                                    { id: 'Night Shift', icon: Moon, label: 'Night Shift', time: '8PM - 5:30AM' }
+                                                ].map((shift) => (
+                                                    <button
+                                                        key={shift.id}
+                                                        onClick={() => setLoginOptions(prev => ({ ...prev, shiftType: shift.id }))}
+                                                        className={cn(
+                                                            "flex flex-col items-center gap-1.5 py-3 md:py-4 px-2 rounded-xl border-2 transition-all font-bold",
+                                                            loginOptions.shiftType === shift.id
+                                                                ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
+                                                                : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
+                                                        )}
+                                                    >
+                                                        <shift.icon className="w-4 h-4 md:w-5 md:h-5" />
+                                                        <div className="flex flex-col gap-0.5 items-center">
+                                                            <span className="text-xs md:text-sm">{shift.label}</span>
+                                                            <span className={cn(
+                                                                "text-[9px] font-black tracking-wider uppercase opacity-80",
+                                                            )}>{shift.time}</span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <div className="relative aspect-video bg-black rounded-3xl overflow-hidden shadow-2xl border-2 border-brand-primary/20">
+                                            {!capturedImage ? (
+                                                <>
+                                                    <video
+                                                        ref={videoRef}
+                                                        autoPlay
+                                                        playsInline
+                                                        className="w-full h-full object-cover mirror"
+                                                        style={{ transform: 'scaleX(-1)' }}
+                                                    />
+                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                        <div className="w-48 h-48 md:w-64 md:h-64 border-2 border-white/30 rounded-full border-dashed animate-[spin_10s_linear_infinite]" />
+                                                        <div className="absolute w-44 h-44 md:w-60 md:h-60 border-2 border-brand-primary/50 rounded-full" />
+                                                    </div>
+                                                    <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+                                                        <div className="px-4 py-1.5 bg-black/50 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2">
+                                                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                                                            <span className="text-[10px] font-bold text-white uppercase tracking-widest">Live Camera</span>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <img src={capturedImage} alt="Captured" className="w-full h-full object-cover" />
+                                            )}
+                                        </div>
+                                        
+                                        <div className="bg-brand-primary/5 border border-brand-primary/10 rounded-2xl p-4 flex gap-4 items-center">
+                                            <div className="p-2 bg-brand-primary/10 rounded-xl">
+                                                <Camera className="w-5 h-5 text-brand-primary" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-brand-text">Face Recognition Required</p>
+                                                <p className="text-[10px] text-brand-muted">Please look into the camera for session authorization.</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
                             <div className="p-5 md:p-6 bg-brand-bg/50 border-t border-brand-border flex gap-4 shrink-0">
-                                <button
-                                    onClick={() => setIsLoginModalOpen(false)}
-                                    disabled={isSubmitting}
-                                    className="flex-1 py-3 px-6 rounded-xl border border-brand-border font-black text-[10px] uppercase tracking-widest text-brand-muted hover:bg-brand-surface transition-all disabled:opacity-50"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={confirmCheckIn}
-                                    disabled={isSubmitting}
-                                    className="flex-[2] py-3 px-6 bg-brand-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
-                                >
-                                    {isSubmitting ? (
-                                        <>
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            Syncing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Authorize & Login
-                                            <ChevronRight className="w-4 h-4" />
-                                        </>
-                                    )}
-                                </button>
+                                {modalStep === 'options' ? (
+                                    <>
+                                        <button
+                                            onClick={closeModal}
+                                            disabled={isSubmitting}
+                                            className="flex-1 py-3 px-6 rounded-xl border border-brand-border font-black text-[10px] uppercase tracking-widest text-brand-muted hover:bg-brand-surface transition-all disabled:opacity-50"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={confirmCheckIn}
+                                            disabled={isSubmitting}
+                                            className="flex-[2] py-3 px-6 bg-brand-primary text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Syncing...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Authorize & Login
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </>
+                                            )}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={() => {
+                                                stopCamera();
+                                                setModalStep('options');
+                                            }}
+                                            disabled={isSubmitting}
+                                            className="flex-1 py-3 px-6 rounded-xl border border-brand-border font-black text-[10px] uppercase tracking-widest text-brand-muted hover:bg-brand-surface transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                        >
+                                            <RefreshCw className="w-4 h-4" />
+                                            Back
+                                        </button>
+                                        <button
+                                            onClick={captureAndSubmit}
+                                            disabled={isSubmitting}
+                                            className="flex-[2] py-3 px-6 bg-status-approved text-white rounded-xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:scale-[1.03] active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                                        >
+                                            {isSubmitting ? (
+                                                <>
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                    Capturing...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Capture & Check-in
+                                                    <UserCheck className="w-4 h-4" />
+                                                </>
+                                            )}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </motion.div>
                     </div>
