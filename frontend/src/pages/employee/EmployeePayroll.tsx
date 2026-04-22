@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
 import { IndianRupee, Download, ShieldCheck, Receipt } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const EmployeePayroll = () => {
     const [salaryDetails, setSalaryDetails] = useState<any>(null);
@@ -61,6 +63,70 @@ const EmployeePayroll = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDownloadPDF = (data: any) => {
+        if (!data) return;
+
+        const doc = new jsPDF();
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+
+        // Header
+        doc.setFillColor(31, 41, 55);
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ANTIGRAVIITY HRMS', 105, 20, { align: 'center' });
+        doc.setFontSize(12);
+        doc.text('PAYSLIP FOR ' + (data.month + ' ' + (data.year || '')).toUpperCase(), 105, 30, { align: 'center' });
+
+        // Employee Info
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Employee Name: ' + (user?.name || 'N/A'), 15, 55);
+        doc.text('Employee ID: ' + (user?.employeeId || user?.id || 'N/A'), 15, 62);
+        doc.text('Designation: ' + (user?.role || 'Team Member'), 15, 69);
+        doc.text('Date Generated: ' + new Date().toLocaleDateString(), 140, 55);
+
+        // Salary Table
+        const tableBody = [
+            ['Description', 'Amount (INR)'],
+            ['Basic Salary', data.basic?.toLocaleString() || (data.netSalary - (data.hra || 0) - (data.allowances || 0)).toLocaleString()],
+            ['HRA', data.hra?.toLocaleString() || '0'],
+            ['Transport / Other Allowances', data.allowances?.toLocaleString() || '0'],
+            ['Deductions', data.deductions?.toLocaleString() || '0'],
+        ];
+
+        autoTable(doc, {
+            startY: 80,
+            head: [['Component', 'Amount']],
+            body: [
+                ['Basic Pay', `INR ${data.basic?.toLocaleString() || (data.netSalary - (data.hra || 0) - (data.allowances || 0)).toLocaleString()}`],
+                ['House Rent Allowance (HRA)', `INR ${data.hra?.toLocaleString() || '0'}`],
+                ['Allowances', `INR ${data.allowances?.toLocaleString() || '0'}`],
+                ['Deductions', `INR ${data.deductions?.toLocaleString() || '0'}`],
+            ],
+            theme: 'striped',
+            headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255] },
+            columnStyles: { 1: { halign: 'right' } }
+        });
+
+        // Total Net Salary
+        const finalY = (doc as any).lastAutoTable.finalY + 10;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text('Net Salary: INR ' + data.netSalary.toLocaleString(), 195, finalY, { align: 'right' });
+
+        // Footer
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(100);
+        doc.text('This is a computer generated document and does not require a physical signature.', 105, 280, { align: 'center' });
+
+        doc.save(`Payslip_${data.month}_${data.year || '2026'}.pdf`);
     };
 
     if (loading) return (
@@ -149,7 +215,10 @@ const EmployeePayroll = () => {
                         </div>
                     </div>
 
-                    <button className="w-full mt-6 bg-brand-primary text-white py-3.5 rounded-xl font-black flex items-center justify-center gap-2 hover:bg-brand-primary/90 transition-all active:scale-95 shadow-md shadow-brand-primary/20 uppercase tracking-widest text-xs">
+                    <button 
+                        onClick={() => handleDownloadPDF(salaryDetails)}
+                        className="w-full mt-6 bg-brand-primary text-white py-3.5 rounded-xl font-black flex items-center justify-center gap-2 hover:bg-brand-primary/90 transition-all active:scale-95 shadow-md shadow-brand-primary/20 uppercase tracking-widest text-xs"
+                    >
                         <Download className="w-4 h-4" />
                         Download PDF
                     </button>
@@ -174,7 +243,10 @@ const EmployeePayroll = () => {
                                     <div className="p-2.5 bg-brand-bg rounded-xl border border-brand-border">
                                         <IndianRupee className="w-4 h-4 text-brand-primary" />
                                     </div>
-                                    <button className="p-2.5 hover:bg-brand-bg rounded-xl text-brand-muted hover:text-brand-primary transition-all active:scale-90 border border-transparent hover:border-brand-border">
+                                    <button 
+                                        onClick={() => handleDownloadPDF(item)}
+                                        className="p-2.5 hover:bg-brand-bg rounded-xl text-brand-muted hover:text-brand-primary transition-all active:scale-90 border border-transparent hover:border-brand-border"
+                                    >
                                         <Download className="w-4 h-4" />
                                     </button>
                                 </div>
