@@ -430,7 +430,22 @@ app.get('/api/attendance', async (req, res) => {
         if (date) query.date = date;
         if (employeeId) query.employeeId = employeeId;
         const attendance = await Attendance.find(query).sort({ createdAt: -1 }).limit(Number(limit) || 0);
-        res.json(attendance);
+        
+        // Auto-correct 'Half Day' to 'Present' if it meets the new 9:45 AM rule
+        const correctedAttendance = attendance.map(record => {
+            const r = record.toObject ? record.toObject() : record;
+            if (r.status === 'Half Day' && r.checkIn && r.shiftType === 'Day Shift') {
+                const [h, m] = r.checkIn.split(':').map(Number);
+                const totalMins = h * 60 + m;
+                // If checked in at or before 9:45 AM, it should be Present
+                if (totalMins <= 9 * 60 + 45) {
+                    return { ...r, status: 'Present' };
+                }
+            }
+            return r;
+        });
+
+        res.json(correctedAttendance);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
