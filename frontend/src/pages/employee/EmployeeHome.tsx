@@ -228,6 +228,39 @@ const EmployeeHome = () => {
                 <StatCard title="Pending Output" value={stats.pendingTasks} icon={Target} color="bg-rose-500" delay={0.4} />
             </div>
 
+            {/* Shift Protocols (New) */}
+            <div className="bg-brand-surface border border-brand-border rounded-2xl md:rounded-[3rem] p-6 md:p-10 shadow-xl relative overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+                <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
+                    <Clock className="w-48 h-48" />
+                </div>
+                <div className="flex flex-col md:flex-row items-center gap-10">
+                    <div className="flex-1 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <Clock className="w-6 h-6 text-brand-primary" />
+                            <h2 className="text-xl font-black text-brand-text uppercase tracking-widest">Office Shift Protocols</h2>
+                        </div>
+                        <p className="text-brand-muted font-medium italic">Adhere to the institutional timeline to ensure operational excellence.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full md:w-auto">
+                        <div className="bg-brand-bg p-6 rounded-2xl border border-brand-border text-center group hover:border-brand-primary transition-all">
+                            <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest block mb-1">Office Hours</span>
+                            <span className="text-lg font-black text-brand-text block tracking-tight">09:30 AM - 06:30 PM</span>
+                            <span className="text-[8px] font-bold text-emerald-500 uppercase mt-2 block tracking-widest">Threshold: 09:45 AM</span>
+                        </div>
+                        <div className="bg-brand-bg p-6 rounded-2xl border border-brand-border text-center group hover:border-brand-primary transition-all">
+                            <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest block mb-1">Lunch Interval</span>
+                            <span className="text-lg font-black text-brand-text block tracking-tight">01:00 PM - 02:00 PM</span>
+                            <span className="text-[8px] font-bold text-brand-primary uppercase mt-2 block tracking-widest">Standard Break</span>
+                        </div>
+                        <div className="bg-brand-primary/10 p-6 rounded-2xl border border-brand-primary/20 text-center group hover:bg-brand-primary/20 transition-all">
+                            <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest block mb-1 font-bold">Attendance Rule</span>
+                            <span className="text-sm font-black text-brand-text block leading-tight mt-1">Login after 09:45 AM</span>
+                            <span className="text-[10px] font-black text-rose-500 uppercase mt-2 block tracking-widest">Marks Half Day</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Content Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-10">
                 {/* Recent Activity */}

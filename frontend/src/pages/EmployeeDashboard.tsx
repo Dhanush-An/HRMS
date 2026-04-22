@@ -334,13 +334,14 @@ const EmployeeDashboard = () => {
 
         let status = 'Present';
         if (loginOptions.shiftType === 'Day Shift') {
-            const nineFifteen = new Date();
-            nineFifteen.setHours(9, 15, 0, 0);
+            const nineFortyFive = new Date();
+            nineFortyFive.setHours(9, 45, 0, 0);
             
-            if (now > nineFifteen) {
+            if (now > nineFortyFive) {
                 status = 'Half Day';
             }
         } else {
+            // Threshold for Night Shift (leaving as is unless specified, typically 15-45 mins after start)
             const eightFortyFivePM = new Date();
             eightFortyFivePM.setHours(20, 45, 0, 0);
 
@@ -624,6 +625,15 @@ const EmployeeDashboard = () => {
                                     {/* Session Info Card */}
                                     <div className="flex items-center gap-6 px-6 py-3 bg-brand-surface border border-brand-border rounded-2xl shadow-sm">
                                         <div className="flex items-center gap-4">
+                                            {/* Shift Info (New) */}
+                                            <div className="hidden xl:flex flex-col min-w-[120px] border-r border-brand-border pr-4">
+                                                <span className="text-[9px] font-black text-brand-primary uppercase tracking-[0.2em] mb-1">Morning Shift</span>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-[10px] font-black text-brand-text">09:30 AM - 06:30 PM</span>
+                                                    <span className="text-[8px] font-bold text-brand-muted uppercase">Lunch: 01:00 - 02:00 PM</span>
+                                                </div>
+                                            </div>
+
                                             <div className="flex flex-col min-w-[70px]">
                                                 <span className="text-[9px] font-black text-brand-muted uppercase tracking-[0.2em] mb-1">Clock In</span>
                                                 <span className="text-sm font-black text-brand-text">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
