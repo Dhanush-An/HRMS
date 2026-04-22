@@ -92,14 +92,6 @@ const EmployeePayroll = () => {
         doc.text('Date Generated: ' + new Date().toLocaleDateString(), 140, 55);
 
         // Salary Table
-        const tableBody = [
-            ['Description', 'Amount (INR)'],
-            ['Basic Salary', data.basic?.toLocaleString() || (data.netSalary - (data.hra || 0) - (data.allowances || 0)).toLocaleString()],
-            ['HRA', data.hra?.toLocaleString() || '0'],
-            ['Transport / Other Allowances', data.allowances?.toLocaleString() || '0'],
-            ['Deductions', data.deductions?.toLocaleString() || '0'],
-        ];
-
         autoTable(doc, {
             startY: 80,
             head: [['Component', 'Amount']],
