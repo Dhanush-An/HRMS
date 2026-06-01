@@ -181,6 +181,7 @@ const Permissions = () => {
                     <p className="text-brand-muted font-medium text-sm md:text-base leading-relaxed">Manage short time-off and late arrivals requests.</p>
                 </div>
                 <div className="flex gap-4">
+                    {!isAdmin && (
                     <button
                         onClick={() => setShowApplyModal(true)}
                         className="bg-brand-primary text-white px-6 py-2.5 rounded-xl font-black flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-brand-primary/20 text-xs uppercase tracking-widest"
@@ -188,6 +189,7 @@ const Permissions = () => {
                         <Plus className="w-4 h-4" />
                         Request Permission
                     </button>
+                    )}
                 </div>
             </div>
 
