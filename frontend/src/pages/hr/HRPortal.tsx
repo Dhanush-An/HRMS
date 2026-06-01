@@ -125,9 +125,10 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
     // Modal State
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [branches, setBranches] = useState<string[]>([]);
     const [loginOptions, setLoginOptions] = useState({
         workMode: 'Work from Office',
-        workLocation: 'Bangalore'
+        workLocation: ''
     });
 
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -135,6 +136,30 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
+    }, []);
+
+    // Fetch branches dynamically from API
+    useEffect(() => {
+        const fetchBranches = async () => {
+            try {
+                const token = localStorage.getItem('token') || '';
+                const res = await fetch(`${(await import('../../config')).API_URL}/api/branches`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    const names = data.map((b: any) => b.name).filter(Boolean);
+                    setBranches(names);
+                    // Auto-select the user's branch or first available
+                    const userBranch = user?.branchName;
+                    const defaultBranch = names.includes(userBranch) ? userBranch : (names[0] || '');
+                    setLoginOptions(prev => ({ ...prev, workLocation: defaultBranch }));
+                }
+            } catch (err) {
+                console.error('Failed to fetch branches:', err);
+            }
+        };
+        fetchBranches();
     }, []);
 
     const markAttendance = async () => {
@@ -433,21 +458,25 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                                 <div className="space-y-4">
                                     <label className="text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Assigned Branch</label>
                                     <div className="grid grid-cols-2 gap-4">
-                                        {['Chennai', 'Bangalore'].map((loc) => (
-                                            <button
-                                                key={loc}
-                                                onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc }))}
-                                                className={cn(
-                                                    "flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all font-bold",
-                                                    loginOptions.workLocation === loc
-                                                        ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
-                                                        : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
-                                                )}
-                                            >
-                                                <MapPin className="w-4 h-4" />
-                                                <span className="text-sm">{loc}</span>
-                                            </button>
-                                        ))}
+                                        {branches.length === 0 ? (
+                                            <div className="col-span-2 text-center text-xs text-brand-muted py-3 animate-pulse">Loading branches...</div>
+                                        ) : (
+                                            branches.map((loc) => (
+                                                <button
+                                                    key={loc}
+                                                    onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc }))}
+                                                    className={cn(
+                                                        "flex items-center justify-center gap-3 py-4 rounded-xl border-2 transition-all font-bold",
+                                                        loginOptions.workLocation === loc
+                                                            ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
+                                                            : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
+                                                    )}
+                                                >
+                                                    <MapPin className="w-4 h-4" />
+                                                    <span className="text-sm">{loc}</span>
+                                                </button>
+                                            ))
+                                        )}
                                     </div>
                                 </div>
                             </div>

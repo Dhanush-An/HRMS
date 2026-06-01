@@ -125,9 +125,10 @@ const EmployeeDashboard = () => {
     // Login Options Modal State
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [branches, setBranches] = useState<string[]>([]);
     const [loginOptions, setLoginOptions] = useState({
         workMode: 'Work from Office',
-        workLocation: 'Chennai',
+        workLocation: '',
         shiftType: 'Day Shift'
     });
 
@@ -138,6 +139,32 @@ const EmployeeDashboard = () => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
 
+
+    // Fetch branches from API
+    useEffect(() => {
+        const fetchBranches = async () => {
+            try {
+                const token = localStorage.getItem('token') || '';
+                const res = await fetch(`${(await import('../config')).API_URL}/api/branches`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (Array.isArray(data)) {
+                    const names = data.map((b: any) => b.name).filter(Boolean);
+                    setBranches(names);
+                    // Auto-select the user's own branch or first branch
+                    const storedUser = localStorage.getItem('user');
+                    const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+                    const userBranch = parsedUser?.branchName;
+                    const defaultBranch = names.includes(userBranch) ? userBranch : (names[0] || '');
+                    setLoginOptions(prev => ({ ...prev, workLocation: defaultBranch }));
+                }
+            } catch (err) {
+                console.error('Failed to fetch branches:', err);
+            }
+        };
+        fetchBranches();
+    }, []);
 
     const fetchTodayAttendance = async (employeeId: string) => {
         try {
@@ -844,7 +871,10 @@ const EmployeeDashboard = () => {
                                         <div className="space-y-2.5">
                                             <label className="text-[10px] md:text-[11px] font-black text-brand-muted uppercase tracking-[0.2em] ml-1">Assigned Branch</label>
                                             <div className="grid grid-cols-2 gap-3 md:gap-4">
-                                                {['Chennai', 'Bangalore'].map((loc) => (
+                                                {branches.length === 0 ? (
+                                                <div className="col-span-2 text-center text-xs text-brand-muted py-3 animate-pulse">Loading branches...</div>
+                                            ) : (
+                                                branches.map((loc) => (
                                                     <button
                                                         key={loc}
                                                         onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc }))}
@@ -858,7 +888,8 @@ const EmployeeDashboard = () => {
                                                         <MapPin className="w-4 h-4 md:w-5 md:h-5" />
                                                         <span className="text-xs md:text-sm">{loc}</span>
                                                     </button>
-                                                ))}
+                                                ))
+                                            )}
                                             </div>
                                         </div>
 
