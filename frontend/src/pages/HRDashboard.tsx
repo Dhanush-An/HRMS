@@ -27,7 +27,7 @@ import {
     Mail, Phone, Edit2, Trash2, UserPlus, Search, XCircle, ClipboardList
 } from 'lucide-react';
 import { cn } from '../utils/cn';
-import logo from '../assets/antigraviity logo 2.jpg';
+import logo from '../assets/forge india logo.jpg';
 import { motion } from 'framer-motion';
 import api from '../api';
 
@@ -551,7 +551,7 @@ const HRDashboard: React.FC = () => {
                             <img src={logo} alt="Logo" className="absolute inset-0 w-full h-full object-cover z-10" />
                         </div>
                         <div>
-                            <span className="text-base font-bold text-brand-text tracking-tight block">Antigraviity</span>
+                            <span className="text-base font-bold text-brand-text tracking-tight block">Forge India Connect</span>
                             <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest flex items-center gap-1">
                                 <Building2 className="w-3 h-3" /> HR Portal
                             </span>

@@ -7,6 +7,7 @@ export interface IAnnouncement extends Document {
     date: string;
     author: string;
     target?: string; // e.g., 'all', 'department'
+    branch?: string;
     seenBy: string[];
 }
 
@@ -17,6 +18,7 @@ const AnnouncementSchema: Schema = new Schema({
     date: { type: String, required: true },
     author: { type: String, default: 'Admin' },
     target: { type: String, default: 'all' },
+    branch: { type: String },
     seenBy: { type: [String], default: [] }
 }, {
     timestamps: true,

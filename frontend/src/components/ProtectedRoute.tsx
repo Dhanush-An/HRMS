@@ -8,6 +8,7 @@ interface ProtectedRouteProps {
 
 const ROLE_HOME: Record<string, string> = {
     admin: '/admin-dashboard',
+    subadmin: '/subadmin-dashboard',
     hr: '/hr-dashboard',
     employee: '/employee-dashboard',
     staff: '/employee-dashboard',

@@ -78,7 +78,7 @@ const EmployeePayroll = () => {
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(22);
         doc.setFont('helvetica', 'bold');
-        doc.text('ANTIGRAVIITY HRMS', 105, 20, { align: 'center' });
+        doc.text('FORGE INDIA CONNECT HRMS', 105, 20, { align: 'center' });
         doc.setFontSize(12);
         doc.text('PAYSLIP FOR ' + (data.month + ' ' + (data.year || '')).toUpperCase(), 105, 30, { align: 'center' });
 

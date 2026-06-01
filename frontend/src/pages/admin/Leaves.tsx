@@ -47,7 +47,7 @@ const Leaves = () => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             const parsedUser = JSON.parse(storedUser);
-            if (parsedUser.role?.toLowerCase().includes('admin')) return 'requests';
+            if (parsedUser.role?.toLowerCase().includes('admin') || parsedUser.role?.toLowerCase() === 'hr') return 'requests';
         }
         return 'dashboard';
     });
@@ -70,7 +70,7 @@ const Leaves = () => {
         return stored ? JSON.parse(stored) : null;
     });
 
-    const isAdmin = user?.role?.toLowerCase().includes('admin');
+    const isAdmin = user?.role?.toLowerCase().includes('admin') || user?.role?.toLowerCase() === 'hr';
 
     const fetchData = async () => {
         try {
@@ -100,7 +100,7 @@ const Leaves = () => {
         e.preventDefault();
 
         // If user is employee, ensure ID is theirs
-        const isUserAdmin = user?.role?.toLowerCase().includes('admin');
+        const isUserAdmin = user?.role?.toLowerCase().includes('admin') || user?.role?.toLowerCase() === 'hr';
         const targetEmployeeId = !isUserAdmin ? user.id : formData.employeeId;
 
         const emp = employees.find(e => e.id === targetEmployeeId);

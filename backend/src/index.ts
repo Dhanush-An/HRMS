@@ -17,6 +17,8 @@ import Policy from './models/Policy';
 import DocumentModel from './models/Document';
 import Admin from './models/Admin';
 import Query from './models/Query';
+import Expense from './models/Expense';
+import Branch from './models/Branch';
 
 import multer from 'multer';
 import dns from 'dns';
@@ -37,7 +39,112 @@ process.on('uncaughtException', (err) => {
 });
 
 // Connect to Database
-connectDB();
+connectDB().then(async () => {
+    await seedBranches();
+    await seedBranchHRManagers();
+});
+
+const seedBranches = async () => {
+    try {
+        const count = await Branch.countDocuments();
+        if (count === 0) {
+            const initialBranches = [
+                {
+                    branchId: 'BR001',
+                    name: 'Chennai Branch',
+                    branchCode: 'CHE01',
+                    address: '123 Mount Road, Teynampet',
+                    city: 'Chennai',
+                    state: 'Tamil Nadu',
+                    country: 'India',
+                    pincode: '600018',
+                    managerName: 'John',
+                    phone: '9876543210',
+                    email: 'chennai@hrms.com',
+                    employeeStrength: 120,
+                    openingDate: '2020-01-15',
+                    branchType: 'Head Office',
+                    status: 'Active'
+                },
+                {
+                    branchId: 'BR002',
+                    name: 'Bangalore Branch',
+                    branchCode: 'BLR02',
+                    address: '456 MG Road, Indiranagar',
+                    city: 'Bangalore',
+                    state: 'Karnataka',
+                    country: 'India',
+                    pincode: '560001',
+                    managerName: 'Kumar',
+                    phone: '9876543211',
+                    email: 'bangalore@hrms.com',
+                    employeeStrength: 85,
+                    openingDate: '2021-06-20',
+                    branchType: 'Regional Office',
+                    status: 'Active'
+                },
+                {
+                    branchId: 'BR003',
+                    name: 'Krishnagiri Branch',
+                    branchCode: 'KRI03',
+                    address: '789 Bangalore Highway',
+                    city: 'Krishnagiri',
+                    state: 'Tamil Nadu',
+                    country: 'India',
+                    pincode: '635001',
+                    managerName: 'Arjun',
+                    phone: '9876543212',
+                    email: 'krishnagiri@hrms.com',
+                    employeeStrength: 45,
+                    openingDate: '2023-03-10',
+                    branchType: 'Franchise',
+                    status: 'Active'
+                }
+            ];
+            await Branch.insertMany(initialBranches);
+            console.log('[SEED] Initial branches seeded successfully!');
+        }
+    } catch (err) {
+        console.error('[SEED ERROR] Failed to seed branches:', err);
+    }
+};
+
+// Backfill HR manager employee accounts for existing branches
+const seedBranchHRManagers = async () => {
+    try {
+        const branches = await Branch.find({ email: { $exists: true, $ne: '' } });
+        for (const branch of branches) {
+            if (!branch.email) continue;
+            const existing = await Employee.findOne({ email: branch.email.toLowerCase() });
+            if (!existing) {
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash('Password123!', salt);
+                const count = await Employee.countDocuments();
+                const empId = `EMP${String(count + 1).padStart(3, '0')}`;
+                const newEmp = new Employee({
+                    employeeId: empId,
+                    name: branch.managerName || `${branch.city} HR Manager`,
+                    email: branch.email.toLowerCase(),
+                    username: branch.email.toLowerCase(),
+                    password: hashedPassword,
+                    role: 'hr',
+                    department: 'Human Resources',
+                    status: 'Active',
+                    joiningDate: branch.openingDate || new Date().toISOString().split('T')[0],
+                    phone: branch.phone || '',
+                    branchId: branch.branchId,
+                    branchName: branch.name,
+                    salary: { base: 0, hra: 0, transport: 0, other: 0 },
+                    leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
+                });
+                await newEmp.save();
+                console.log(`[SEED] HR Manager account created: ${branch.email} (Branch: ${branch.name})`);
+            }
+        }
+    } catch (err) {
+        console.error('[SEED ERROR] Failed to seed branch HR managers:', err);
+    }
+};
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hrms_dev_secret_change_in_production';
 
@@ -114,7 +221,7 @@ const authorizeRoles = (...roles: string[]) => {
 };
 
 app.get('/', (req, res) => {
-    res.send('Antigraviity HRMS API is running...');
+    res.send('Forge India Connect HRMS API is running...');
 });
 
 // --- DEV-ONLY DEBUG LOGIN (bypasses DB, for frontend auth testing) ---
@@ -204,7 +311,9 @@ app.post('/api/login', async (req, res) => {
                     name: user.name,
                     role: (user.role || 'employee').toLowerCase(),
                     email: user.email,
-                    department: user.department
+                    department: user.department,
+                    branchId: user.branchId || 'BR001',
+                    branchName: user.branchName || 'Chennai'
                 };
                 const token = jwt.sign(empUser, JWT_SECRET, { expiresIn: '8h' });
                 res.json({ success: true, token, user: empUser });
@@ -224,7 +333,12 @@ app.use(authMiddleware);
 
 app.get('/api/employees', async (req, res) => {
     try {
-        const employees = await Employee.find();
+        const user = (req as any).user;
+        const query: any = {};
+        if (user.role !== 'admin' && user.branchId) {
+            query.branchId = user.branchId;
+        }
+        const employees = await Employee.find(query);
         res.json(employees);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -232,14 +346,22 @@ app.get('/api/employees', async (req, res) => {
 });
 
 // POST new employee
-app.post('/api/employees', authorizeRoles('admin'), async (req, res) => {
+app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
     try {
-        const { id, name, email, role, department, status, phone, joiningDate } = req.body;
+        const { id, name, email, role, department, status, phone, joiningDate, branchId, branchName } = req.body;
+        const user = (req as any).user;
 
         let finalId = id;
         if (!finalId) {
             const count = await Employee.countDocuments();
             finalId = `EMP${String(count + 1).padStart(3, '0')}`;
+        }
+
+        let finalBranchId = branchId;
+        let finalBranchName = branchName;
+        if (user.role !== 'admin') {
+            finalBranchId = user.branchId;
+            finalBranchName = user.branchName;
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -256,6 +378,8 @@ app.post('/api/employees', authorizeRoles('admin'), async (req, res) => {
             status: status || 'Active',
             joiningDate: joiningDate || new Date().toISOString().split('T')[0],
             phone: phone || '',
+            branchId: finalBranchId || 'BR001',
+            branchName: finalBranchName || 'Chennai',
             salary: req.body.salary || { base: 0, hra: 0, transport: 0, other: 0 },
             leaveBalance: req.body.leaveBalance || { sick: 10, casual: 12, earned: 15, wfh: 10 }
         });
@@ -273,10 +397,36 @@ app.post('/api/employees', authorizeRoles('admin'), async (req, res) => {
     }
 });
 
-// PUT update employee
-app.put('/api/employees/:id', authorizeRoles('admin', 'hr'), async (req, res) => {
+app.put('/api/employees/:id', async (req, res) => {
     try {
+        const user = (req as any).user;
+        if (user.role !== 'admin' && user.role !== 'subadmin' && user.role !== 'hr' && user.id !== req.params.id) {
+            res.status(403).json({ success: false, message: 'Access denied. You do not have permission to update this profile.' });
+            return;
+        }
+
+        if (user.role !== 'admin' && user.id !== req.params.id) {
+            const targetEmployee = await Employee.findOne({ employeeId: req.params.id });
+            if (!targetEmployee || targetEmployee.branchId !== user.branchId) {
+                res.status(403).json({ success: false, message: 'Access denied. Employee belongs to another branch.' });
+                return;
+            }
+        }
+
         const updateData = { ...req.body };
+        if (user.role !== 'admin' && user.role !== 'hr' && user.role !== 'subadmin') {
+            // Employees can only update their personal fields
+            delete updateData.role;
+            delete updateData.department;
+            delete updateData.salary;
+            delete updateData.status;
+            delete updateData.joiningDate;
+            delete updateData.employeeId;
+            delete updateData.leaveBalance;
+            delete updateData.branchId;
+            delete updateData.branchName;
+        }
+
         if (updateData.password) {
             const salt = await bcrypt.genSalt(10);
             updateData.password = await bcrypt.hash(updateData.password, salt);
@@ -303,14 +453,249 @@ app.put('/api/employees/:id', authorizeRoles('admin', 'hr'), async (req, res) =>
     }
 });
 
-// DELETE employee
-app.delete('/api/employees/:id', authorizeRoles('admin'), async (req, res) => {
+// POST upload avatar
+app.post('/api/employees/:id/avatar', upload.single('avatar'), async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+        
+        const avatarUrl = `/uploads/${req.file.filename}`;
+        const employee = await Employee.findOneAndUpdate(
+            { employeeId: req.params.id },
+            { $set: { avatar: avatarUrl } },
+            { new: true }
+        );
+
+        if (employee) {
+            res.json({ success: true, avatar: avatarUrl, employee });
+        } else {
+            res.status(404).json({ success: false, message: 'Employee not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE employee
+app.delete('/api/employees/:id', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
+    try {
+        const user = (req as any).user;
+        if (user.role !== 'admin') {
+            const targetEmployee = await Employee.findOne({ employeeId: req.params.id });
+            if (!targetEmployee || targetEmployee.branchId !== user.branchId) {
+                return res.status(403).json({ success: false, message: 'Access denied. Employee belongs to another branch.' });
+            }
+        }
         const result = await Employee.findOneAndDelete({ employeeId: req.params.id });
         if (result) {
             res.json({ message: 'Employee deleted' });
         } else {
             res.status(404).json({ message: 'Employee not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- BRANCH ROUTES ---
+
+// GET all branches
+app.get('/api/branches', async (req, res) => {
+    try {
+        const branches = await Branch.find().sort({ branchId: 1 });
+        res.json(branches);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST new branch
+app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
+    try {
+        const { branchId, name, branchCode, address, city, state, country, pincode, managerName, phone, email, employeeStrength, openingDate, branchType, status, password, subAdminEmail, subAdminPassword } = req.body;
+        
+        let finalBranchId = branchId;
+        if (!finalBranchId) {
+            const count = await Branch.countDocuments();
+            finalBranchId = `BR${String(count + 1).padStart(3, '0')}`;
+        }
+
+        const newBranch = new Branch({
+            branchId: finalBranchId,
+            name,
+            branchCode,
+            address,
+            city,
+            state,
+            country,
+            pincode,
+            managerName,
+            phone,
+            email,
+            employeeStrength: employeeStrength || 0,
+            openingDate,
+            branchType: branchType || 'Regional Office',
+            status: status || 'Active'
+        });
+
+        await newBranch.save();
+
+        if (email) {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password || 'Password123!', salt);
+            
+            let existingEmp = await Employee.findOne({ email: email.toLowerCase() });
+            if (existingEmp) {
+                existingEmp.name = managerName || existingEmp.name;
+                existingEmp.phone = phone || existingEmp.phone;
+                existingEmp.password = hashedPassword;
+                existingEmp.branchId = finalBranchId;
+                existingEmp.branchName = name;
+                existingEmp.role = 'hr';
+                await existingEmp.save();
+            } else {
+                const count = await Employee.countDocuments();
+                const empId = `EMP${String(count + 1).padStart(3, '0')}`;
+                const newEmp = new Employee({
+                    employeeId: empId,
+                    name: managerName || 'Branch Manager',
+                    email: email.toLowerCase(),
+                    username: email.toLowerCase(),
+                    password: hashedPassword,
+                    role: 'hr',
+                    department: 'Human Resources',
+                    status: 'Active',
+                    joiningDate: openingDate || new Date().toISOString().split('T')[0],
+                    phone: phone || '',
+                    branchId: finalBranchId,
+                    branchName: name,
+                    salary: { base: 0, hra: 0, transport: 0, other: 0 },
+                    leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
+                });
+                await newEmp.save();
+            }
+        }
+
+        // Create Sub Admin account if subAdminEmail is provided
+        if (subAdminEmail) {
+            const salt2 = await bcrypt.genSalt(10);
+            const subAdminHash = await bcrypt.hash(subAdminPassword || 'Password123!', salt2);
+            const existingSub = await Employee.findOne({ email: subAdminEmail.toLowerCase() });
+            if (existingSub) {
+                existingSub.role = 'subadmin';
+                existingSub.branchId = finalBranchId;
+                existingSub.branchName = name;
+                existingSub.password = subAdminHash;
+                await existingSub.save();
+            } else {
+                const subCount = await Employee.countDocuments();
+                const subEmpId = `EMP${String(subCount + 1).padStart(3, '0')}`;
+                const subEmp = new Employee({
+                    employeeId: subEmpId,
+                    name: `${name} Sub Admin`,
+                    email: subAdminEmail.toLowerCase(),
+                    username: subAdminEmail.toLowerCase(),
+                    password: subAdminHash,
+                    role: 'subadmin',
+                    department: 'Administration',
+                    status: 'Active',
+                    joiningDate: openingDate || new Date().toISOString().split('T')[0],
+                    phone: phone || '',
+                    branchId: finalBranchId,
+                    branchName: name,
+                    salary: { base: 0, hra: 0, transport: 0, other: 0 },
+                    leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
+                });
+                await subEmp.save();
+            }
+        }
+
+        res.status(201).json(newBranch);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// PUT update branch
+app.put('/api/branches/:id', authorizeRoles('admin'), async (req, res) => {
+    try {
+        const { password, subAdminPassword, subAdminEmail, ...branchData } = req.body;
+
+        const updatedBranch = await Branch.findOneAndUpdate(
+            { branchId: req.params.id },
+            branchData,
+            { new: true }
+        );
+        if (updatedBranch) {
+            // Sync HR manager employee account if email is set
+            if (updatedBranch.email) {
+                const existingEmp = await Employee.findOne({ email: updatedBranch.email.toLowerCase() });
+                if (existingEmp) {
+                    existingEmp.name = updatedBranch.managerName || existingEmp.name;
+                    existingEmp.phone = updatedBranch.phone || existingEmp.phone;
+                    existingEmp.branchId = updatedBranch.branchId;
+                    existingEmp.branchName = updatedBranch.name;
+                    if (password) {
+                        const salt = await bcrypt.genSalt(10);
+                        existingEmp.password = await bcrypt.hash(password, salt);
+                    }
+                    await existingEmp.save();
+                }
+            }
+            // Sync Sub Admin employee account if subAdminEmail is provided
+            const targetSubEmail = subAdminEmail || (updatedBranch as any).subAdminEmail;
+            if (targetSubEmail) {
+                const existingSub = await Employee.findOne({ email: targetSubEmail.toLowerCase() });
+                if (existingSub) {
+                    existingSub.branchId = updatedBranch.branchId;
+                    existingSub.branchName = updatedBranch.name;
+                    if (subAdminPassword) {
+                        const salt2 = await bcrypt.genSalt(10);
+                        existingSub.password = await bcrypt.hash(subAdminPassword, salt2);
+                    }
+                    await existingSub.save();
+                } else if (subAdminEmail) {
+                    // Create new sub admin account
+                    const salt2 = await bcrypt.genSalt(10);
+                    const subHash = await bcrypt.hash(subAdminPassword || 'Password123!', salt2);
+                    const subCount = await Employee.countDocuments();
+                    const subEmpId = `EMP${String(subCount + 1).padStart(3, '0')}`;
+                    await new Employee({
+                        employeeId: subEmpId,
+                        name: `${updatedBranch.name} Sub Admin`,
+                        email: subAdminEmail.toLowerCase(),
+                        username: subAdminEmail.toLowerCase(),
+                        password: subHash,
+                        role: 'subadmin',
+                        department: 'Administration',
+                        status: 'Active',
+                        joiningDate: new Date().toISOString().split('T')[0],
+                        phone: updatedBranch.phone || '',
+                        branchId: updatedBranch.branchId,
+                        branchName: updatedBranch.name,
+                        salary: { base: 0, hra: 0, transport: 0, other: 0 },
+                        leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
+                    }).save();
+                }
+            }
+            res.json(updatedBranch);
+        } else {
+            res.status(404).json({ success: false, message: 'Branch not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE branch
+app.delete('/api/branches/:id', authorizeRoles('admin'), async (req, res) => {
+    try {
+        const result = await Branch.findOneAndDelete({ branchId: req.params.id });
+        if (result) {
+            res.json({ message: 'Branch deleted successfully' });
+        } else {
+            res.status(404).json({ message: 'Branch not found' });
         }
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -426,9 +811,23 @@ app.get('/api/employees/:id/location', async (req, res) => {
 app.get('/api/attendance', async (req, res) => {
     const { date, employeeId, limit } = req.query;
     try {
+        const user = (req as any).user;
         const query: any = {};
         if (date) query.date = date;
-        if (employeeId) query.employeeId = employeeId;
+
+        if (user.role === 'employee' || user.role === 'staff') {
+            query.employeeId = user.id;
+        } else if (user.role !== 'admin' && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            if (employeeId && branchEmpIds.includes(employeeId as string)) {
+                query.employeeId = employeeId;
+            } else {
+                query.employeeId = { $in: branchEmpIds };
+            }
+        } else {
+            if (employeeId) query.employeeId = employeeId;
+        }
         const attendance = await Attendance.find(query).sort({ createdAt: -1 }).limit(Number(limit) || 0);
         
         // Auto-correct 'Half Day' to 'Present' if it meets the new 9:45 AM rule
@@ -539,8 +938,26 @@ app.post('/api/payroll/generate', authorizeRoles('admin'), async (req, res) => {
 // GET Payroll History
 app.get('/api/payroll', async (req, res) => {
     try {
-        const payroll = await Payroll.find();
-        res.json(payroll);
+        const user = (req as any).user;
+        let payrolls: any[] = await Payroll.find();
+        
+        if (user.role === 'employee' || user.role === 'staff') {
+            payrolls = payrolls.map(p => {
+                const po = p.toObject ? p.toObject() : p;
+                po.records = po.records.filter((r: any) => r.employeeId === user.id);
+                return po;
+            }).filter(p => p.records.length > 0);
+        } else if (user.role !== 'admin' && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = new Set(branchEmps.map(e => e.employeeId));
+            
+            payrolls = payrolls.map(p => {
+                const po = p.toObject ? p.toObject() : p;
+                po.records = po.records.filter((r: any) => branchEmpIds.has(r.employeeId));
+                return po;
+            }).filter(p => p.records.length > 0);
+        }
+        res.json(payrolls);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -551,7 +968,17 @@ app.get('/api/payroll', async (req, res) => {
 // GET all leaves
 app.get('/api/leaves', async (req, res) => {
     try {
-        const leaves = await Leave.find();
+        const user = (req as any).user;
+        let leaves;
+        if (user.role === 'employee' || user.role === 'staff') {
+            leaves = await Leave.find({ employeeId: user.id });
+        } else if (user.role !== 'admin' && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            leaves = await Leave.find({ employeeId: { $in: branchEmpIds } });
+        } else {
+            leaves = await Leave.find();
+        }
         res.json(leaves);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -576,9 +1003,17 @@ app.post('/api/leaves', async (req, res) => {
 // PUT update leave status (Approve/Reject)
 app.put('/api/leaves/:id', async (req, res) => {
     try {
+        const user = (req as any).user;
         const leave = await Leave.findById(req.params.id);
         if (!leave) {
             return res.status(404).json({ message: 'Leave request not found' });
+        }
+
+        if (user.role !== 'admin') {
+            const employee = await Employee.findOne({ employeeId: leave.employeeId });
+            if (!employee || employee.branchId !== user.branchId) {
+                return res.status(403).json({ message: 'Access denied. Employee belongs to another branch.' });
+            }
         }
 
         const { status } = req.body;
@@ -625,11 +1060,111 @@ app.put('/api/leaves/:id', async (req, res) => {
     }
 });
 
+
+// --- EXPENSE ROUTES ---
+
+// GET all expenses
+app.get('/api/expenses', async (req, res) => {
+    try {
+        const user = (req as any).user;
+        if (user.role === 'admin') {
+            const expenses = await Expense.find().sort({ createdAt: -1 });
+            res.json(expenses);
+        } else if ((user.role === 'subadmin' || user.role === 'hr') && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            const expenses = await Expense.find({ employeeId: { $in: branchEmpIds } }).sort({ createdAt: -1 });
+            res.json(expenses);
+        } else {
+            const expenses = await Expense.find({ employeeId: user.id }).sort({ createdAt: -1 });
+            res.json(expenses);
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// POST new expense claim
+app.post('/api/expenses', upload.single('receipt'), async (req, res) => {
+    try {
+        const { employeeId, employeeName, employeeRole, category, amount, date, description } = req.body;
+        const newExpense = new Expense({
+            employeeId,
+            employeeName,
+            employeeRole: employeeRole || 'employee',
+            category,
+            amount: Number(amount),
+            date,
+            description,
+            status: 'Pending',
+            receiptName: req.file ? req.file.originalname : undefined,
+            receiptUrl: req.file ? `/uploads/${req.file.filename}` : undefined
+        });
+        await newExpense.save();
+        res.status(201).json(newExpense);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// PUT update expense status (Approve/Reject)
+app.put('/api/expenses/:id/status', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
+    try {
+        const { status } = req.body;
+        const user = (req as any).user;
+        if (!['Approved', 'Rejected', 'Pending'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+        const expense = await Expense.findById(req.params.id);
+        if (!expense) {
+            return res.status(404).json({ success: false, message: 'Expense claim not found' });
+        }
+        if (user.role !== 'admin') {
+            const employee = await Employee.findOne({ employeeId: expense.employeeId });
+            if (!employee || employee.branchId !== user.branchId) {
+                return res.status(403).json({ success: false, message: 'Access denied' });
+            }
+        }
+        expense.status = status;
+        await expense.save();
+        res.json(expense);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// DELETE delete pending expense claim
+app.delete('/api/expenses/:id', async (req, res) => {
+    try {
+        const user = (req as any).user;
+        const expense = await Expense.findById(req.params.id);
+        if (!expense) {
+            return res.status(404).json({ success: false, message: 'Expense claim not found' });
+        }
+        if (user.role !== 'admin' && expense.employeeId !== user.id) {
+            return res.status(403).json({ success: false, message: 'Access denied' });
+        }
+        await Expense.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: 'Expense claim deleted' });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // --- PERFORMANCE ROUTES ---
 
 app.get('/api/performance', async (req, res) => {
     try {
-        const performance = await Performance.find();
+        const user = (req as any).user;
+        let query: any = {};
+        if (user.role === 'employee' || user.role === 'staff') {
+            query.employeeId = user.id;
+        } else if (user.role !== 'admin' && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            query.employeeId = { $in: branchEmpIds };
+        }
+        const performance = await Performance.find(query);
         res.json(performance);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -667,8 +1202,21 @@ app.delete('/api/performance/:id', async (req, res) => {
 app.get('/api/documents', async (req, res) => {
     const { employeeId } = req.query;
     try {
+        const user = (req as any).user;
         const query: any = {};
-        if (employeeId) query.employeeId = employeeId;
+        if (user.role === 'employee' || user.role === 'staff') {
+            query.employeeId = user.id;
+        } else if (user.role !== 'admin' && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            if (employeeId && branchEmpIds.includes(employeeId as string)) {
+                query.employeeId = employeeId;
+            } else {
+                query.employeeId = { $in: branchEmpIds };
+            }
+        } else {
+            if (employeeId) query.employeeId = employeeId;
+        }
         const documents = await DocumentModel.find(query);
         res.json(documents);
     } catch (error: any) {
@@ -705,14 +1253,26 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
 
 app.get('/api/announcements', async (req, res) => {
     try {
-        const announcements = await Announcement.find();
+        const user = (req as any).user;
+        let query: any = {};
+        if (user.role !== 'admin' && user.branchName) {
+            query = {
+                $or: [
+                    { branch: user.branchName },
+                    { branch: { $exists: false } },
+                    { branch: null },
+                    { branch: '' }
+                ]
+            };
+        }
+        const announcements = await Announcement.find(query);
         res.json(announcements);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
 });
 
-app.post('/api/announcements', authorizeRoles('admin'), async (req, res) => {
+app.post('/api/announcements', authorizeRoles('admin', 'subadmin'), async (req, res) => {
     try {
         const newAnnouncement = new Announcement({
             date: new Date().toISOString().split('T')[0],
@@ -774,9 +1334,23 @@ app.delete('/api/announcements/:id', authorizeRoles('admin'), async (req, res) =
 app.get('/api/tasks', async (req, res) => {
     const { date, employeeId } = req.query;
     try {
+        const user = (req as any).user;
         const query: any = {};
         if (date) query.date = date;
-        if (employeeId) query.employeeId = employeeId;
+
+        if (user.role === 'employee' || user.role === 'staff') {
+            query.employeeId = user.id;
+        } else if (user.role !== 'admin' && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            if (employeeId && branchEmpIds.includes(employeeId as string)) {
+                query.employeeId = employeeId;
+            } else {
+                query.employeeId = { $in: branchEmpIds };
+            }
+        } else {
+            if (employeeId) query.employeeId = employeeId;
+        }
         const tasks = await Task.find(query);
         res.json(tasks);
     } catch (error: any) {
@@ -822,8 +1396,22 @@ app.put('/api/tasks/:id', async (req, res) => {
 app.get('/api/queries', async (req, res) => {
     const { employeeId } = req.query;
     try {
+        const user = (req as any).user;
         const query: any = {};
-        if (employeeId) query.employeeId = employeeId;
+
+        if (user.role === 'employee' || user.role === 'staff') {
+            query.employeeId = user.id;
+        } else if (user.role !== 'admin' && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            if (employeeId && branchEmpIds.includes(employeeId as string)) {
+                query.employeeId = employeeId;
+            } else {
+                query.employeeId = { $in: branchEmpIds };
+            }
+        } else {
+            if (employeeId) query.employeeId = employeeId;
+        }
         const queries = await Query.find(query).sort({ createdAt: -1 });
         res.json(queries);
     } catch (error: any) {

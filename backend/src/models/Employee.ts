@@ -11,6 +11,9 @@ export interface IEmployee extends Document {
     status: 'Active' | 'Inactive' | 'On Leave';
     joiningDate: string;
     phone: string;
+    avatar?: string;
+    branchId: string;
+    branchName: string;
     salary: {
         base: number;
         hra: number;
@@ -37,6 +40,9 @@ const EmployeeSchema: Schema = new Schema({
     status: { type: String, enum: ['Active', 'Inactive', 'On Leave'], default: 'Active' },
     joiningDate: { type: String, required: true },
     phone: { type: String, default: '' },
+    avatar: { type: String, default: '' },
+    branchId: { type: String, default: 'BR001' },
+    branchName: { type: String, default: 'Chennai' },
     salary: {
         base: { type: Number, default: 0 },
         other: { type: Number, default: 0 },

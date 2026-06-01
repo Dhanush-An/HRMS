@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { API_URL } from '../config';
-import logo from '../assets/antigraviity logo 2.jpg';
+import logo from '../assets/forge india logo.jpg';
 
 
 
@@ -50,6 +50,8 @@ const LoginPage: React.FC = () => {
                 const role = (data.user.role || 'employee').toLowerCase();
                 if (role === 'admin') {
                     navigate('/admin-dashboard');
+                } else if (role === 'subadmin') {
+                    navigate('/subadmin-dashboard');
                 } else if (role === 'hr') {
                     navigate('/hr-dashboard');
                 } else {
@@ -68,7 +70,7 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="h-screen w-full flex items-center justify-center bg-[#6366f1] overflow-hidden font-sans p-6 md:p-12">
+        <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#e0f2fe] via-[#f0f9ff] to-[#e0e7ff] overflow-hidden font-sans p-6 md:p-12">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -82,8 +84,8 @@ const LoginPage: React.FC = () => {
                             className="w-full h-full object-cover"
                         />
                     </div>
-                    <h1 className="text-4xl font-bold text-[#6366f1] mb-2 tracking-tight">
-                        Antigraviity
+                    <h1 className="text-3xl font-bold text-[#6366f1] mb-2 tracking-tight">
+                        Forge India Connect
                     </h1>
                     <p className="text-gray-500 text-base uppercase tracking-wide">
                         Sign in to your account

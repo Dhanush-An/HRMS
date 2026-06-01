@@ -25,11 +25,12 @@ import {
     HelpCircle,
     Camera,
     RefreshCw,
-    UserCheck
+    UserCheck,
+    CreditCard
 } from 'lucide-react';
 import { useRef } from 'react';
 import { cn } from '../utils/cn';
-import logo from '../assets/antigraviity logo 2.jpg';
+import logo from '../assets/forge india logo.jpg';
 
 // Geofencing Constants
 const BRANCH_LOCATIONS = {
@@ -96,6 +97,21 @@ const EmployeeDashboard = () => {
             return null;
         }
     });
+
+    useEffect(() => {
+        const handleUserUpdate = () => {
+            const stored = localStorage.getItem('user');
+            if (stored) {
+                try {
+                    setUser(JSON.parse(stored));
+                } catch (e) {
+                    console.error("Error parsing user on update", e);
+                }
+            }
+        };
+        window.addEventListener('user-update', handleUserUpdate);
+        return () => window.removeEventListener('user-update', handleUserUpdate);
+    }, []);
     const [isCheckedIn, setIsCheckedIn] = useState(false);
     const [isCheckedOut, setIsCheckedOut] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -474,6 +490,7 @@ const EmployeeDashboard = () => {
         { icon: Calendar, label: 'Attendance', path: '/employee-dashboard/attendance' },
         { icon: Clock, label: 'Leave', path: '/employee-dashboard/leaves' },
         { icon: FileText, label: 'Payroll', path: '/employee-dashboard/payroll' },
+        { icon: CreditCard, label: 'Expenses', path: '/employee-dashboard/expenses' },
         { icon: Megaphone, label: 'Announcements', path: '/employee-dashboard/announcements' },
         { icon: File, label: 'Documents', path: '/employee-dashboard/documents' },
         { icon: HelpCircle, label: 'Queries', path: '/employee-dashboard/queries' },
@@ -521,7 +538,7 @@ const EmployeeDashboard = () => {
                                 className="absolute inset-0 w-full h-full object-cover z-10"
                             />
                         </div>
-                        <span className="text-xl font-bold text-brand-text tracking-tight">Antigraviity</span>
+                        <span className="text-xl font-bold text-brand-text tracking-tight">Forge India Connect</span>
                     </div>
                     <button
                         className="lg:hidden p-2 hover:bg-brand-bg rounded-lg transition-colors"
@@ -543,13 +560,13 @@ const EmployeeDashboard = () => {
                                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all group",
                                 location.pathname === item.path
                                     ? "bg-brand-primary-light text-brand-primary font-semibold shadow-sm"
-                                    : "hover:bg-brand-bg text-brand-muted hover:text-brand-text"
+                                    : "hover:bg-brand-primary-light/40 text-brand-text/80 hover:text-brand-primary"
                             )}
                         >
-                            <item.icon className={cn("w-5 h-5", location.pathname === item.path ? "text-brand-primary" : "group-hover:text-brand-primary")} />
+                            <item.icon className={cn("w-5 h-5", location.pathname === item.path ? "text-brand-primary" : "text-brand-text/60 group-hover:text-brand-primary")} />
                             <span className={cn(
                                 "text-sm",
-                                location.pathname === item.path ? "text-brand-primary font-bold" : "text-brand-muted group-hover:text-brand-text transition-colors"
+                                location.pathname === item.path ? "text-brand-primary font-bold" : "text-brand-text/80 group-hover:text-brand-primary transition-colors"
                             )}>
                                 {item.label}
                             </span>
@@ -568,7 +585,15 @@ const EmployeeDashboard = () => {
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-primary to-blue-400 p-[2px]">
                                 <div className="w-full h-full rounded-[10px] bg-brand-surface flex items-center justify-center overflow-hidden">
-                                    <span className="text-sm font-bold text-brand-primary tracking-wider uppercase">{user.name?.charAt(0)}</span>
+                                    {user.avatar ? (
+                                        <img
+                                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.avatar}`}
+                                            alt="Avatar"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-sm font-bold text-brand-primary tracking-wider uppercase">{user.name?.charAt(0)}</span>
+                                    )}
                                 </div>
                             </div>
                             <div className="text-left overflow-hidden">
@@ -607,7 +632,7 @@ const EmployeeDashboard = () => {
                                 className="absolute inset-0 w-full h-full object-cover z-10"
                             />
                         </div>
-                        <span className="text-lg font-bold text-brand-text tracking-tight">Antigraviity</span>
+                        <span className="text-lg font-bold text-brand-text tracking-tight">Forge India Connect</span>
                     </div>
                     <button
                         onClick={() => setIsSidebarOpen(true)}

@@ -190,7 +190,7 @@ const EmployeeHome = () => {
                 <div className="absolute -inset-1 bg-gradient-to-r from-brand-primary/20 to-blue-500/20 rounded-[3rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
                 <div className="relative space-y-5">
                     <div className="flex flex-col">
-                        <span className="text-brand-primary font-black uppercase tracking-[0.4em] text-[10px] mb-4 animate-in fade-in slide-in-from-left-4 duration-700 block">Antigraviity • Human Resources</span>
+                        <span className="text-brand-primary font-black uppercase tracking-[0.4em] text-[10px] mb-4 animate-in fade-in slide-in-from-left-4 duration-700 block">Forge India Connect • Human Resources</span>
                         <h1 className="text-4xl md:text-6xl font-black text-brand-text tracking-tighter leading-[0.9] animate-in fade-in slide-in-from-bottom-4 duration-1000">
                             Welcome Back, <br className="md:hidden" />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-blue-400">
@@ -326,7 +326,7 @@ const EmployeeHome = () => {
                         </div>
                         <h3 className="text-[10px] font-black text-brand-text uppercase tracking-widest mb-6 opacity-60">System Inspiration</h3>
                         <p className="italic text-brand-muted font-medium leading-relaxed text-lg">
-                            "Gravity may keep us on the ground, but Antigraviity keeps our dreams soaring."
+                            "Forge India Connect keeps our dreams soaring and operations connected."
                         </p>
                     </div>
                 </div>

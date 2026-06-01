@@ -3,20 +3,114 @@ import {
     User, Briefcase,
     Shield, Sun, Moon,
     Camera, Edit2, Globe,
-    Activity, ShieldCheck, MapPin
+    Activity, ShieldCheck, MapPin,
+    Save, X
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import api from '../../api';
 
 const EmployeeProfile = () => {
     const [user, setUser] = useState<any>(null);
     const { theme, toggleTheme } = useTheme();
+    const [isEditing, setIsEditing] = useState(false);
+    const [editData, setEditData] = useState({ name: '', email: '', phone: '' });
+    const [saving, setSaving] = useState(false);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+    const fetchLiveProfile = async (employeeId: string) => {
+        try {
+            const res = await api.get(`/api/employees`);
+            if (res.ok) {
+                const employees = await res.json();
+                const current = employees.find((e: any) => e.employeeId === employeeId || e.id === employeeId);
+                if (current) {
+                    setUser((prev: any) => ({ ...prev, ...current }));
+                    setEditData({
+                        name: current.name || '',
+                        email: current.email || '',
+                        phone: current.phone || ''
+                    });
+                }
+            }
+        } catch (err) {
+            console.error("Error fetching live profile:", err);
+        }
+    };
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            const parsed = JSON.parse(storedUser);
+            setUser(parsed);
+            setEditData({
+                name: parsed.name || '',
+                email: parsed.email || '',
+                phone: parsed.phone || ''
+            });
+            fetchLiveProfile(parsed.id);
         }
     }, []);
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !user) return;
+
+        setUploadingAvatar(true);
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/employees/${user.id || user.employeeId}/avatar`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                const newUserData = { ...user, avatar: data.avatar };
+                localStorage.setItem('user', JSON.stringify(newUserData));
+                setUser(newUserData);
+                window.dispatchEvent(new Event('user-update'));
+                alert("Profile image updated successfully!");
+            } else {
+                const err = await response.json();
+                alert(`Upload failed: ${err.message || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error("Avatar upload failed", error);
+            alert("An error occurred during upload.");
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
+
+    const handleSave = async () => {
+        if (!user) return;
+        setSaving(true);
+        try {
+            const res = await api.put(`/api/employees/${user.id || user.employeeId}`, editData);
+            if (res.ok) {
+                const updated = await res.json();
+                const newUserData = { ...user, ...updated };
+                localStorage.setItem('user', JSON.stringify(newUserData));
+                setUser(newUserData);
+                setIsEditing(false);
+                window.dispatchEvent(new Event('user-update'));
+                alert("Profile updated successfully!");
+            } else {
+                const errData = await res.json();
+                alert(errData.message || "Failed to update profile.");
+            }
+        } catch (err: any) {
+            alert(err.message || "An error occurred while updating profile.");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     if (!user) return (
         <div className="flex flex-col justify-center items-center min-h-[60vh] gap-4">
@@ -57,9 +151,41 @@ const EmployeeProfile = () => {
                         )}
                     </button>
 
-                    <button className="p-2.5 bg-brand-surface border border-brand-border rounded-xl text-brand-muted hover:text-brand-primary transition-all">
-                        <Edit2 className="w-5 h-5" />
-                    </button>
+                    {isEditing ? (
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                className="p-2.5 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-all shadow-sm shadow-emerald-500/20 disabled:opacity-50"
+                                title="Save Profile"
+                            >
+                                <Save className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setIsEditing(false);
+                                    setEditData({
+                                        name: user.name || '',
+                                        email: user.email || '',
+                                        phone: user.phone || ''
+                                    });
+                                }}
+                                disabled={saving}
+                                className="p-2.5 bg-brand-surface border border-brand-border rounded-xl text-brand-muted hover:text-brand-text transition-all"
+                                title="Cancel Edit"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="p-2.5 bg-brand-surface border border-brand-border rounded-xl text-brand-muted hover:text-brand-primary transition-all"
+                            title="Edit Profile"
+                        >
+                            <Edit2 className="w-5 h-5" />
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -70,12 +196,31 @@ const EmployeeProfile = () => {
                         <div className="relative mb-6">
                             <div className="w-32 h-32 rounded-full bg-brand-primary/10 p-1 group-hover:bg-brand-primary/20 transition-all duration-500">
                                 <div className="w-full h-full rounded-full bg-brand-bg flex items-center justify-center overflow-hidden border-2 border-brand-border">
-                                    <span className="text-4xl font-black text-brand-muted/30 uppercase">{user.name?.charAt(0)}</span>
+                                    {user.avatar ? (
+                                        <img
+                                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.avatar}`}
+                                            alt="Avatar"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-4xl font-black text-brand-muted/30 uppercase">{user.name?.charAt(0)}</span>
+                                    )}
                                 </div>
                             </div>
-                            <button className="absolute bottom-0 right-0 p-2.5 bg-brand-primary text-white rounded-lg shadow-lg hover:scale-110 active:scale-90 transition-all border-2 border-brand-surface">
-                                <Camera className="w-4 h-4" />
-                            </button>
+                            <label className="absolute bottom-0 right-0 p-2.5 bg-brand-primary text-white rounded-lg shadow-lg hover:scale-110 active:scale-90 transition-all border-2 border-brand-surface cursor-pointer">
+                                <input
+                                    type="file"
+                                    onChange={handleAvatarChange}
+                                    accept="image/*"
+                                    className="hidden"
+                                    disabled={uploadingAvatar}
+                                />
+                                {uploadingAvatar ? (
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                    <Camera className="w-4 h-4" />
+                                )}
+                            </label>
                         </div>
 
                         <div className="space-y-1">
@@ -131,15 +276,42 @@ const EmployeeProfile = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-brand-muted text-[10px] font-black uppercase tracking-widest pl-1">Name</label>
-                                <p className="text-brand-text font-black text-sm bg-brand-bg p-4 rounded-xl border border-brand-border">{user.name}</p>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        value={editData.name}
+                                        onChange={e => setEditData(prev => ({ ...prev, name: e.target.value }))}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-text text-sm font-black focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                                    />
+                                ) : (
+                                    <p className="text-brand-text font-black text-sm bg-brand-bg p-4 rounded-xl border border-brand-border">{user.name}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <label className="text-brand-muted text-[10px] font-black uppercase tracking-widest pl-1">Email</label>
-                                <p className="text-brand-text font-black text-sm bg-brand-bg p-4 rounded-xl border border-brand-border lowercase">{user.email}</p>
+                                {isEditing ? (
+                                    <input
+                                        type="email"
+                                        value={editData.email}
+                                        onChange={e => setEditData(prev => ({ ...prev, email: e.target.value }))}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-text text-sm font-black focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                                    />
+                                ) : (
+                                    <p className="text-brand-text font-black text-sm bg-brand-bg p-4 rounded-xl border border-brand-border lowercase">{user.email}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <label className="text-brand-muted text-[10px] font-black uppercase tracking-widest pl-1">Contact</label>
-                                <p className="text-brand-text font-black text-sm bg-brand-bg p-4 rounded-xl border border-brand-border">{user.phone || 'Not Shared'}</p>
+                                {isEditing ? (
+                                    <input
+                                        type="text"
+                                        value={editData.phone}
+                                        onChange={e => setEditData(prev => ({ ...prev, phone: e.target.value }))}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-text text-sm font-black focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                                    />
+                                ) : (
+                                    <p className="text-brand-text font-black text-sm bg-brand-bg p-4 rounded-xl border border-brand-border">{user.phone || 'Not Shared'}</p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <label className="text-brand-muted text-[10px] font-black uppercase tracking-widest pl-1">Entry Date</label>

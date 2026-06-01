@@ -6,11 +6,12 @@ import {
     LogOut, X, DollarSign, Shield,
     Search, Plus, XCircle, CheckCircle,
     Mail, Phone, Edit2, Trash2, UserPlus, ClipboardList,
-    Building2, Home, MapPin, Loader2, ChevronRight, Clock
+    Building2, Home, MapPin, Loader2, ChevronRight, Clock, CreditCard
 } from 'lucide-react';
 import api from '../../api';
-import logo from '../../assets/antigraviity logo 2.jpg';
+import logo from '../../assets/forge india logo.jpg';
 import AdminPayroll from '../admin/Payroll';
+import EmployeeExpenses from '../employee/EmployeeExpenses';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const BRANCH_LOCATIONS = {
@@ -99,6 +100,7 @@ const NAV = [
     { id: 'leaves',       icon: FileText,         label: 'Leave Requests' },
     { id: 'payroll',      icon: DollarSign,       label: 'Payroll' },
     { id: 'permissions',  icon: Shield,           label: 'Permissions' },
+    { id: 'expenses',     icon: CreditCard,       label: 'Expenses' },
     { id: 'announcements',icon: Bell,             label: 'Announcements' },
 ];
 
@@ -1190,6 +1192,7 @@ const HRPortal: React.FC = () => {
             case 'leaves':       return <LeavesSection leaves={leaves} employees={employees} onRefresh={fetchAll} />;
             case 'payroll':      return <AdminPayroll />;
             case 'permissions':  return <PermissionsSection leaves={leaves} onRefresh={fetchAll} />;
+            case 'expenses':     return <EmployeeExpenses />;
             case 'announcements':return <AnnouncementsSection />;
             case 'task-assignment':return <TasksSection employees={employees} />;
             default:             return null;
@@ -1213,7 +1216,7 @@ const HRPortal: React.FC = () => {
                             <img src={logo} alt="Logo" className="w-full h-full object-cover" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-brand-text">Antigraviity</p>
+                             <p className="text-sm font-bold text-brand-text">Forge India Connect</p>
                             <p className="text-[10px] font-black text-brand-primary uppercase tracking-widest">HR Portal</p>
                         </div>
                     </div>

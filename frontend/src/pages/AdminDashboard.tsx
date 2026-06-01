@@ -17,12 +17,14 @@ import {
     Moon,
     Menu,
     X,
-    HelpCircle
+    HelpCircle,
+    CreditCard,
+    GitBranch
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import logo from '../assets/antigraviity logo 2.jpg';
+import logo from '../assets/forge india logo.jpg';
 
 const AdminDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -44,10 +46,12 @@ const AdminDashboard: React.FC = () => {
     const menuItems = [
         { icon: LayoutDashboard, label: 'Overview', path: '/admin-dashboard' },
         { icon: Building2, label: 'HR', path: '/admin-dashboard/hr' },
+        { icon: GitBranch, label: 'Branches', path: '/admin-dashboard/branches' },
         { icon: Users, label: 'Employees', path: '/admin-dashboard/employees' },
         { icon: Calendar, label: 'Attendance', path: '/admin-dashboard/attendance' },
         { icon: DollarSign, label: 'Salary', path: '/admin-dashboard/payroll' },
         { icon: FileText, label: 'Leaves', path: '/admin-dashboard/leaves' },
+        { icon: CreditCard, label: 'Expenses', path: '/admin-dashboard/expenses' },
         { icon: TrendingUp, label: 'Performance', path: '/admin-dashboard/performance' },
         { icon: File, label: 'Documents', path: '/admin-dashboard/documents' },
         { icon: Bell, label: 'Announcements', path: '/admin-dashboard/announcements' },
@@ -84,7 +88,7 @@ const AdminDashboard: React.FC = () => {
                                 className="absolute inset-0 w-full h-full object-cover z-10"
                             />
                         </div>
-                        <span className="text-xl font-bold text-brand-text tracking-tight">Antigraviity</span>
+                        <span className="text-xl font-bold text-brand-text tracking-tight">Forge India Connect</span>
                     </div>
                     <button
                         className="lg:hidden p-2 hover:bg-brand-bg rounded-lg transition-colors"
@@ -169,7 +173,7 @@ const AdminDashboard: React.FC = () => {
                                 className="absolute inset-0 w-full h-full object-cover z-10"
                             />
                         </div>
-                        <span className="text-lg font-bold text-brand-text tracking-tight">Antigraviity</span>
+                        <span className="text-lg font-bold text-brand-text tracking-tight">Forge India Connect</span>
                     </div>
                     <button
                         onClick={() => setIsSidebarOpen(true)}

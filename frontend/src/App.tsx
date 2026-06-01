@@ -28,6 +28,10 @@ import CompanyPolicies from './pages/employee/CompanyPolicies';
 import EmployeePayroll from './pages/employee/EmployeePayroll';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import EmployeeQueries from './pages/employee/EmployeeQueries';
+import EmployeeExpenses from './pages/employee/EmployeeExpenses';
+import AdminExpenses from './pages/admin/AdminExpenses';
+import Branches from './pages/admin/Branches';
+import SubAdminDashboard from './pages/SubAdminDashboard';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -57,12 +61,14 @@ function App() {
             <Route path="attendance" element={<Attendance />} />
             <Route path="payroll" element={<Payroll />} />
             <Route path="leaves" element={<Leaves />} />
+            <Route path="expenses" element={<AdminExpenses />} />
             <Route path="performance" element={<Performance />} />
             <Route path="documents" element={<Documents />} />
             <Route path="announcements" element={<Announcements />} />
             <Route path="policies" element={<AdminPolicies />} />
             <Route path="reports" element={<Reports />} />
             <Route path="hr" element={<HR />} />
+            <Route path="branches" element={<Branches />} />
             <Route path="hr-dashboard" element={<HRDashboard />} />
             <Route path="settings" element={<Settings />} />
             <Route path="queries" element={<Queries />} />
@@ -81,10 +87,14 @@ function App() {
             <Route path="leaves" element={<Leaves />} />
             <Route path="attendance" element={<EmployeeAttendance />} />
             <Route path="queries" element={<EmployeeQueries />} />
+            <Route path="expenses" element={<EmployeeExpenses />} />
           </Route>
 
           {/* HR Routes */}
           <Route path="/hr-dashboard" element={<ProtectedRoute allowedRoles={['hr', 'admin']}><HRPortal /></ProtectedRoute>} />
+
+          {/* Sub Admin Routes */}
+          <Route path="/subadmin-dashboard" element={<ProtectedRoute allowedRoles={['subadmin']}><SubAdminDashboard /></ProtectedRoute>} />
 
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
