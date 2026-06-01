@@ -64,6 +64,7 @@ const Branches = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+    const [loading, setLoading] = useState(true);
     
     const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null); // For branch dashboard view
@@ -109,6 +110,8 @@ const Branches = () => {
             setAttendance(Array.isArray(attData) ? attData : []);
         } catch (error) {
             console.error("Error loading branch directory data:", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -590,7 +593,11 @@ const Branches = () => {
                     </div>
 
                     {/* Directory Cards/Table Content */}
-                    {viewMode === 'grid' ? (
+                    {loading ? (
+                        <div className="flex items-center justify-center py-20">
+                            <div className="w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    ) : viewMode === 'grid' ? (
                         /* Card Grid Layout */
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {filteredBranches.map(branch => {
