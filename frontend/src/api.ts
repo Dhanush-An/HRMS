@@ -46,22 +46,40 @@ const handleResponse = async (response: Response): Promise<Response> => {
     return response;
 };
 
-/** Wrapper around fetch that automatically attaches the JWT Bearer token */
+const apiCache = new Map<string, { promise: Promise<Response>, timestamp: number }>();
+const CACHE_DURATION = 30000; // 30 seconds
+
+/** Wrapper around fetch that automatically attaches the JWT Bearer token and provides simple caching */
 const api = {
-    get: (path: string) =>
-        fetch(`${API_URL}${path}${path.includes('?') ? '&' : '?'}_cb=${Date.now()}`, {
+    get: (path: string) => {
+        const now = Date.now();
+        if (apiCache.has(path)) {
+            const cached = apiCache.get(path)!;
+            if (now - cached.timestamp < CACHE_DURATION) {
+                return cached.promise.then(res => res.clone());
+            }
+        }
+        
+        const promise = fetch(`${API_URL}${path}`, {
             method: 'GET',
             headers: getAuthHeaders(),
-        }).then(handleResponse),
+        }).then(handleResponse);
 
-    post: (path: string, body?: unknown) =>
-        fetch(`${API_URL}${path}`, {
+        apiCache.set(path, { promise, timestamp: now });
+        return promise.then(res => res.clone());
+    },
+
+    post: (path: string, body?: unknown) => {
+        apiCache.clear();
+        return fetch(`${API_URL}${path}`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: body ? JSON.stringify(body) : undefined,
-        }).then(handleResponse),
+        }).then(handleResponse);
+    },
 
     postForm: (path: string, body: FormData) => {
+        apiCache.clear();
         const headers = getAuthHeaders() as any;
         delete headers['Content-Type']; // Let browser set Content-Type with boundary
         return fetch(`${API_URL}${path}`, {
@@ -71,18 +89,22 @@ const api = {
         }).then(handleResponse);
     },
 
-    put: (path: string, body?: unknown) =>
-        fetch(`${API_URL}${path}`, {
+    put: (path: string, body?: unknown) => {
+        apiCache.clear();
+        return fetch(`${API_URL}${path}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: body ? JSON.stringify(body) : undefined,
-        }).then(handleResponse),
+        }).then(handleResponse);
+    },
 
-    delete: (path: string) =>
-        fetch(`${API_URL}${path}`, {
+    delete: (path: string) => {
+        apiCache.clear();
+        return fetch(`${API_URL}${path}`, {
             method: 'DELETE',
             headers: getAuthHeaders(),
-        }).then(handleResponse),
+        }).then(handleResponse);
+    },
 };
 
 export default api;

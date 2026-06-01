@@ -20,8 +20,9 @@ import ResignationTab from '../../components/ResignationTab';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const BRANCH_LOCATIONS = {
-    'Bangalore': { lat: 12.971667, lng: 77.507778 },
-    'Chennai': { lat: 13.0827, lng: 80.2707 } 
+    'Bangalore': { lat: 12.971748775481734, lng: 77.50804575326372 },
+    'Chennai': { lat: 13.0827, lng: 80.2707 },
+    'Palacode': { lat: 12.299359170545028, lng: 78.0733771109474 }
 };
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -207,8 +208,8 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
             const branch = BRANCH_LOCATIONS[loginOptions.workLocation as keyof typeof BRANCH_LOCATIONS];
             if (branch) {
                 const distance = calculateDistance(loginLocation.latitude, loginLocation.longitude, branch.lat, branch.lng);
-                if (distance > 500) {
-                    alert(`Access Denied: You are ${distance.toFixed(0)}m away. You must be within 500m of the ${loginOptions.workLocation} office to check-in.`);
+                if (distance > 50) {
+                    alert(`Access Denied: You are ${distance.toFixed(0)}m away. You must be within 50m of the ${loginOptions.workLocation} office to check-in.`);
                     setIsSubmitting(false);
                     return;
                 }
