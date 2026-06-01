@@ -7,7 +7,7 @@ import {
     Search, Plus, XCircle, CheckCircle,
     Mail, Phone, Edit2, Trash2, UserPlus, ClipboardList,
     Building2, Home, MapPin, Loader2, ChevronRight, Clock, CreditCard,
-    Settings, User, Lock, Eye, EyeOff
+    Settings, User, Lock, Eye, EyeOff, Menu
 } from 'lucide-react';
 import api from '../../api';
 import logo from '../../assets/forge india logo.jpg';
@@ -1351,15 +1351,20 @@ const HRPortal: React.FC = () => {
     return (
         <div className="h-screen flex overflow-hidden bg-brand-bg text-brand-text font-sans">
             {/* Mobile overlay */}
-            {sidebar && <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebar(false)} />}
+            {sidebar && (
+                <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+                    onClick={() => setSidebar(false)}
+                />
+            )}
 
             {/* Sidebar */}
             <aside className={cn(
-                'fixed inset-y-0 left-0 w-64 bg-brand-surface border-r border-brand-border flex flex-col z-50 transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen',
-                sidebar ? 'translate-x-0' : '-translate-x-full'
+                'fixed inset-y-0 left-0 w-64 bg-brand-surface border-r border-brand-border flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-screen',
+                sidebar ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
             )}>
                 {/* Logo */}
-                <div className="flex items-center justify-between p-5 border-b border-brand-border">
+                <div className="flex items-center justify-between p-5 border-b border-brand-border flex-shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl overflow-hidden bg-brand-primary flex-shrink-0">
                             <img src={logo} alt="Logo" className="w-full h-full object-cover" />
@@ -1369,44 +1374,85 @@ const HRPortal: React.FC = () => {
                             <p className="text-[10px] font-black text-brand-primary uppercase tracking-widest">HR Portal</p>
                         </div>
                     </div>
-                    <button onClick={() => setSidebar(false)} className="lg:hidden text-brand-muted hover:text-brand-text"><X className="w-5 h-5" /></button>
+                    <button
+                        onClick={() => setSidebar(false)}
+                        className="lg:hidden p-1.5 rounded-lg text-brand-muted hover:text-brand-text hover:bg-brand-bg transition-colors"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 overflow-y-auto p-3 space-y-2">
+                <nav className="flex-1 overflow-y-auto p-3 space-y-1 no-scrollbar">
                     {NAV.map(({ id, icon: Icon, label }) => (
                         <button key={id} onClick={() => { setSection(id); setSidebar(false); }}
                             className={cn(
-                                'w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all text-base font-medium',
-                                section === id ? 'bg-brand-primary/10 text-brand-primary font-bold' : 'text-brand-muted hover:bg-brand-bg hover:text-brand-text'
+                                'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium text-left',
+                                section === id
+                                    ? 'bg-brand-primary/10 text-brand-primary font-bold border border-brand-primary/20'
+                                    : 'text-brand-muted hover:bg-brand-bg hover:text-brand-text'
                             )}>
-                            <Icon className="w-5 h-5 flex-shrink-0" />
+                            <Icon className="w-4 h-4 flex-shrink-0" />
                             {label}
                         </button>
                     ))}
                 </nav>
 
                 {/* User info + logout */}
-                <div className="p-4 border-t border-brand-border">
-                    <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-brand-bg border border-brand-border">
+                <div className="p-4 border-t border-brand-border flex-shrink-0">
+                    <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-brand-bg border border-brand-border">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-xs font-black flex-shrink-0">
                             {user.name?.charAt(0) || 'H'}
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold text-brand-text truncate">{user.name || 'HR Manager'}</p>
-                            <p className="text-[10px] text-brand-muted uppercase tracking-widest font-black opacity-60 scale-90 -ml-1 mt-0.5">{user.role || 'HR'}</p>
+                            <p className="text-[10px] text-brand-muted uppercase tracking-widest font-black opacity-60">{user.role || 'HR'}</p>
                         </div>
-                        <button onClick={logout} title="Logout" className="p-1.5 hover:bg-rose-500/10 rounded-lg text-brand-muted hover:text-rose-500 transition-colors">
+                        <button
+                            onClick={logout}
+                            title="Logout"
+                            className="p-1.5 hover:bg-rose-500/10 rounded-lg text-brand-muted hover:text-rose-500 transition-colors flex-shrink-0"
+                        >
                             <LogOut className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
             </aside>
 
-            {/* Main */}
+            {/* Main content area */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                {/* ── Mobile top navbar ─────────────────────────── */}
+                <header className="lg:hidden flex-shrink-0 flex items-center justify-between px-4 py-3 bg-brand-surface border-b border-brand-border sticky top-0 z-30 shadow-sm">
+                    <button
+                        onClick={() => setSidebar(true)}
+                        className="p-2.5 rounded-xl bg-brand-bg border border-brand-border text-brand-muted hover:text-brand-primary hover:border-brand-primary/30 transition-all active:scale-95"
+                        aria-label="Open menu"
+                    >
+                        <Menu className="w-5 h-5" />
+                    </button>
+
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg overflow-hidden">
+                            <img src={logo} alt="Logo" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm font-black text-brand-text leading-none">HR Portal</p>
+                            <p className="text-[9px] font-black text-brand-primary uppercase tracking-widest leading-none mt-0.5">Forge India Connect</p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={logout}
+                        className="p-2.5 rounded-xl bg-brand-bg border border-brand-border text-brand-muted hover:text-rose-500 hover:border-rose-500/30 transition-all active:scale-95"
+                        aria-label="Logout"
+                    >
+                        <LogOut className="w-4 h-4" />
+                    </button>
+                </header>
+
+                {/* ── Page content ──────────────────────────────── */}
                 <main className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar">
-                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-7xl mx-auto">
                         {renderSection()}
                     </div>
                 </main>
