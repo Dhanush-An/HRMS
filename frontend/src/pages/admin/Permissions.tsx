@@ -4,13 +4,11 @@ import {
     CheckCircle,
     XCircle,
     Filter,
-    Users,
     Search,
     Plus,
     User,
     CalendarDays
 } from 'lucide-react';
-import { cn } from '../../utils/cn';
 import api from '../../api';
 
 interface PermissionRequest {
@@ -96,7 +94,7 @@ const Permissions = () => {
         e.preventDefault();
 
         const targetEmployeeId = !isAdmin ? user.id : formData.employeeId;
-        const emp = employees.find(e => e.id === targetEmployeeId);
+        let emp = employees.find(e => e.id === targetEmployeeId);
         
         if (!emp && !isAdmin) {
             // fallback if employees not loaded but requesting for self

@@ -41,6 +41,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import GlobalJobPopup from './components/GlobalJobPopup';
 import JobsTab from './components/JobsTab';
 import ResignationTab from './components/ResignationTab';
+import Permissions from './pages/admin/Permissions';
 
 
 function App() {

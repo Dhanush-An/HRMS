@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Clock, CheckCircle2, XCircle, Search, User, CalendarDays } from 'lucide-react';
 import api from '../api';
 
