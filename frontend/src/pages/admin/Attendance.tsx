@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Calendar,
     Clock,
@@ -11,7 +11,10 @@ import {
     MapPin,
     X,
     Maximize2,
-    User
+    User,
+    MoreVertical,
+    CheckCircle,
+    MinusCircle
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -90,13 +93,15 @@ const Attendance = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
-    // Removed unused editingId
-    // Removed unused setEditForm
 
     // Report State
     const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState<'attendance' | 'breaks'>('attendance');
+
+    // Kebab menu state
+    const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     // Map Modal State
     const [mapModal, setMapModal] = useState<{ isOpen: boolean; empName: string; lat: number; lng: number }>({
@@ -110,6 +115,17 @@ const Attendance = () => {
         img: '',
         name: ''
     });
+
+    // Close menu on outside click
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+                setOpenMenuId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const fetchData = async () => {
         try {
@@ -157,7 +173,30 @@ const Attendance = () => {
 
 
 
-    // Removed unused handleSaveEdit
+    // Change attendance status from the kebab menu
+    const handleChangeStatus = async (empId: string, newStatus: 'Present' | 'Half Day' | 'Absent') => {
+        const record = getAttendanceStatus(empId);
+        setOpenMenuId(null);
+        try {
+            if (record && record.id && !(record as any).isWeeklyOff) {
+                // Update existing record
+                await api.put(`/api/attendance/${record.id}`, { status: newStatus });
+            } else {
+                // Create a new attendance record
+                const emp = employees.find(e => e.id === empId);
+                await api.post('/api/attendance', {
+                    employeeId: empId,
+                    employeeName: emp?.name || '',
+                    date: selectedDate,
+                    status: newStatus,
+                    checkIn: newStatus === 'Absent' ? undefined : '--:--',
+                });
+            }
+            await fetchData();
+        } catch (err: any) {
+            alert(`Failed to update attendance: ${err.message}`);
+        }
+    };
 
     const handleViewLocation = async (empId: string, empName: string, recordLocation?: { lat?: number; lng?: number }) => {
         // 1. Check if record has a specific Login Location
@@ -516,7 +555,7 @@ const Attendance = () => {
                                             </span>
                                         </td>
                                         <td className="px-4 py-4 whitespace-nowrap text-right">
-                                            <div className="flex justify-end gap-2">
+                                            <div className="flex justify-end items-center gap-2" ref={openMenuId === emp.id ? menuRef : null}>
                                                 {record?.faceImage && (
                                                     <button
                                                         onClick={() => setFaceModal({ isOpen: true, img: record.faceImage!, name: emp.name })}
@@ -537,6 +576,44 @@ const Attendance = () => {
                                                 ) : (
                                                     <span className="text-brand-muted text-[10px] font-black uppercase tracking-widest opacity-40">Pending</span>
                                                 )}
+                                                {/* Three-dot status menu */}
+                                                <div className="relative">
+                                                    <button
+                                                        onClick={() => setOpenMenuId(openMenuId === emp.id ? null : emp.id)}
+                                                        className="p-2 text-brand-muted hover:text-brand-primary hover:bg-brand-primary-light rounded-lg transition-all"
+                                                        title="Change Status"
+                                                    >
+                                                        <MoreVertical className="w-4 h-4" />
+                                                    </button>
+                                                    {openMenuId === emp.id && (
+                                                        <div className="absolute right-0 top-full mt-1 z-50 bg-brand-surface border border-brand-border rounded-xl shadow-xl shadow-black/20 overflow-hidden min-w-[150px] animate-in fade-in zoom-in-95 duration-150">
+                                                            <div className="px-3 py-2 border-b border-brand-border">
+                                                                <p className="text-[9px] font-black text-brand-muted uppercase tracking-widest">Mark Attendance</p>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleChangeStatus(emp.id, 'Present')}
+                                                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+                                                            >
+                                                                <CheckCircle className="w-3.5 h-3.5" />
+                                                                Present
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleChangeStatus(emp.id, 'Half Day')}
+                                                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-blue-400 hover:bg-blue-400/10 transition-colors"
+                                                            >
+                                                                <MinusCircle className="w-3.5 h-3.5" />
+                                                                Half Day
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleChangeStatus(emp.id, 'Absent')}
+                                                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-colors"
+                                                            >
+                                                                <XCircle className="w-3.5 h-3.5" />
+                                                                Absent
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -607,10 +684,35 @@ const Attendance = () => {
                                     <span className="text-sm font-black text-brand-primary">{calculateWorkingHours(record?.checkIn, record?.checkOut, record?.workHours)}</span>
                                 </div>
 
+                                {/* Mobile status change buttons */}
+                                <div className="flex gap-2 mt-4">
+                                    <button
+                                        onClick={() => handleChangeStatus(emp.id, 'Present')}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 active:scale-95 transition-all"
+                                    >
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        Present
+                                    </button>
+                                    <button
+                                        onClick={() => handleChangeStatus(emp.id, 'Half Day')}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-400/10 text-blue-400 text-[10px] font-black uppercase tracking-widest border border-blue-400/20 active:scale-95 transition-all"
+                                    >
+                                        <MinusCircle className="w-3.5 h-3.5" />
+                                        Half Day
+                                    </button>
+                                    <button
+                                        onClick={() => handleChangeStatus(emp.id, 'Absent')}
+                                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-widest border border-rose-500/20 active:scale-95 transition-all"
+                                    >
+                                        <XCircle className="w-3.5 h-3.5" />
+                                        Absent
+                                    </button>
+                                </div>
+
                                 {record?.location && (
                                     <button
                                         onClick={() => handleViewLocation(emp.id, emp.name, record.location)}
-                                        className="w-full mt-4 bg-brand-bg border border-brand-border text-brand-text py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                        className="w-full mt-3 bg-brand-bg border border-brand-border text-brand-text py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all"
                                     >
                                         <MapPin className="w-4 h-4 text-brand-primary" /> View Location
                                     </button>
