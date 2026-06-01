@@ -13,7 +13,9 @@ import {
     Calendar,
     Filter,
     Lock,
-    User
+    User,
+    MoreVertical,
+    UserMinus
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -27,6 +29,7 @@ interface Employee {
     status: string;
     joiningDate: string;
     phone?: string;
+    branchName?: string;
 }
 
 const Employees = () => {
@@ -35,6 +38,7 @@ const Employees = () => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [isEditing, setIsEditing] = useState(false);
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         id: '',
@@ -55,7 +59,8 @@ const Employees = () => {
         try {
             const response = await api.get('/api/employees');
             const data = await response.json();
-            setEmployees(data);
+            const filtered = Array.isArray(data) ? data.filter((e: any) => e.role !== 'subadmin' && e.role !== 'admin') : [];
+            setEmployees(filtered);
         } catch (error) {
             console.error('Error fetching employees:', error);
         }
@@ -119,11 +124,26 @@ const Employees = () => {
     const handleDelete = async (id: string) => {
         if (window.confirm('Are you sure you want to delete this employee?')) {
             try {
-                await api.delete(`/api/employees/${id}`);
-                fetchEmployees();
+                const response = await api.delete(`/api/employees/${id}`);
+                if (response.ok) {
+                    fetchEmployees();
+                }
             } catch (error) {
                 console.error('Error deleting employee:', error);
             }
+        }
+    };
+
+    const handleDeactivate = async (id: string) => {
+        if (!window.confirm('Are you sure you want to deactivate this employee?')) return;
+        try {
+            const response = await api.put(`/api/employees/${id}/status`, { status: 'Inactive' });
+            if (response.ok) {
+                fetchEmployees();
+                setActiveDropdown(null);
+            }
+        } catch (error) {
+            console.error("Error deactivating employee:", error);
         }
     };
 
@@ -218,7 +238,7 @@ const Employees = () => {
                             </td>
                             <td className="px-4 py-4">
                                 <div className="text-brand-text font-bold text-sm">{emp.role}</div>
-                                <div className="text-brand-muted text-xs font-medium">{emp.department}</div>
+                                <div className="text-brand-muted text-xs font-medium">{emp.department}{emp.branchName ? ` • ${emp.branchName}` : ''}</div>
                             </td>
                             <td className="px-4 py-4">
                                 <div className="flex flex-col gap-0.5">
@@ -273,6 +293,34 @@ const Employees = () => {
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
+                                        <div className="relative">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveDropdown(activeDropdown === emp.id ? null : emp.id);
+                                                }}
+                                                className="p-2 text-brand-muted hover:text-brand-text hover:bg-brand-bg rounded-lg transition-all"
+                                            >
+                                                <MoreVertical className="w-4 h-4" />
+                                            </button>
+                                            {activeDropdown === emp.id && (
+                                                <>
+                                                    <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); }} />
+                                                    <div 
+                                                        className="absolute right-0 mt-2 w-40 bg-brand-surface border border-brand-border rounded-xl shadow-xl z-10 py-1"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <button
+                                                            onClick={() => handleDeactivate(emp.id)}
+                                                            className="w-full text-left px-4 py-2 text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 transition-colors"
+                                                        >
+                                                            <UserMinus className="w-3.5 h-3.5" />
+                                                            Disactive
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -296,7 +344,7 @@ const Employees = () => {
                                 </div>
                                 <div>
                                     <div className="text-brand-text font-black text-base">{emp.name}</div>
-                                    <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest">{emp.department}</div>
+                                    <div className="text-brand-muted text-[10px] font-bold uppercase tracking-widest">{emp.department}{emp.branchName ? ` • ${emp.branchName}` : ''}</div>
                                 </div>
                             </div>
                             <div className={cn(

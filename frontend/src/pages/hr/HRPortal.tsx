@@ -6,12 +6,17 @@ import {
     LogOut, X, DollarSign, Shield,
     Search, Plus, XCircle, CheckCircle,
     Mail, Phone, Edit2, Trash2, UserPlus, ClipboardList,
-    Building2, Home, MapPin, Loader2, ChevronRight, Clock, CreditCard
+    Building2, Home, MapPin, Loader2, ChevronRight, Clock, CreditCard,
+    Settings, User, Lock, Eye, EyeOff
 } from 'lucide-react';
 import api from '../../api';
 import logo from '../../assets/forge india logo.jpg';
 import AdminPayroll from '../admin/Payroll';
 import EmployeeExpenses from '../employee/EmployeeExpenses';
+import EmployeeAttendance from '../employee/EmployeeAttendance';
+import EmployeeTasks from '../employee/EmployeeTasks';
+import JobsTab from '../../components/JobsTab';
+import ResignationTab from '../../components/ResignationTab';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const BRANCH_LOCATIONS = {
@@ -102,6 +107,9 @@ const NAV = [
     { id: 'permissions',  icon: Shield,           label: 'Permissions' },
     { id: 'expenses',     icon: CreditCard,       label: 'Expenses' },
     { id: 'announcements',icon: Bell,             label: 'Announcements' },
+    { id: 'jobs',         icon: ClipboardList,    label: 'Jobs' }, // Actually better to use Briefcase, I'll assume lucide icon is loaded or I'll just use Briefcase 
+    { id: 'resignation',  icon: LogOut,           label: 'Resignation' },
+    { id: 'settings',     icon: Settings,         label: 'Settings' },
 ];
 
 // ─── Section: Overview ────────────────────────────────────────────────────────
@@ -318,14 +326,14 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                     </div>
 
                     {/* Operational Details Section */}
-                    <div className="flex-1 flex flex-wrap items-center justify-center xl:justify-start gap-10">
+                    <div className="flex-1 flex flex-row flex-wrap items-center justify-center xl:justify-start gap-4">
                         {/* Check-in Box */}
-                        <div className="space-y-4 flex flex-col items-center">
-                            <div className="bg-brand-bg border border-brand-border px-6 py-4 rounded-3xl min-w-[160px] flex flex-col items-center justify-center gap-2 shadow-inner group/box transition-all hover:bg-brand-surface">
-                                <span className="text-xl font-bold text-brand-text tabular-nums">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
+                        <div className="flex flex-col items-center">
+                            <div className="bg-brand-bg border border-brand-border px-4 py-2 rounded-2xl min-w-[110px] flex flex-col items-center justify-center gap-1 shadow-inner group/box transition-all hover:bg-brand-surface">
+                                <span className="text-base font-bold text-brand-text tabular-nums">{clockedInTime !== '--:--' ? formatTimeTo12Hour(clockedInTime) : '--:--'}</span>
                                 {sessionLocation.workMode && (
                                     <span className={cn(
-                                        "text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-lg shadow-sm border",
+                                        "text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-md shadow-sm border",
                                         sessionLocation.workMode === 'Work from Office'
                                             ? "bg-brand-primary text-white border-brand-primary/20"
                                             : "bg-indigo-600 text-white border-indigo-500/20" 
@@ -333,25 +341,28 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
                                         {sessionLocation.workMode === 'Work from Office' ? 'OFFICE' : 'REMOTE'}
                                     </span>
                                 )}
+                                {!sessionLocation.workMode && (
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em] px-2 py-0.5 text-brand-muted">CLOCK IN</span>
+                                )}
                             </div>
                         </div>
 
                         {/* Check-out & Location Box */}
-                        <div className="space-y-4 flex flex-col items-center">
-                            <div className="bg-brand-bg border border-brand-border px-6 py-4 rounded-3xl min-w-[160px] flex flex-col items-center justify-center gap-2 shadow-inner transition-all hover:bg-brand-surface">
-                                <span className="text-xl font-bold text-brand-text tabular-nums">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
-                                <span className="text-[10px] text-brand-muted font-black uppercase tracking-[0.2em] opacity-60">
+                        <div className="flex flex-col items-center">
+                            <div className="bg-brand-bg border border-brand-border px-4 py-2 rounded-2xl min-w-[110px] flex flex-col items-center justify-center gap-1 shadow-inner transition-all hover:bg-brand-surface">
+                                <span className="text-base font-bold text-brand-text tabular-nums">{clockedOutTime !== '--:--' ? formatTimeTo12Hour(clockedOutTime) : '--:--'}</span>
+                                <span className="text-[8px] text-brand-muted font-black uppercase tracking-[0.2em] opacity-60">
                                     {sessionLocation.workLocation || (isCheckedIn && !isCheckedOut ? 'ACTIVE' : 'IDLE')}
                                 </span>
                             </div>
                         </div>
 
                         {/* Productivity Score / Hours */}
-                        <div className="px-6 py-5 bg-brand-bg border-2 border-brand-border/50 rounded-[2rem] flex flex-col items-center justify-center gap-1 shadow-md hover:border-brand-primary/30 transition-colors">
-                            <span className="text-2xl font-black text-brand-text tracking-tighter">
+                        <div className="px-4 py-2 bg-brand-bg border border-brand-border/50 rounded-2xl min-w-[110px] flex flex-col items-center justify-center gap-1 shadow-inner hover:border-brand-primary/30 transition-colors">
+                            <span className="text-base font-black text-brand-text tracking-tighter">
                                 {calculateWorkingHours(clockedInTime, clockedOutTime, sessionLocation.workHours)}
                             </span>
-                            <span className="text-[9px] font-black text-brand-muted uppercase tracking-widest">Duration</span>
+                            <span className="text-[8px] font-black text-brand-muted uppercase tracking-widest">Duration</span>
                         </div>
                     </div>
 
@@ -749,6 +760,7 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
 // ─── Section: Attendance ──────────────────────────────────────────────────────
 const AttendanceSection = ({ attendance, employees }: any) => {
     const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+    const [viewMode, setViewMode] = useState<'all' | 'my'>('all');
     const today = new Date().toISOString().split('T')[0];
 
     const todayRecords = attendance.filter((a: any) => a.date === today);
@@ -756,11 +768,33 @@ const AttendanceSection = ({ attendance, employees }: any) => {
     const absentCount = Math.max((employees?.length || 0) - presentCount, 0);
     const lateCount = todayRecords.filter((a: any) => a.status === 'Late').length;
 
+    if (viewMode === 'my') {
+        return (
+            <div className="space-y-5">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 className="text-2xl font-black text-brand-text">My Attendance</h2>
+                        <p className="text-sm text-brand-muted mt-0.5">Track your personal attendance.</p>
+                    </div>
+                    <button onClick={() => setViewMode('all')} className="px-4 py-2 bg-brand-surface border border-brand-border text-brand-text rounded-xl text-sm font-bold hover:bg-brand-bg transition-colors">
+                        Back to All Attendance
+                    </button>
+                </div>
+                <EmployeeAttendance />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-5">
-            <div>
-                <h2 className="text-2xl font-black text-brand-text">Attendance Management</h2>
-                <p className="text-sm text-brand-muted mt-0.5">Track daily, weekly and monthly attendance.</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-black text-brand-text">Attendance Management</h2>
+                    <p className="text-sm text-brand-muted mt-0.5">Track daily, weekly and monthly attendance.</p>
+                </div>
+                <button onClick={() => setViewMode('my')} className="px-4 py-2 bg-brand-primary text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-brand-primary/20">
+                    My Attendance
+                </button>
             </div>
             <div className="flex gap-2">
                 {(['daily', 'weekly', 'monthly'] as const).map(p => (
@@ -1049,6 +1083,7 @@ const AnnouncementsSection = () => {
 
 // ─── Section: Tasks ────────────────────────────────────────────────────────────
 const TasksSection = ({ employees }: { employees: any[] }) => {
+    const [viewMode, setViewMode] = useState<'all' | 'my'>('all');
     const [tasks, setTasks] = useState<any[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState({
@@ -1081,6 +1116,23 @@ const TasksSection = ({ employees }: { employees: any[] }) => {
         } catch (err: any) { alert(err.message); }
     };
 
+    if (viewMode === 'my') {
+        return (
+            <div className="space-y-5">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h2 className="text-2xl font-black text-brand-text">My Tasks</h2>
+                        <p className="text-sm text-brand-muted mt-0.5">Manage your assigned tasks.</p>
+                    </div>
+                    <button onClick={() => setViewMode('all')} className="px-4 py-2 bg-brand-surface border border-brand-border text-brand-text rounded-xl text-sm font-bold hover:bg-brand-bg transition-colors">
+                        Back to All Tasks
+                    </button>
+                </div>
+                <EmployeeTasks />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-5">
             <div className="flex items-center justify-between">
@@ -1088,10 +1140,15 @@ const TasksSection = ({ employees }: { employees: any[] }) => {
                     <h2 className="text-2xl font-black text-brand-text">Task Management</h2>
                     <p className="text-sm text-brand-muted mt-0.5">Assign and track tasks for employees.</p>
                 </div>
-                <button onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-brand-primary/20">
-                    <Plus className="w-4 h-4" /> Assign New Task
-                </button>
+                <div className="flex items-center gap-3">
+                    <button onClick={() => setViewMode('my')} className="px-4 py-2 bg-brand-surface border border-brand-border text-brand-text rounded-xl text-sm font-bold hover:bg-brand-bg transition-colors">
+                        My Tasks
+                    </button>
+                    <button onClick={() => setShowModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-brand-primary/20">
+                        <Plus className="w-4 h-4" /> Assign New Task
+                    </button>
+                </div>
             </div>
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
                 <table className="w-full text-left">
@@ -1101,10 +1158,10 @@ const TasksSection = ({ employees }: { employees: any[] }) => {
                         ))}</tr>
                     </thead>
                     <tbody className="divide-y divide-brand-border">
-                        {tasks.map((t: any) => (
+                        {tasks.filter((t: any) => employees.some(e => e.employeeId === t.employeeId || e.id === t.employeeId)).map((t: any) => (
                             <tr key={t._id || t.id} className="hover:bg-brand-bg/40 transition-colors">
                                 <td className="px-4 py-3 text-sm font-semibold text-brand-text">
-                                    {employees.find(e => e.employeeId === t.employeeId)?.name || t.employeeId}
+                                    {employees.find(e => e.employeeId === t.employeeId || e.id === t.employeeId)?.name || t.employeeId}
                                 </td>
                                 <td className="px-4 py-3 text-xs text-brand-text">{t.projectName || '—'}</td>
                                 <td className="px-4 py-3 text-xs text-brand-muted max-w-[200px] truncate">{t.description}</td>
@@ -1181,6 +1238,123 @@ const TasksSection = ({ employees }: { employees: any[] }) => {
     );
 };
 
+// ─── Section: Settings ────────────────────────────────────────────────────────
+const HRSettings = () => {
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : {};
+    
+    const [empFormData, setEmpFormData] = useState({
+        username: user.username || '',
+        email: user.email || '',
+        password: ''
+    });
+    const [empLoading, setEmpLoading] = useState(false);
+    const [empMessage, setEmpMessage] = useState('');
+    const [empShowPassword, setEmpShowPassword] = useState(false);
+
+    const handleEmployeeUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setEmpLoading(true);
+        setEmpMessage('');
+
+        try {
+            const { password, ...rest } = empFormData;
+            const payload = password ? { ...rest, password } : rest;
+
+            const response = await api.put(`/api/employees/${user.id}`, payload);
+            if (response.ok) {
+                setEmpMessage('Your credentials have been updated successfully!');
+                const updatedUser = await response.json();
+                localStorage.setItem('user', JSON.stringify({ ...user, ...updatedUser }));
+            } else {
+                setEmpMessage('Failed to update credentials.');
+            }
+        } catch (error) {
+            setEmpMessage('An error occurred while updating.');
+        } finally {
+            setEmpLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-8 max-w-4xl">
+            <div>
+                <h1 className="text-3xl font-black text-brand-text tracking-tight">Settings</h1>
+                <p className="text-brand-muted font-medium mt-1">Manage your HR account credentials</p>
+            </div>
+            
+            <div className="bg-brand-surface border border-brand-border rounded-[2rem] overflow-hidden shadow-sm">
+                <div className="p-8 border-b border-brand-border bg-gradient-to-r from-brand-bg to-brand-surface">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-brand-primary/10 rounded-xl border border-brand-primary/20">
+                            <Shield className="w-5 h-5 text-brand-primary" />
+                        </div>
+                        <div>
+                            <h2 className="text-sm font-black text-brand-text uppercase tracking-widest">Personal Credentials</h2>
+                            <p className="text-xs font-bold text-brand-muted mt-1 uppercase tracking-wider">Update your access details</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-8">
+                    <form onSubmit={handleEmployeeUpdate} className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">Username</label>
+                            <div className="relative group">
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                <input
+                                    type="text"
+                                    className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                    value={empFormData.username}
+                                    onChange={(e) => setEmpFormData({ ...empFormData, username: e.target.value })}
+                                    placeholder="Enter unique username"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">Email Address</label>
+                            <div className="relative group">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                <input
+                                    type="email"
+                                    className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-4 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                    value={empFormData.email}
+                                    onChange={(e) => setEmpFormData({ ...empFormData, email: e.target.value })}
+                                    placeholder="your.email@example.com"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                            <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest pl-1">New Password (Optional)</label>
+                            <div className="relative group">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-primary transition-colors" />
+                                <input
+                                    type={empShowPassword ? "text" : "password"}
+                                    className="w-full bg-brand-bg border border-brand-border rounded-xl py-4 pl-12 pr-12 text-brand-text font-medium text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner"
+                                    value={empFormData.password}
+                                    onChange={(e) => setEmpFormData({ ...empFormData, password: e.target.value })}
+                                    placeholder="Leave blank to keep current"
+                                />
+                                <button type="button" onClick={() => setEmpShowPassword(!empShowPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-2">
+                                    {empShowPassword ? <EyeOff className="w-5 h-5 text-brand-muted" /> : <Eye className="w-5 h-5 text-brand-muted" />}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="md:col-span-2 flex items-center justify-between pt-4 border-t border-brand-border">
+                            <span className="text-emerald-500 text-[10px] font-black uppercase tracking-widest">{empMessage}</span>
+                            <button type="submit" disabled={empLoading} className="bg-brand-primary text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all disabled:opacity-50 shadow-lg shadow-brand-primary/20">
+                                {empLoading ? 'Updating...' : 'Update Credentials'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // ─── Main HRPortal ────────────────────────────────────────────────────────────
 const HRPortal: React.FC = () => {
     const navigate = useNavigate();
@@ -1199,7 +1373,9 @@ const HRPortal: React.FC = () => {
                 api.get('/api/leaves'),
                 api.get('/api/attendance'),
             ]);
-            setEmployees(await empRes.json());
+            const allEmps = await empRes.json();
+            const filteredEmps = Array.isArray(allEmps) ? allEmps.filter((e: any) => e.role !== 'admin' && e.role !== 'subadmin') : [];
+            setEmployees(filteredEmps);
             setLeaves(await leavesRes.json());
             setAttendance(await attRes.json());
         } catch (e) { console.error(e); }
@@ -1224,6 +1400,9 @@ const HRPortal: React.FC = () => {
             case 'expenses':     return <EmployeeExpenses />;
             case 'announcements':return <AnnouncementsSection />;
             case 'task-assignment':return <TasksSection employees={employees} />;
+            case 'jobs':         return <JobsTab showAll />;
+            case 'resignation':  return <ResignationTab role="hr" />;
+            case 'settings':     return <HRSettings />;
             default:             return null;
         }
     };

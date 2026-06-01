@@ -163,8 +163,8 @@ const Settings = () => {
     return (
         <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
             {/* Employee Credential Management */}
-            <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-hidden shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-100">
-                <div className="p-8 border-b border-brand-border bg-table-header flex items-center justify-between">
+            <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-visible shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-100">
+                <div className="p-8 border-b border-brand-border bg-table-header rounded-t-3xl flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-black text-brand-text uppercase tracking-tight flex items-center gap-3">
                             <Shield className="w-6 h-6 text-brand-primary" />
@@ -284,8 +284,8 @@ const Settings = () => {
             </div>
 
             {/* HR Credential Management (NEW SECTION) */}
-            <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-hidden shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-150">
-                <div className="p-8 border-b border-brand-border bg-table-header flex items-center justify-between">
+            <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-visible shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-300">
+                <div className="p-8 border-b border-brand-border bg-table-header rounded-t-3xl flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-black text-brand-text uppercase tracking-tight flex items-center gap-3">
                             <User className="w-6 h-6 text-brand-primary" />
@@ -405,8 +405,8 @@ const Settings = () => {
             </div>
 
             {/* Admin Security Section */}
-            <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-hidden shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-200">
-                <div className="p-8 border-b border-brand-border bg-table-header flex items-center justify-between">
+            <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-visible shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-200">
+                <div className="p-8 border-b border-brand-border bg-table-header rounded-t-3xl flex items-center justify-between">
                     <div>
                         <h2 className="text-xl font-black text-brand-text uppercase tracking-tight flex items-center gap-3">
                             <Lock className="w-6 h-6 text-brand-primary" />

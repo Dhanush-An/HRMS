@@ -41,7 +41,8 @@ const EmployeeExpenses = () => {
         try {
             const res = await api.get('/api/expenses');
             const data = await res.json();
-            setClaims(Array.isArray(data) ? data : []);
+            const filteredData = Array.isArray(data) ? data.filter((c: any) => c.employeeId === user?.id) : [];
+            setClaims(filteredData);
         } catch (err) {
             console.error("Error fetching claims:", err);
         }

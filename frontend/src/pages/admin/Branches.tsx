@@ -25,6 +25,8 @@ interface Branch {
     subAdminEmail?: string;
     employeeStrength: number;
     openingDate?: string;
+    latitude?: number;
+    longitude?: number;
     branchType: 'Head Office' | 'Regional Office' | 'Franchise';
     status: 'Active' | 'Inactive';
 }
@@ -80,8 +82,6 @@ const Branches = () => {
     // Password fields
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Sub Admin Password fields
     const [subAdminPassword, setSubAdminPassword] = useState('');
@@ -150,6 +150,9 @@ const Branches = () => {
                         const updated = await res.json();
                         setSelectedBranch(updated);
                     }
+                } else {
+                    const err = await res.json();
+                    alert(`Failed to update branch: ${err.message || 'Unknown error'}`);
                 }
             } else {
                 // Add branch
@@ -157,10 +160,14 @@ const Branches = () => {
                 if (res.ok) {
                     await loadData();
                     setShowFormModal(false);
+                } else {
+                    const err = await res.json();
+                    alert(`Failed to register branch: ${err.message || 'Unknown error'}`);
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error saving branch:", error);
+            alert(`Error: ${error.message || 'Unknown error occurred'}`);
         }
     };
 
@@ -294,8 +301,6 @@ const Branches = () => {
                                     setFormBranch(selectedBranch);
                                     setPassword('');
                                     setConfirmPassword('');
-                                    setShowPassword(false);
-                                    setShowConfirmPassword(false);
                                     setShowFormModal(true);
                                 }}
                                 className="flex items-center gap-2 px-5 py-3 bg-brand-surface border border-brand-border text-brand-text hover:text-brand-primary hover:border-brand-primary/20 rounded-2xl text-xs font-black uppercase tracking-wider transition-all hover:scale-[1.02] active:scale-95 shadow-sm"
@@ -497,8 +502,6 @@ const Branches = () => {
                                 });
                                 setPassword('');
                                 setConfirmPassword('');
-                                setShowPassword(false);
-                                setShowConfirmPassword(false);
                                 setSubAdminPassword('');
                                 setConfirmSubAdminPassword('');
                                 setShowSubAdminPassword(false);
@@ -709,8 +712,6 @@ const Branches = () => {
                                                                     setFormBranch(branch);
                                                                     setPassword('');
                                                                     setConfirmPassword('');
-                                                                    setShowPassword(false);
-                                                                    setShowConfirmPassword(false);
                                                                     setSubAdminPassword('');
                                                                     setConfirmSubAdminPassword('');
                                                                     setShowSubAdminPassword(false);
@@ -815,7 +816,7 @@ const Branches = () => {
 
                             <div className="border-t border-brand-border/50 border-dashed pt-4 space-y-4">
                                 <h3 className="text-xs font-black uppercase tracking-wider text-brand-text">Local Leadership & Contact</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Branch Manager Name</label>
                                         <input 
@@ -833,55 +834,6 @@ const Branches = () => {
                                             onChange={e => setFormBranch({...formBranch, phone: e.target.value})}
                                             className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
                                         />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Official Email</label>
-                                        <input 
-                                            type="email" placeholder="e.g. branch@hrms.com"
-                                            value={formBranch.email || ''}
-                                            onChange={e => setFormBranch({...formBranch, email: e.target.value})}
-                                            className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 border-t border-brand-border/30 pt-4">
-                                    <div>
-                                        <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Password</label>
-                                        <div className="relative">
-                                            <input 
-                                                type={showPassword ? "text" : "password"} 
-                                                placeholder={formBranch.branchId ? "Leave blank to keep existing password" : "Enter password..."}
-                                                value={password}
-                                                onChange={e => setPassword(e.target.value)}
-                                                className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 pr-10 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-text"
-                                            >
-                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Confirm Password</label>
-                                        <div className="relative">
-                                            <input 
-                                                type={showConfirmPassword ? "text" : "password"} 
-                                                placeholder="Confirm password..."
-                                                value={confirmPassword}
-                                                onChange={e => setConfirmPassword(e.target.value)}
-                                                className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 pr-10 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-text"
-                                            >
-                                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -991,13 +943,31 @@ const Branches = () => {
                                             />
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:col-span-2">
                                         <div>
                                             <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Opening Date</label>
                                             <input 
                                                 type="date"
                                                 value={formBranch.openingDate || ''}
                                                 onChange={e => setFormBranch({...formBranch, openingDate: e.target.value})}
+                                                className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Latitude</label>
+                                            <input 
+                                                type="number" step="any" placeholder="e.g. 12.9716"
+                                                value={formBranch.latitude || ''}
+                                                onChange={e => setFormBranch({...formBranch, latitude: parseFloat(e.target.value)})}
+                                                className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Longitude</label>
+                                            <input 
+                                                type="number" step="any" placeholder="e.g. 77.5946"
+                                                value={formBranch.longitude || ''}
+                                                onChange={e => setFormBranch({...formBranch, longitude: parseFloat(e.target.value)})}
                                                 className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
                                             />
                                         </div>

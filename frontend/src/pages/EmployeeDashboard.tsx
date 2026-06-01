@@ -26,17 +26,13 @@ import {
     Camera,
     RefreshCw,
     UserCheck,
-    CreditCard
+    CreditCard,
+    Briefcase
 } from 'lucide-react';
 import { useRef } from 'react';
 import { cn } from '../utils/cn';
 import logo from '../assets/forge india logo.jpg';
 
-// Geofencing Constants
-const BRANCH_LOCATIONS = {
-    'Bangalore': { lat: 12.971667, lng: 77.507778 },
-    'Chennai': { lat: 13.0827, lng: 80.2707 } // Placeholder for Chennai
-};
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
     const R = 6371e3; // metres
@@ -125,7 +121,7 @@ const EmployeeDashboard = () => {
     // Login Options Modal State
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [branches, setBranches] = useState<string[]>([]);
+    const [branches, setBranches] = useState<any[]>([]);
     const [loginOptions, setLoginOptions] = useState({
         workMode: 'Work from Office',
         workLocation: '',
@@ -151,7 +147,7 @@ const EmployeeDashboard = () => {
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     const names = data.map((b: any) => b.name).filter(Boolean);
-                    setBranches(names);
+                    setBranches(data);
                     // Auto-select the user's own branch or first branch
                     const storedUser = localStorage.getItem('user');
                     const parsedUser = storedUser ? JSON.parse(storedUser) : null;
@@ -288,29 +284,36 @@ const EmployeeDashboard = () => {
             }
         }
 
-        // GEOFENCING LOGIC (Using either direct or fallback location)
-        if (loginOptions.workMode === 'Work from Office' && loginLocation.latitude && loginLocation.longitude) {
-            const branch = BRANCH_LOCATIONS[loginOptions.workLocation as keyof typeof BRANCH_LOCATIONS];
-            if (branch) {
-                const distance = calculateDistance(
-                    loginLocation.latitude,
-                    loginLocation.longitude,
-                    branch.lat,
-                    branch.lng
-                );
-
-                console.log(`[GEOFENCE] Distance to ${loginOptions.workLocation} branch: ${distance.toFixed(2)}m`);
-
-                if (distance > 50) {
-                    alert(`Access Denied: You are ${distance.toFixed(0)}m away. You must be within 50m of the office to check-in.`);
-                    setIsSubmitting(false);
-                    return;
-                }
+        // GEOFENCING LOGIC (Using dynamic branch location)
+        if (loginOptions.workMode === 'Work from Office') {
+            if (!loginLocation.latitude || !loginLocation.longitude) {
+                alert("Kindly check the location. Please enable GPS access to check-in.");
+                setIsSubmitting(false);
+                return;
             }
-        } else if (loginOptions.workMode === 'Work from Office' && !loginLocation.latitude) {
-            // This case should be handled by the catch block above, but as a safety measure:
-            setIsSubmitting(false);
-            return;
+
+            const selectedBranch = branches.find((b: any) => b.name === loginOptions.workLocation);
+            
+            if (!selectedBranch || !selectedBranch.latitude || !selectedBranch.longitude) {
+                alert("Kindly check the location. Your branch coordinates are not configured in the system.");
+                setIsSubmitting(false);
+                return;
+            }
+
+            const distance = calculateDistance(
+                loginLocation.latitude,
+                loginLocation.longitude,
+                selectedBranch.latitude,
+                selectedBranch.longitude
+            );
+
+            console.log(`[GEOFENCE] Distance to ${loginOptions.workLocation} branch: ${distance.toFixed(2)}m`);
+
+            if (distance > 50) {
+                alert(`Access Denied: You are ${distance.toFixed(0)}m away. Kindly check the location. You must be within 50m of the office to check-in.`);
+                setIsSubmitting(false);
+                return;
+            }
         }
 
         setLastValidatedLocation({ lat: loginLocation.latitude, lng: loginLocation.longitude });
@@ -522,6 +525,8 @@ const EmployeeDashboard = () => {
         { icon: File, label: 'Documents', path: '/employee-dashboard/documents' },
         { icon: HelpCircle, label: 'Queries', path: '/employee-dashboard/queries' },
         { icon: Book, label: 'Company Policies', path: '/employee-dashboard/policies' },
+        { icon: Briefcase, label: 'Jobs', path: '/employee-dashboard/jobs' },
+        { icon: LogOut, label: 'Resignation', path: '/employee-dashboard/resignation' },
     ];
 
 
@@ -874,19 +879,19 @@ const EmployeeDashboard = () => {
                                                 {branches.length === 0 ? (
                                                 <div className="col-span-2 text-center text-xs text-brand-muted py-3 animate-pulse">Loading branches...</div>
                                             ) : (
-                                                branches.map((loc) => (
+                                                branches.map((loc: any) => (
                                                     <button
-                                                        key={loc}
-                                                        onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc }))}
+                                                        key={loc.name}
+                                                        onClick={() => setLoginOptions(prev => ({ ...prev, workLocation: loc.name }))}
                                                         className={cn(
                                                             "flex flex-col items-center justify-center gap-2 py-3 md:py-4 rounded-xl border-2 transition-all font-bold",
-                                                            loginOptions.workLocation === loc
+                                                            loginOptions.workLocation === loc.name
                                                                 ? "bg-brand-primary text-white border-brand-primary shadow-xl shadow-brand-primary/20"
                                                                 : "bg-brand-bg border-brand-border text-brand-muted hover:border-brand-primary/50"
                                                         )}
                                                     >
                                                         <MapPin className="w-4 h-4 md:w-5 md:h-5" />
-                                                        <span className="text-xs md:text-sm">{loc}</span>
+                                                        <span className="text-xs md:text-sm">{loc.name}</span>
                                                     </button>
                                                 ))
                                             )}

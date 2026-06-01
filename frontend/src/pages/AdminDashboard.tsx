@@ -19,7 +19,9 @@ import {
     X,
     HelpCircle,
     CreditCard,
-    GitBranch
+    GitBranch,
+    UserCog,
+    Briefcase
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -47,6 +49,7 @@ const AdminDashboard: React.FC = () => {
         { icon: LayoutDashboard, label: 'Overview', path: '/admin-dashboard' },
         { icon: Building2, label: 'HR', path: '/admin-dashboard/hr' },
         { icon: GitBranch, label: 'Branches', path: '/admin-dashboard/branches' },
+        { icon: UserCog, label: 'Branch Managers', path: '/admin-dashboard/branch-managers' },
         { icon: Users, label: 'Employees', path: '/admin-dashboard/employees' },
         { icon: Calendar, label: 'Attendance', path: '/admin-dashboard/attendance' },
         { icon: DollarSign, label: 'Salary', path: '/admin-dashboard/payroll' },
@@ -56,6 +59,9 @@ const AdminDashboard: React.FC = () => {
         { icon: File, label: 'Documents', path: '/admin-dashboard/documents' },
         { icon: Bell, label: 'Announcements', path: '/admin-dashboard/announcements' },
         { icon: ShieldCheck, label: 'Policies', path: '/admin-dashboard/policies' },
+        { icon: Briefcase, label: 'Recruitment', path: '/admin-dashboard/recruitment' },
+        { icon: Briefcase, label: 'Jobs', path: '/admin-dashboard/jobs' },
+        { icon: LogOut, label: 'Resignation', path: '/admin-dashboard/resignation' },
         { icon: BarChart2, label: 'Reports', path: '/admin-dashboard/reports' },
         { icon: HelpCircle, label: 'Queries', path: '/admin-dashboard/queries' },
         { icon: Settings, label: 'Settings', path: '/admin-dashboard/settings' },

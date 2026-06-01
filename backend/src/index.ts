@@ -19,11 +19,24 @@ import Admin from './models/Admin';
 import Query from './models/Query';
 import Expense from './models/Expense';
 import Branch from './models/Branch';
-
+import JobPosting from './models/JobPosting';
+import Resignation from './models/Resignation';
 import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import dns from 'dns';
 
-dns.setServers(["1.1.1.1","8.8.8.8"])
+dns.setServers(["1.1.1.1","8.8.8.8"]);
+
+const generateEmpId = async () => {
+    let count = await Employee.countDocuments();
+    let empId = `EMP${String(count + 1).padStart(3, '0')}`;
+    while (await Employee.findOne({ employeeId: empId })) {
+        count++;
+        empId = `EMP${String(count + 1).padStart(3, '0')}`;
+    }
+    return empId;
+};
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -119,8 +132,7 @@ const seedBranchHRManagers = async () => {
             if (!existing) {
                 const salt = await bcrypt.genSalt(10);
                 const hashedPassword = await bcrypt.hash('Password123!', salt);
-                const count = await Employee.countDocuments();
-                const empId = `EMP${String(count + 1).padStart(3, '0')}`;
+                const empId = await generateEmpId();
                 const newEmp = new Employee({
                     employeeId: empId,
                     name: branch.managerName || `${branch.city} HR Manager`,
@@ -148,18 +160,40 @@ const seedBranchHRManagers = async () => {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'hrms_dev_secret_change_in_production';
 
-// Configure Multer for local storage
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadPath = path.join(__dirname, '../uploads');
-        if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
-        cb(null, uploadPath);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// Configure Cloudinary or Fallback to Local Storage
+let storage: any;
+
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    storage = new CloudinaryStorage({
+        cloudinary: cloudinary,
+        params: {
+            folder: 'hrms_uploads',
+            allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi'],
+            resource_type: 'auto'
+        } as any,
+    });
+    console.log('[INIT] Cloudinary configured for uploads');
+} else {
+    storage = multer.diskStorage({
+        destination: (req, file, cb) => {
+            const uploadPath = path.join(__dirname, '../uploads');
+            if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+            cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+            cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+        }
+    });
+    console.log('[INIT] Cloudinary credentials missing. Falling back to local disk storage for uploads');
+}
+
 const upload = multer({ storage });
 
 const allowedOrigins = [
@@ -353,8 +387,7 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
 
         let finalId = id;
         if (!finalId) {
-            const count = await Employee.countDocuments();
-            finalId = `EMP${String(count + 1).padStart(3, '0')}`;
+            finalId = await generateEmpId();
         }
 
         let finalBranchId = branchId;
@@ -555,8 +588,7 @@ app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
                 existingEmp.role = 'hr';
                 await existingEmp.save();
             } else {
-                const count = await Employee.countDocuments();
-                const empId = `EMP${String(count + 1).padStart(3, '0')}`;
+                const empId = await generateEmpId();
                 const newEmp = new Employee({
                     employeeId: empId,
                     name: managerName || 'Branch Manager',
@@ -589,11 +621,10 @@ app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
                 existingSub.password = subAdminHash;
                 await existingSub.save();
             } else {
-                const subCount = await Employee.countDocuments();
-                const subEmpId = `EMP${String(subCount + 1).padStart(3, '0')}`;
+                const subEmpId = await generateEmpId();
                 const subEmp = new Employee({
                     employeeId: subEmpId,
-                    name: `${name} Sub Admin`,
+                    name: managerName || `${name} Sub Admin`,
                     email: subAdminEmail.toLowerCase(),
                     username: subAdminEmail.toLowerCase(),
                     password: subAdminHash,
@@ -650,6 +681,9 @@ app.put('/api/branches/:id', authorizeRoles('admin'), async (req, res) => {
                 if (existingSub) {
                     existingSub.branchId = updatedBranch.branchId;
                     existingSub.branchName = updatedBranch.name;
+                    if (updatedBranch.managerName) {
+                        existingSub.name = updatedBranch.managerName;
+                    }
                     if (subAdminPassword) {
                         const salt2 = await bcrypt.genSalt(10);
                         existingSub.password = await bcrypt.hash(subAdminPassword, salt2);
@@ -659,11 +693,10 @@ app.put('/api/branches/:id', authorizeRoles('admin'), async (req, res) => {
                     // Create new sub admin account
                     const salt2 = await bcrypt.genSalt(10);
                     const subHash = await bcrypt.hash(subAdminPassword || 'Password123!', salt2);
-                    const subCount = await Employee.countDocuments();
-                    const subEmpId = `EMP${String(subCount + 1).padStart(3, '0')}`;
+                    const subEmpId = await generateEmpId();
                     await new Employee({
                         employeeId: subEmpId,
-                        name: `${updatedBranch.name} Sub Admin`,
+                        name: updatedBranch.managerName || `${updatedBranch.name} Sub Admin`,
                         email: subAdminEmail.toLowerCase(),
                         username: subAdminEmail.toLowerCase(),
                         password: subHash,
@@ -754,6 +787,46 @@ app.get('/api/admin/stats', authorizeRoles('admin'), async (req, res) => {
         });
     } catch (error: any) {
         console.error('[ERROR] Failed to fetch admin stats:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// GET SubAdmin Dashboard Stats
+app.get('/api/subadmin/stats', authorizeRoles('subadmin'), async (req, res) => {
+    try {
+        const user = (req as any).user;
+        const branchId = user.branchId;
+
+        if (!branchId) {
+            return res.status(400).json({ success: false, message: 'SubAdmin branch context missing' });
+        }
+
+        const [totalEmployees] = await Promise.all([
+            Employee.countDocuments({ branchId })
+        ]);
+
+        // Fetch employees in this branch to filter leaves and payroll
+        const branchEmployees = await Employee.find({ branchId }).select('employeeId');
+        const empIds = branchEmployees.map(e => e.employeeId);
+
+        const [actualPendingRequests, actualPayrollData, actualTasks] = await Promise.all([
+            Leave.countDocuments({ status: 'Pending', employeeId: { $in: empIds } }),
+            Payroll.aggregate([
+                { $unwind: '$records' },
+                { $match: { 'records.employeeId': { $in: empIds } } },
+                { $group: { _id: null, total: { $sum: '$records.netSalary' } } }
+            ]),
+            Task.distinct('projectName', { projectName: { $ne: null, $exists: true }, employeeId: { $in: empIds } })
+        ]);
+
+        res.json({
+            totalEmployees: totalEmployees || 0,
+            totalPayroll: actualPayrollData[0]?.total || 0,
+            activeProjects: actualTasks.filter(name => name && typeof name === 'string' && name.trim() !== '').length,
+            pendingRequests: actualPendingRequests || 0
+        });
+    } catch (error: any) {
+        console.error('[ERROR] Failed to fetch subadmin stats:', error);
         res.status(500).json({ success: false, message: error.message });
     }
 });
@@ -915,21 +988,42 @@ app.put('/api/employees/:id/salary', authorizeRoles('admin'), async (req, res) =
 });
 
 // GENERATE Payroll
-app.post('/api/payroll/generate', authorizeRoles('admin'), async (req, res) => {
+app.post('/api/payroll/generate', authorizeRoles('admin', 'subadmin'), async (req, res) => {
     const { month, year, records } = req.body;
+    const user = (req as any).user;
 
     try {
-        const payroll = await Payroll.findOneAndUpdate(
-            { month, year },
-            {
+        let validRecords = records;
+        let branchEmpIds: string[] = [];
+
+        if (user.role !== 'admin') {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            validRecords = records.filter((r: any) => branchEmpIds.includes(r.employeeId));
+        }
+
+        let existingPayroll = await Payroll.findOne({ month, year });
+        if (existingPayroll) {
+            if (user.role !== 'admin') {
+                // Keep records of other branches, replace only this branch's employees
+                const otherRecords = existingPayroll.records.filter((r: any) => !branchEmpIds.includes(r.employeeId));
+                existingPayroll.records = [...otherRecords, ...validRecords];
+            } else {
+                existingPayroll.records = validRecords;
+            }
+            existingPayroll.dateGenerated = new Date().toISOString();
+            await existingPayroll.save();
+            res.status(201).json(existingPayroll);
+        } else {
+            const newPayroll = new Payroll({
                 month,
                 year,
                 dateGenerated: new Date().toISOString(),
-                records
-            },
-            { upsert: true, new: true }
-        );
-        res.status(201).json(payroll);
+                records: validRecords
+            });
+            await newPayroll.save();
+            res.status(201).json(newPayroll);
+        }
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -1274,10 +1368,16 @@ app.get('/api/announcements', async (req, res) => {
 
 app.post('/api/announcements', authorizeRoles('admin', 'subadmin'), async (req, res) => {
     try {
+        const user = (req as any).user;
         const newAnnouncement = new Announcement({
             date: new Date().toISOString().split('T')[0],
             ...req.body
         });
+        
+        if (user.role !== 'admin') {
+            newAnnouncement.branch = user.branchName;
+        }
+
         await newAnnouncement.save();
         res.status(201).json(newAnnouncement);
     } catch (error: any) {
@@ -1434,19 +1534,27 @@ app.post('/api/queries', async (req, res) => {
     }
 });
 
-app.put('/api/queries/:id', authorizeRoles('admin', 'hr'), async (req, res) => {
+app.put('/api/queries/:id', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
     try {
         const { status } = req.body;
-        const updatedQuery = await Query.findByIdAndUpdate(
-            req.params.id,
-            { status, updatedAt: new Date() },
-            { new: true }
-        );
-        if (updatedQuery) {
-            res.json(updatedQuery);
-        } else {
-            res.status(404).json({ message: 'Query not found' });
+        const user = (req as any).user;
+        
+        const query = await Query.findById(req.params.id);
+        if (!query) {
+            return res.status(404).json({ message: 'Query not found' });
         }
+
+        if (user.role !== 'admin') {
+            const employee = await Employee.findOne({ employeeId: query.employeeId });
+            if (!employee || employee.branchId !== user.branchId) {
+                return res.status(403).json({ success: false, message: 'Access denied. Employee belongs to another branch.' });
+            }
+        }
+
+        query.status = status;
+        query.updatedAt = new Date();
+        await query.save();
+        res.json(query);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -1534,7 +1642,147 @@ app.put('/api/policies/:id/seen', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+// --- JOB POSTINGS ROUTES ---
 
+app.get('/api/jobs', async (req, res) => {
+    try {
+        const jobs = await JobPosting.find().sort({ createdAt: -1 });
+        res.json(jobs);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/jobs', authorizeRoles('admin', 'hr'), async (req, res) => {
+    try {
+        const newJob = new JobPosting(req.body);
+        await newJob.save();
+        res.status(201).json(newJob);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/jobs/:id', authorizeRoles('admin', 'hr'), async (req, res) => {
+    try {
+        const updatedJob = await JobPosting.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        if (updatedJob) {
+            res.json(updatedJob);
+        } else {
+            res.status(404).json({ message: 'Job posting not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.delete('/api/jobs/:id', authorizeRoles('admin', 'hr'), async (req, res) => {
+    try {
+        const result = await JobPosting.findByIdAndDelete(req.params.id);
+        if (result) {
+            res.json({ message: 'Job posting deleted' });
+        } else {
+            res.status(404).json({ message: 'Job posting not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- RESIGNATION ROUTES ---
+app.get('/api/resignations', authMiddleware, async (req, res) => {
+    try {
+        const resignations = await Resignation.find().sort({ createdAt: -1 });
+        res.json(resignations);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/resignations/:employeeId', authMiddleware, async (req, res) => {
+    try {
+        const resignations = await Resignation.find({ employeeId: req.params.employeeId }).sort({ createdAt: -1 });
+        res.json(resignations);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/resignations', authMiddleware, async (req, res) => {
+    try {
+        const newResignation = new Resignation(req.body);
+        await newResignation.save();
+        res.status(201).json(newResignation);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/resignations/:id', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
+    try {
+        const updatedResignation = await Resignation.findByIdAndUpdate(
+            req.params.id,
+            { status: req.body.status },
+            { new: true }
+        );
+        if (updatedResignation) {
+            res.json(updatedResignation);
+        } else {
+            res.status(404).json({ message: 'Resignation not found' });
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- EMPLOYEE STATUS UPDATE ROUTE ---
+app.put('/api/employees/:id/status', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
+    try {
+        const updatedEmployee = await Employee.findOneAndUpdate(
+            { id: req.params.id }, // Wait, id or _id? Let me check how ID is handled... employeeId
+            { status: req.body.status },
+            { new: true }
+        );
+        
+        // Try fallback to employeeId
+        if (!updatedEmployee) {
+             const fallbackUpdate = await Employee.findOneAndUpdate(
+                { employeeId: req.params.id },
+                { status: req.body.status },
+                { new: true }
+            );
+            if (!fallbackUpdate) {
+                return res.status(404).json({ message: 'Employee not found' });
+            }
+            res.json(fallbackUpdate);
+        } else {
+            res.json(updatedEmployee);
+        }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- FILE UPLOAD ROUTE ---
+app.post('/api/upload', authorizeRoles('admin', 'hr'), upload.single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+        
+        // If Cloudinary is configured, req.file.path is the URL. Otherwise, we build the local URL.
+        const isCloudinary = process.env.CLOUDINARY_CLOUD_NAME ? true : false;
+        const fileUrl = isCloudinary ? req.file.path : `/uploads/${req.file.filename}`;
+        
+        res.json({ success: true, url: fileUrl });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 app.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}`);

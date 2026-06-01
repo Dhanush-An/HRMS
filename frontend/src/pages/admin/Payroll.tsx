@@ -66,8 +66,16 @@ const Payroll = () => {
             const attData = await attRes.json();
             const leavesJson = await leavesRes.json();
 
+            const userStr = localStorage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : null;
+            
+            let filteredEmployees = employeesData;
+            if (user?.role === 'hr') {
+                filteredEmployees = Array.isArray(employeesData) ? employeesData.filter((e: any) => e.role !== 'admin' && e.role !== 'subadmin') : [];
+            }
+
             setPayrollHistory(historyData);
-            setEmployees(employeesData);
+            setEmployees(filteredEmployees);
             setAttendanceData(attData);
             setLeavesData(leavesJson);
 

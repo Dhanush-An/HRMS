@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import api from '../../api';
 
-interface HRContact {
+interface BMContact {
     id: string;
     name: string;
     role: string;
@@ -26,38 +26,19 @@ interface HRContact {
     email: string;
     phone: string;
     avatar: string;
-    branchName?: string;
 }
 
-const HR: React.FC = () => {
-    const userStr = localStorage.getItem('user');
-    const currentUser = userStr ? JSON.parse(userStr) : null;
-    const isSubadmin = currentUser?.role === 'subadmin';
-    const userBranch = currentUser?.branchName || '';
-
+const BranchManagers: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [hrContacts, setHrContacts] = React.useState<HRContact[]>([]);
-    const [branches, setBranches] = React.useState<any[]>([]);
+    const [BMContacts, setBMContacts] = React.useState<BMContact[]>([]);
 
-    const fetchBranches = async () => {
-        try {
-            const res = await api.get('/api/branches');
-            if (res.ok) {
-                const data = await res.json();
-                setBranches(data);
-            }
-        } catch (error) {
-            console.error('Error fetching branches:', error);
-        }
-    };
-
-    const fetchHREmployees = async () => {
+    const fetchBMEmployees = async () => {
         try {
             const response = await api.get('/api/employees');
             if (response.ok) {
                 const data = await response.json();
                 const mapped = data
-                    .filter((emp: any) => emp.department === 'Human Resources' || (emp.employeeId || emp.id)?.startsWith('HR'))
+                    .filter((emp: any) => emp.department === 'Administration' || (emp.employeeId || emp.id)?.startsWith('BranchManagers'))
                     .map((emp: any) => ({
                         id: emp.employeeId || emp.id || 'N/A',
                         name: emp.name,
@@ -65,22 +46,20 @@ const HR: React.FC = () => {
                         department: emp.department,
                         email: emp.email,
                         phone: emp.phone || 'N/A',
-                        avatar: emp.name ? emp.name.charAt(0).toUpperCase() : 'U',
-                        branchName: emp.branchName || ''
+                        avatar: emp.name ? emp.name.charAt(0).toUpperCase() : 'U'
                     }));
-                setHrContacts(mapped);
+                setBMContacts(mapped);
             }
         } catch (error) {
-            console.error('Error fetching HR employees:', error);
+            console.error('Error fetching BranchManagers employees:', error);
         }
     };
 
     React.useEffect(() => {
-        fetchHREmployees();
-        fetchBranches();
+        fetchBMEmployees();
     }, []);
 
-    // ── Add HR Modal state ──────────────────────────────────────────────────
+    // ── Add BranchManagers Modal state ──────────────────────────────────────────────────
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -89,13 +68,12 @@ const HR: React.FC = () => {
         name: '',
         email: '',
         role: '',
-        department: 'Human Resources',
+        department: 'Administration',
         status: 'Active',
         phone: '',
         joiningDate: new Date().toISOString().split('T')[0],
         username: '',
-        password: '',
-        branchName: ''
+        password: ''
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -109,20 +87,20 @@ const HR: React.FC = () => {
 
     const openModal = async () => {
         setIsEditing(false);
-        let nextId = 'HR001';
+        let nextId = 'BM001';
         try {
             const res = await api.get('/api/employees');
             if (res.ok) {
                 const employees = await res.json();
-                const hrIds = employees
+                const BMIds = employees
                     .map((emp: any) => emp.employeeId || emp.id)
-                    .filter((id: string) => id?.startsWith('HR'))
-                    .map((id: string) => parseInt(id.replace('HR', ''), 10))
+                    .filter((id: string) => id?.startsWith('BranchManagers'))
+                    .map((id: string) => parseInt(id.replace('BranchManagers', ''), 10))
                     .filter((num: number) => !isNaN(num));
 
-                if (hrIds.length > 0) {
-                    const maxId = Math.max(...hrIds);
-                    nextId = `HR${String(maxId + 1).padStart(3, '0')}`;
+                if (BMIds.length > 0) {
+                    const maxId = Math.max(...BMIds);
+                    nextId = `BranchManagers${String(maxId + 1).padStart(3, '0')}`;
                 }
             }
         } catch (error) {
@@ -133,20 +111,19 @@ const HR: React.FC = () => {
             id: nextId,
             name: '',
             email: '',
-            role: 'hr',
-            department: 'Human Resources',
+            role: 'subadmin',
+            department: 'Administration',
             status: 'Active',
             phone: '',
             joiningDate: new Date().toISOString().split('T')[0],
             username: '',
-            password: '',
-            branchName: isSubadmin ? userBranch : ''
+            password: ''
         });
         setShowPassword(false);
         setIsModalOpen(true);
     };
 
-    const openEditModal = (contact: HRContact) => {
+    const openEditModal = (contact: BMContact) => {
         setFormData({
             id: contact.id,
             name: contact.name,
@@ -157,8 +134,7 @@ const HR: React.FC = () => {
             phone: contact.phone === 'N/A' ? '' : contact.phone,
             joiningDate: new Date().toISOString().split('T')[0],
             username: '',
-            password: '',
-            branchName: contact.branchName || ''
+            password: ''
         });
         setIsEditing(true);
         setShowPassword(false);
@@ -166,11 +142,11 @@ const HR: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this HR member?')) return;
+        if (!window.confirm('Are you sure you want to delete this BranchManagers member?')) return;
         try {
             const res = await api.delete(`/api/employees/${id}`);
             if (res.ok) {
-                fetchHREmployees();
+                fetchBMEmployees();
             } else {
                 const data = await res.json();
                 alert(data.message || 'Error deleting');
@@ -188,14 +164,14 @@ const HR: React.FC = () => {
                 : await api.post('/api/employees', formData);
             if (res.ok) {
                 setIsModalOpen(false);
-                fetchHREmployees();
+                fetchBMEmployees();
             }
         } catch (err: any) {
             alert(`Error saving: ${err.message || 'Unknown error'}`);
         }
     };
 
-    const filteredContacts = hrContacts.filter(c =>
+    const filteredContacts = BMContacts.filter(c =>
         c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.department.toLowerCase().includes(searchQuery.toLowerCase())
@@ -208,7 +184,7 @@ const HR: React.FC = () => {
                 <div>
                     <h1 className="text-2xl font-bold text-brand-text flex items-center gap-2">
                         <Building2 className="w-7 h-7 text-brand-primary" />
-                        Human Resources
+                        Administration
                     </h1>
                     <p className="text-brand-muted text-sm mt-1">Manage your people, culture, and organizational health</p>
                 </div>
@@ -226,19 +202,19 @@ const HR: React.FC = () => {
                         className="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:opacity-90 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-primary/20 transition-all hover:scale-105 active:scale-95"
                     >
                         <Plus className="w-4 h-4" />
-                        Add Human Resource
+                        Add Branch Manager
                     </button>
                 </div>
             </div>
 
-            {/* HR Team List */}
+            {/* BranchManagers Team List */}
             <div className="space-y-4">
                     {/* Search */}
                     <div className="relative">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
                         <input
                             type="text"
-                            placeholder="Search HR team members..."
+                            placeholder="Search BranchManagers team members..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-10 pr-4 py-2.5 bg-brand-surface border border-brand-border rounded-xl text-sm text-brand-text placeholder:text-brand-muted focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all"
@@ -252,7 +228,7 @@ const HR: React.FC = () => {
                                 className="bg-brand-surface border border-brand-border rounded-xl p-4 hover:border-brand-primary/30 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-brand-primary/20 flex-shrink-0">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-brand-primary/20 flex-sBMink-0">
                                         {contact.avatar}
                                     </div>
                                     <div className="min-w-0">
@@ -265,24 +241,24 @@ const HR: React.FC = () => {
                                 <div className="flex items-center justify-between sm:justify-end gap-4 md:gap-8 w-full sm:w-auto border-t sm:border-t-0 border-brand-border pt-4 sm:pt-0">
                                     <div className="flex items-center gap-4 md:gap-8 overflow-hidden">
                                         <div className="flex items-center gap-2 text-xs sm:text-sm text-brand-muted">
-                                            <Mail className="w-3.5 h-3.5 text-brand-primary flex-shrink-0" />
+                                            <Mail className="w-3.5 h-3.5 text-brand-primary flex-sBMink-0" />
                                             <span className="truncate max-w-[150px] sm:max-w-none">{contact.email}</span>
                                         </div>
                                         <div className="items-center gap-2 text-xs sm:text-sm text-brand-muted hidden md:flex">
-                                            <Phone className="w-3.5 h-3.5 text-brand-primary flex-shrink-0" />
+                                            <Phone className="w-3.5 h-3.5 text-brand-primary flex-sBMink-0" />
                                             <span>{contact.phone}</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); openEditModal(contact); }}
-                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 rounded-lg transition-colors flex-shrink-0"
+                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 rounded-lg transition-colors flex-sBMink-0"
                                     >
                                         <Edit2 className="w-3.5 h-3.5" />
                                         <span className="hidden sm:inline">Edit</span>
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleDelete(contact.id); }}
-                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors flex-shrink-0"
+                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors flex-sBMink-0"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
                                         <span className="hidden sm:inline">Delete</span>
@@ -295,17 +271,17 @@ const HR: React.FC = () => {
                     {filteredContacts.length === 0 && (
                         <div className="text-center py-16 text-brand-muted">
                             <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                            <p className="font-medium">No HR team members found</p>
+                            <p className="font-medium">No BranchManagers team members found</p>
                             <p className="text-sm mt-1">Try a different search term</p>
                         </div>
                     )}
                 </div>
-            {/* Add Human Resource Modal */}
+            {/* Add Branch Manager Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
                     <div className="bg-brand-surface border border-brand-border rounded-3xl p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-2xl font-black text-brand-text">{isEditing ? 'Edit Human Resource' : 'Add Human Resource'}</h2>
+                            <h2 className="text-2xl font-black text-brand-text">{isEditing ? 'Edit Branch Manager' : 'Add Branch Manager'}</h2>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-brand-bg rounded-xl transition-colors text-brand-muted">
                                 <XCircle className="w-6 h-6" />
                             </button>
@@ -324,7 +300,7 @@ const HR: React.FC = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">HR ID</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">BranchManagers ID</label>
                                     <input
                                         name="id"
                                         value={formData.id}
@@ -405,36 +381,15 @@ const HR: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Role</label>
                                     <div className="w-full bg-brand-bg border border-brand-primary/30 rounded-2xl p-4 flex items-center gap-3 cursor-not-allowed">
-                                        <span className="px-2.5 py-0.5 bg-brand-primary/10 text-brand-primary text-xs font-black rounded-full uppercase tracking-widest border border-brand-primary/20">HR</span>
-                                        <span className="text-brand-muted text-sm font-medium">Human Resource</span>
-                                    <input type="hidden" name="role" value="hr" />
+                                        <span className="px-2.5 py-0.5 bg-brand-primary/10 text-brand-primary text-xs font-black rounded-full uppercase tracking-widest border border-brand-primary/20">BM</span>
+                                        <span className="text-brand-muted text-sm font-medium">Branch Manager</span>
+                                        <input type="hidden" name="role" value="subadmin" />
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            {!isSubadmin && (
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Branch</label>
-                                    <select
-                                        name="branchName"
-                                        value={formData.branchName}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium appearance-none"
-                                        required
-                                    >
-                                        <option value="">Select Branch</option>
-                                        {branches.map(b => (
-                                            <option key={b._id} value={b.name}>{b.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Department</label>
                                     <input
@@ -470,7 +425,7 @@ const HR: React.FC = () => {
                                     type="submit"
                                     className="flex-1 py-4 rounded-2xl bg-brand-primary text-white font-black hover:opacity-90 shadow-lg shadow-brand-primary/20 transition-all active:scale-95"
                                 >
-                                    {isEditing ? 'Save Changes' : 'Save Human Resource'}
+                                    {isEditing ? 'Save Changes' : 'Save Branch Manager'}
                                 </button>
                             </div>
                         </form>
@@ -481,4 +436,4 @@ const HR: React.FC = () => {
     );
 };
 
-export default HR;
+export default BranchManagers;

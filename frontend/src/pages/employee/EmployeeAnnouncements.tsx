@@ -96,7 +96,7 @@ const EmployeeAnnouncements = () => {
                 </div>
             </div>
 
-            <div className="space-y-4 max-w-4xl">
+            <div className="space-y-4 w-full">
                 {announcements.length === 0 ? (
                     <div className="text-center py-16 bg-brand-surface rounded-[2.5rem] border border-brand-border shadow-sm">
                         <div className="w-16 h-16 bg-brand-bg rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-border opacity-50">

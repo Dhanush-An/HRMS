@@ -15,7 +15,9 @@ import Reports from './pages/admin/Reports';
 import Announcements from './pages/admin/Announcements';
 import AdminPolicies from './pages/admin/AdminPolicies';
 import HR from './pages/admin/HR';
+import BranchManagers from './pages/admin/BranchManagers';
 import Queries from './pages/admin/Queries';
+import Recruitment from './pages/admin/Recruitment';
 import HRDashboard from './pages/HRDashboard';
 import HRPortal from './pages/hr/HRPortal';
 import EmployeeHome from './pages/employee/EmployeeHome';
@@ -25,6 +27,7 @@ import EmployeePerformance from './pages/employee/EmployeePerformance';
 import EmployeeAnnouncements from './pages/employee/EmployeeAnnouncements';
 import EmployeeDocuments from './pages/employee/EmployeeDocuments';
 import CompanyPolicies from './pages/employee/CompanyPolicies';
+import SubAdminSettings from './pages/subadmin/SubAdminSettings';
 import EmployeePayroll from './pages/employee/EmployeePayroll';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import EmployeeQueries from './pages/employee/EmployeeQueries';
@@ -32,9 +35,12 @@ import EmployeeExpenses from './pages/employee/EmployeeExpenses';
 import AdminExpenses from './pages/admin/AdminExpenses';
 import Branches from './pages/admin/Branches';
 import SubAdminDashboard from './pages/SubAdminDashboard';
+import SubAdminHome from './pages/subadmin/SubAdminHome';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
-
+import GlobalJobPopup from './components/GlobalJobPopup';
+import JobsTab from './components/JobsTab';
+import ResignationTab from './components/ResignationTab';
 
 
 function App() {
@@ -51,6 +57,7 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
+        <GlobalJobPopup />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 
@@ -68,10 +75,14 @@ function App() {
             <Route path="policies" element={<AdminPolicies />} />
             <Route path="reports" element={<Reports />} />
             <Route path="hr" element={<HR />} />
+            <Route path="branch-managers" element={<BranchManagers />} />
             <Route path="branches" element={<Branches />} />
             <Route path="hr-dashboard" element={<HRDashboard />} />
             <Route path="settings" element={<Settings />} />
             <Route path="queries" element={<Queries />} />
+            <Route path="recruitment" element={<Recruitment />} />
+            <Route path="jobs" element={<JobsTab showAll />} />
+            <Route path="resignation" element={<ResignationTab role="admin" />} />
           </Route>
 
           {/* Employee Routes */}
@@ -88,13 +99,28 @@ function App() {
             <Route path="attendance" element={<EmployeeAttendance />} />
             <Route path="queries" element={<EmployeeQueries />} />
             <Route path="expenses" element={<EmployeeExpenses />} />
+            <Route path="jobs" element={<JobsTab />} />
+            <Route path="resignation" element={<ResignationTab role="employee" />} />
           </Route>
 
           {/* HR Routes */}
           <Route path="/hr-dashboard" element={<ProtectedRoute allowedRoles={['hr', 'admin']}><HRPortal /></ProtectedRoute>} />
 
           {/* Sub Admin Routes */}
-          <Route path="/subadmin-dashboard" element={<ProtectedRoute allowedRoles={['subadmin']}><SubAdminDashboard /></ProtectedRoute>} />
+          <Route path="/subadmin-dashboard" element={<ProtectedRoute allowedRoles={['subadmin']}><SubAdminDashboard /></ProtectedRoute>}>
+            <Route index element={<SubAdminHome />} />
+            <Route path="employees" element={<Employees />} />
+            <Route path="attendance" element={<Attendance />} />
+            <Route path="payroll" element={<Payroll />} />
+            <Route path="leaves" element={<Leaves />} />
+            <Route path="expenses" element={<AdminExpenses />} />
+            <Route path="performance" element={<Performance />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="hr" element={<HR />} />
+            <Route path="settings" element={<SubAdminSettings />} />
+            <Route path="jobs" element={<JobsTab showAll />} />
+            <Route path="resignation" element={<ResignationTab role="subadmin" />} />
+          </Route>
 
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>

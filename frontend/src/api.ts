@@ -61,6 +61,16 @@ const api = {
             body: body ? JSON.stringify(body) : undefined,
         }).then(handleResponse),
 
+    postForm: (path: string, body: FormData) => {
+        const headers = getAuthHeaders() as any;
+        delete headers['Content-Type']; // Let browser set Content-Type with boundary
+        return fetch(`${API_URL}${path}`, {
+            method: 'POST',
+            headers,
+            body,
+        }).then(handleResponse);
+    },
+
     put: (path: string, body?: unknown) =>
         fetch(`${API_URL}${path}`, {
             method: 'PUT',
