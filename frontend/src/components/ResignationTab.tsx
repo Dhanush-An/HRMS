@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, FileText, CheckCircle2, XCircle, Clock, Save, Download, AlertTriangle } from 'lucide-react';
+import { LogOut, FileText, CheckCircle2, XCircle, Clock, Save } from 'lucide-react';
 import api from '../api';
 
 interface Resignation {
