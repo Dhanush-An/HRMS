@@ -47,8 +47,8 @@ const Permissions = () => {
     });
 
     const isAdmin = user?.role?.toLowerCase().includes('admin') || user?.role?.toLowerCase() === 'subadmin' || user?.role?.toLowerCase() === 'hr';
-    // HR can both approve and request permissions themselves
-    const canRequestPermission = !user?.role?.toLowerCase().includes('admin') && user?.role?.toLowerCase() !== 'subadmin';
+    // isApprover: only admin/subadmin can approve or decline (NOT hr)
+    const isApprover = user?.role?.toLowerCase().includes('admin') || user?.role?.toLowerCase() === 'subadmin';
 
     // New Permission Form
     const [formData, setFormData] = useState({
@@ -183,7 +183,7 @@ const Permissions = () => {
                     <p className="text-brand-muted font-medium text-sm md:text-base leading-relaxed">Manage short time-off and late arrivals requests.</p>
                 </div>
                 <div className="flex gap-4">
-                    {canRequestPermission && (
+                    {!isApprover && (
                     <button
                         onClick={() => setShowApplyModal(true)}
                         className="bg-brand-primary text-white px-6 py-2.5 rounded-xl font-black flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-brand-primary/20 text-xs uppercase tracking-widest"
@@ -270,7 +270,7 @@ const Permissions = () => {
                                     <th className="px-4 py-5">Date & Time</th>
                                     <th className="px-4 py-5">Reason</th>
                                     <th className="px-4 py-5">Status</th>
-                                    {isAdmin && <th className="px-4 py-5 text-right">Actions</th>}
+                                    {isApprover && <th className="px-4 py-5 text-right">Actions</th>}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-brand-border">
@@ -311,7 +311,7 @@ const Permissions = () => {
                                                 {permission.status}
                                             </span>
                                         </td>
-                                        {isAdmin && (
+                                        {isApprover && (
                                             <td className="px-4 py-6 whitespace-nowrap text-right">
                                                 {permission.status === 'Pending' && (
                                                     <div className="flex justify-end gap-2">
@@ -338,7 +338,7 @@ const Permissions = () => {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={isAdmin ? 5 : 4} className="px-6 py-12 text-center text-brand-muted text-sm font-medium">
+                                        <td colSpan={isApprover ? 5 : 4} className="px-6 py-12 text-center text-brand-muted text-sm font-medium">
                                             No permission requests found.
                                         </td>
                                     </tr>
