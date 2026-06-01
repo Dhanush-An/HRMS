@@ -21,6 +21,7 @@ import Expense from './models/Expense';
 import Branch from './models/Branch';
 import JobPosting from './models/JobPosting';
 import Resignation from './models/Resignation';
+import Permission from './models/Permission';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
@@ -1245,6 +1246,71 @@ app.delete('/api/expenses/:id', async (req, res) => {
     }
 });
 
+// --- PERMISSION ROUTES ---
+
+app.get('/api/permissions', authorizeRoles('admin'), async (req, res) => {
+    try {
+        const permissions = await Permission.find().sort({ createdAt: -1 });
+        res.json(permissions);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/permissions/branch/:branchId', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
+    try {
+        const permissions = await Permission.find({ branchId: req.params.branchId }).sort({ createdAt: -1 });
+        res.json(permissions);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/permissions/employee/:employeeId', async (req, res) => {
+    try {
+        const permissions = await Permission.find({ employeeId: req.params.employeeId }).sort({ createdAt: -1 });
+        res.json(permissions);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/permissions', async (req, res) => {
+    try {
+        const newPermission = new Permission(req.body);
+        await newPermission.save();
+        res.status(201).json(newPermission);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/permissions/:id/status', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
+    try {
+        const { status, approvedBy } = req.body;
+        if (!['Approved', 'Declined', 'Pending'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid status' });
+        }
+        const permission = await Permission.findById(req.params.id);
+        if (!permission) {
+            return res.status(404).json({ success: false, message: 'Permission not found' });
+        }
+        
+        // Validation check for subadmin/hr: only approve for own branch
+        const user = (req as any).user;
+        if (user.role !== 'admin' && permission.branchId !== user.branchId) {
+            return res.status(403).json({ success: false, message: 'Access denied to this branch\'s permissions' });
+        }
+
+        permission.status = status;
+        permission.approvedBy = approvedBy;
+        await permission.save();
+        res.json(permission);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // --- PERFORMANCE ROUTES ---
 
 app.get('/api/performance', async (req, res) => {
@@ -1762,6 +1828,61 @@ app.put('/api/employees/:id/status', authorizeRoles('admin', 'subadmin', 'hr'), 
         } else {
             res.json(updatedEmployee);
         }
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// --- PERMISSION ROUTES ---
+app.get('/api/permissions', authMiddleware, async (req, res) => {
+    try {
+        const permissions = await Permission.find().sort({ createdAt: -1 });
+        res.json(permissions);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/permissions/employee/:employeeId', authMiddleware, async (req, res) => {
+    try {
+        const permissions = await Permission.find({ employeeId: req.params.employeeId }).sort({ createdAt: -1 });
+        res.json(permissions);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.get('/api/permissions/branch/:branchId', authMiddleware, async (req, res) => {
+    try {
+        const permissions = await Permission.find({ branchId: req.params.branchId }).sort({ createdAt: -1 });
+        res.json(permissions);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/permissions', authMiddleware, async (req, res) => {
+    try {
+        const permission = new Permission(req.body);
+        await permission.save();
+        res.status(201).json(permission);
+    } catch (error: any) {
+        res.status(400).json({ success: false, message: error.message });
+    }
+});
+
+app.put('/api/permissions/:id/status', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
+    try {
+        const { status, approvedBy } = req.body;
+        const updatedPermission = await Permission.findByIdAndUpdate(
+            req.params.id,
+            { status, approvedBy },
+            { new: true }
+        );
+        if (!updatedPermission) {
+            return res.status(404).json({ message: 'Permission not found' });
+        }
+        res.json(updatedPermission);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }

@@ -46,6 +46,7 @@ const SubAdminDashboard: React.FC = () => {
         { icon: Calendar, label: 'Attendance', path: '/subadmin-dashboard/attendance' },
         { icon: DollarSign, label: 'Salary', path: '/subadmin-dashboard/payroll' },
         { icon: FileText, label: 'Leaves', path: '/subadmin-dashboard/leaves' },
+        { icon: FileText, label: 'Permissions', path: '/subadmin-dashboard/permissions' },
         { icon: CreditCard, label: 'Expenses', path: '/subadmin-dashboard/expenses' },
         { icon: TrendingUp, label: 'Performance', path: '/subadmin-dashboard/performance' },
         { icon: File, label: 'Documents', path: '/subadmin-dashboard/documents' },

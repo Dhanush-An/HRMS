@@ -17,6 +17,7 @@ import EmployeeAttendance from '../employee/EmployeeAttendance';
 import EmployeeTasks from '../employee/EmployeeTasks';
 import JobsTab from '../../components/JobsTab';
 import ResignationTab from '../../components/ResignationTab';
+import Permissions from '../admin/Permissions';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 const BRANCH_LOCATIONS = {
@@ -919,67 +920,6 @@ const LeavesSection = ({ leaves, onRefresh }: any) => {
     );
 };
 
-
-
-// ─── Section: Permissions ─────────────────────────────────────────────────────
-const PermissionsSection = ({ leaves, onRefresh }: any) => {
-    // Reuse leave requests filtered by 'Permission' type (or short leave)
-    const perms = leaves.filter((l: any) =>
-        l.type?.toLowerCase().includes('permission') || l.type?.toLowerCase().includes('short'));
-
-    const update = async (id: string, status: 'Approved' | 'Rejected') => {
-        try { await api.put(`/api/leaves/${id}`, { status }); onRefresh(); }
-        catch (e: any) { alert(e.message); }
-    };
-
-    return (
-        <div className="space-y-5">
-            <div>
-                <h2 className="text-2xl font-black text-brand-text">Permission Requests</h2>
-                <p className="text-sm text-brand-muted mt-0.5">Review short leave and special access requests.</p>
-            </div>
-            {!perms.length ? (
-                <div className="bg-brand-surface border border-brand-border rounded-2xl py-16 text-center">
-                    <Shield className="w-10 h-10 mx-auto mb-3 text-brand-muted opacity-30" />
-                    <p className="text-brand-muted text-sm">No permission requests found.</p>
-                    <p className="text-xs text-brand-muted/60 mt-1">Requests with type "Permission" or "Short Leave" will appear here.</p>
-                </div>
-            ) : (
-                <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead className="bg-brand-bg border-b border-brand-border">
-                            <tr>{['Employee', 'Type', 'Duration', 'Reason', 'Status', 'Actions'].map(h => (
-                                <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
-                            ))}</tr>
-                        </thead>
-                        <tbody className="divide-y divide-brand-border">
-                            {perms.map((l: any) => (
-                                <tr key={l._id || l.id} className="hover:bg-brand-bg/40 transition-colors group">
-                                    <td className="px-4 py-3 text-sm font-semibold text-brand-text">{l.employeeName || l.name || '—'}</td>
-                                    <td className="px-4 py-3 text-xs text-brand-muted">{l.type}</td>
-                                    <td className="px-4 py-3 text-xs text-brand-muted">{l.startDate} → {l.endDate}</td>
-                                    <td className="px-4 py-3 text-xs text-brand-muted max-w-[150px] truncate">{l.reason || '—'}</td>
-                                    <td className="px-4 py-3"><Badge status={l.status} /></td>
-                                    <td className="px-4 py-3">
-                                        {l.status === 'Pending' && (
-                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => update(l._id || l.id, 'Approved')}
-                                                    className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-lg transition-all"><CheckCircle className="w-4 h-4" /></button>
-                                                <button onClick={() => update(l._id || l.id, 'Rejected')}
-                                                    className="p-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white rounded-lg transition-all"><XCircle className="w-4 h-4" /></button>
-                                            </div>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </div>
-    );
-};
-
 // ─── Section: Announcements ────────────────────────────────────────────────────
 const AnnouncementsSection = () => {
     const [announcements, setAnnouncements] = useState<any[]>([]);
@@ -1397,7 +1337,7 @@ const HRPortal: React.FC = () => {
             case 'attendance':   return <AttendanceSection attendance={attendance} employees={employees} />;
             case 'leaves':       return <LeavesSection leaves={leaves} employees={employees} onRefresh={fetchAll} />;
             case 'payroll':      return <AdminPayroll />;
-            case 'permissions':  return <PermissionsSection leaves={leaves} onRefresh={fetchAll} />;
+            case 'permissions':  return <Permissions />;
             case 'expenses':     return <EmployeeExpenses />;
             case 'announcements':return <AnnouncementsSection />;
             case 'task-assignment':return <TasksSection employees={employees} />;

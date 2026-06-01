@@ -74,6 +74,7 @@ function App() {
             <Route path="announcements" element={<Announcements />} />
             <Route path="policies" element={<AdminPolicies />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="permissions" element={<Permissions />} />
             <Route path="hr" element={<HR />} />
             <Route path="branch-managers" element={<BranchManagers />} />
             <Route path="branches" element={<Branches />} />
@@ -96,6 +97,7 @@ function App() {
             <Route path="policies" element={<CompanyPolicies />} />
             <Route path="payroll" element={<EmployeePayroll />} />
             <Route path="leaves" element={<Leaves />} />
+            <Route path="permissions" element={<Permissions />} />
             <Route path="attendance" element={<EmployeeAttendance />} />
             <Route path="queries" element={<EmployeeQueries />} />
             <Route path="expenses" element={<EmployeeExpenses />} />
@@ -104,7 +106,9 @@ function App() {
           </Route>
 
           {/* HR Routes */}
-          <Route path="/hr-dashboard" element={<ProtectedRoute allowedRoles={['hr', 'admin']}><HRPortal /></ProtectedRoute>} />
+          <Route path="/hr-dashboard" element={<ProtectedRoute allowedRoles={['hr', 'admin']}><HRPortal /></ProtectedRoute>}>
+             <Route path="permissions" element={<Permissions />} />
+          </Route>
 
           {/* Sub Admin Routes */}
           <Route path="/subadmin-dashboard" element={<ProtectedRoute allowedRoles={['subadmin']}><SubAdminDashboard /></ProtectedRoute>}>
@@ -113,6 +117,7 @@ function App() {
             <Route path="attendance" element={<Attendance />} />
             <Route path="payroll" element={<Payroll />} />
             <Route path="leaves" element={<Leaves />} />
+            <Route path="permissions" element={<Permissions />} />
             <Route path="expenses" element={<AdminExpenses />} />
             <Route path="performance" element={<Performance />} />
             <Route path="documents" element={<Documents />} />

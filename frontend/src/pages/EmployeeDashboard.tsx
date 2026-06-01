@@ -519,6 +519,7 @@ const EmployeeDashboard = () => {
         { icon: TrendingUp, label: 'Performance', path: '/employee-dashboard/performance' },
         { icon: Calendar, label: 'Attendance', path: '/employee-dashboard/attendance' },
         { icon: Clock, label: 'Leave', path: '/employee-dashboard/leaves' },
+        { icon: Clock, label: 'Permissions', path: '/employee-dashboard/permissions' },
         { icon: FileText, label: 'Payroll', path: '/employee-dashboard/payroll' },
         { icon: CreditCard, label: 'Expenses', path: '/employee-dashboard/expenses' },
         { icon: Megaphone, label: 'Announcements', path: '/employee-dashboard/announcements' },
