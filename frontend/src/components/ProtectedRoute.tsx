@@ -38,7 +38,10 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
         return <Navigate to="/login" replace />;
     }
 
-    const role: string = (user.role || 'employee').toLowerCase();
+    let role: string = (user.role || 'employee').toLowerCase();
+    if (role !== 'admin' && role !== 'subadmin' && role !== 'hr') {
+        role = 'employee';
+    }
     const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase());
     
     console.log(`[AUTH] Path: ${window.location.pathname}, Role: ${role}, Allowed: [${normalizedAllowedRoles.join(', ')}]`);

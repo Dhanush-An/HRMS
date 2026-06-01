@@ -59,23 +59,30 @@ const Permissions = () => {
 
     const fetchData = async () => {
         try {
+            const role = user?.role?.toLowerCase() || '';
+            const isApprover = role.includes('admin') || role === 'subadmin' || role === 'hr';
+
             let permUrl = '/api/permissions';
-            if (user?.role === 'employee' || user?.role === 'staff') {
+            if (!isApprover) {
                 permUrl = `/api/permissions/employee/${user.id}`;
-            } else if (user?.role !== 'admin' && user?.branchId) {
+            } else if (role !== 'admin' && user?.branchId) {
                 permUrl = `/api/permissions/branch/${user.branchId}`;
             }
 
-            const [permRes, empRes] = await Promise.all([
-                api.get(permUrl),
-                api.get('/api/employees')
-            ]);
+            const promises: Promise<any>[] = [api.get(permUrl)];
+            if (isApprover) {
+                promises.push(api.get('/api/employees'));
+            }
+
+            const results = await Promise.all(promises);
+            const permRes = results[0];
+            const empRes = results[1];
 
             if (permRes.ok) {
                 const data = await permRes.json();
                 setPermissions(data);
             }
-            if (empRes.ok) {
+            if (empRes && empRes.ok) {
                 setEmployees(await empRes.json());
             }
         } catch (error) {
