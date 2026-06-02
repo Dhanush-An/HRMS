@@ -14,6 +14,7 @@ export interface IEmployee extends Document {
     avatar?: string;
     branchId: string;
     branchName: string;
+    responsibilities?: string;
     salary: {
         base: number;
         hra: number;
@@ -43,6 +44,7 @@ const EmployeeSchema: Schema = new Schema({
     avatar: { type: String, default: '' },
     branchId: { type: String, default: 'BR001' },
     branchName: { type: String, default: 'Chennai' },
+    responsibilities: { type: String, default: '' },
     salary: {
         base: { type: Number, default: 0 },
         other: { type: Number, default: 0 },

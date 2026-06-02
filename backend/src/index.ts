@@ -415,7 +415,8 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
             branchId: finalBranchId || 'BR001',
             branchName: finalBranchName || 'Chennai',
             salary: req.body.salary || { base: 0, hra: 0, transport: 0, other: 0 },
-            leaveBalance: req.body.leaveBalance || { sick: 10, casual: 12, earned: 15, wfh: 10 }
+            leaveBalance: req.body.leaveBalance || { sick: 10, casual: 12, earned: 15, wfh: 10 },
+            responsibilities: req.body.responsibilities || ''
         });
 
         await newEmployee.save();

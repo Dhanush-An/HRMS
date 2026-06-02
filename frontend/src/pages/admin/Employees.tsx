@@ -15,7 +15,8 @@ import {
     Lock,
     User,
     MoreVertical,
-    UserMinus
+    UserMinus,
+    ShieldCheck
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -30,6 +31,7 @@ interface Employee {
     joiningDate: string;
     phone?: string;
     branchName?: string;
+    responsibilities?: string;
 }
 
 const Employees = () => {
@@ -39,6 +41,9 @@ const Employees = () => {
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+    const [selectedEmployeeForRole, setSelectedEmployeeForRole] = useState<Employee | null>(null);
+    const [roleResponsibilities, setRoleResponsibilities] = useState('');
 
     const [formData, setFormData] = useState({
         id: '',
@@ -161,6 +166,33 @@ const Employees = () => {
         } catch (error: any) {
             console.error('Error saving employee:', error);
             alert(`Error saving employee: ${error.message || 'Unknown error'}`);
+        }
+    };
+
+    const openRoleModal = (employee: Employee) => {
+        setSelectedEmployeeForRole(employee);
+        setRoleResponsibilities(employee.responsibilities || '');
+        setIsRoleModalOpen(true);
+        setActiveDropdown(null);
+    };
+
+    const handleSaveRoleResponsibilities = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedEmployeeForRole) return;
+        try {
+            const response = await api.put(`/api/employees/${selectedEmployeeForRole.id}`, {
+                responsibilities: roleResponsibilities
+            });
+            if (response.ok) {
+                setIsRoleModalOpen(false);
+                fetchEmployees();
+            } else {
+                const err = await response.json();
+                alert(`Error saving responsibilities: ${err.message || 'Unknown error'}`);
+            }
+        } catch (error: any) {
+            console.error('Error saving responsibilities:', error);
+            alert(`Error saving responsibilities: ${error.message || 'Unknown error'}`);
         }
     };
     const filteredEmployees = employees
@@ -307,12 +339,19 @@ const Employees = () => {
                                                 <>
                                                     <div className="fixed inset-0 z-[5]" onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); }} />
                                                     <div 
-                                                        className="absolute right-0 mt-2 w-40 bg-brand-surface border border-brand-border rounded-xl shadow-xl z-10 py-1"
+                                                        className="absolute right-0 mt-2 w-48 bg-brand-surface border border-brand-border rounded-xl shadow-xl z-10 py-1"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         <button
+                                                            onClick={() => openRoleModal(emp)}
+                                                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-brand-primary hover:bg-brand-primary-light flex items-center gap-2 transition-colors border-b border-brand-border pb-2.5"
+                                                        >
+                                                            <ShieldCheck className="w-3.5 h-3.5" />
+                                                            Role & Responsibility
+                                                        </button>
+                                                        <button
                                                             onClick={() => handleDeactivate(emp.id)}
-                                                            className="w-full text-left px-4 py-2 text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 transition-colors"
+                                                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 transition-colors pt-2.5"
                                                         >
                                                             <UserMinus className="w-3.5 h-3.5" />
                                                             Disactive
@@ -635,6 +674,62 @@ const Employees = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Role & Responsibility Modal */}
+            {isRoleModalOpen && selectedEmployeeForRole && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsRoleModalOpen(false)}>
+                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 className="text-2xl font-black text-brand-text">Role & Responsibilities</h2>
+                                <p className="text-brand-muted text-xs font-bold uppercase mt-1">
+                                    {selectedEmployeeForRole.name} ({selectedEmployeeForRole.id})
+                                </p>
+                            </div>
+                            <button onClick={() => setIsRoleModalOpen(false)} className="p-2 hover:bg-brand-bg rounded-xl transition-colors text-brand-muted">
+                                <XCircle className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSaveRoleResponsibilities} className="space-y-6 text-left">
+                            <div className="bg-brand-bg p-4 rounded-2xl border border-brand-border space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-brand-muted font-semibold">Department:</span>
+                                    <span className="text-brand-text font-bold">{selectedEmployeeForRole.department}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-brand-muted font-semibold">Current Role:</span>
+                                    <span className="text-brand-text font-bold">{selectedEmployeeForRole.role}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Key Responsibilities</label>
+                                <textarea
+                                    value={roleResponsibilities}
+                                    onChange={(e) => setRoleResponsibilities(e.target.value)}
+                                    placeholder="Enter employee's key roles and responsibilities (e.g. key tasks, leadership scopes, etc.)..."
+                                    className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium resize-none min-h-[150px]"
+                                    required
+                                />
+                            </div>
+                            <div className="flex gap-4 mt-8">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsRoleModalOpen(false)}
+                                    className="flex-1 py-4 rounded-2xl border border-brand-border text-brand-text font-bold hover:bg-brand-bg transition-colors active:scale-95"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 py-4 rounded-2xl bg-brand-primary text-white font-black hover:opacity-90 shadow-lg shadow-brand-primary/20 transition-all active:scale-95"
+                                >
+                                    Save Responsibilities
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
