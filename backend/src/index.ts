@@ -516,12 +516,23 @@ app.post('/api/employees/:id/avatar', upload.single('avatar'), async (req, res) 
 app.delete('/api/employees/:id', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
     try {
         const user = (req as any).user;
-        if (user.role !== 'admin') {
-            const targetEmployee = await Employee.findOne({ employeeId: req.params.id });
-            if (!targetEmployee || targetEmployee.branchId !== user.branchId) {
-                return res.status(403).json({ success: false, message: 'Access denied. Employee belongs to another branch.' });
-            }
+        const targetEmployee = await Employee.findOne({ employeeId: req.params.id });
+        if (!targetEmployee) {
+            return res.status(404).json({ message: 'Employee not found' });
         }
+
+        if (user.role !== 'admin' && targetEmployee.branchId !== user.branchId) {
+            return res.status(403).json({ success: false, message: 'Access denied. Employee belongs to another branch.' });
+        }
+
+        // Clean up branch manager references if this employee is a branch manager
+        if (targetEmployee.email) {
+            await Branch.updateMany(
+                { email: targetEmployee.email.toLowerCase() },
+                { $set: { managerName: '', phone: '', email: '' } }
+            );
+        }
+
         const result = await Employee.findOneAndDelete({ employeeId: req.params.id });
         if (result) {
             res.json({ message: 'Employee deleted' });
