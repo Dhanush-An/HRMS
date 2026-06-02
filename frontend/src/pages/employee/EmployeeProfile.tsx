@@ -320,6 +320,25 @@ const EmployeeProfile = () => {
                         </div>
                     </div>
 
+                    {/* Roles & Responsibilities */}
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 shadow-sm">
+                        <h3 className="text-[10px] font-black text-brand-text uppercase tracking-widest mb-6 flex items-center gap-3">
+                            <ShieldCheck className="w-4 h-4 text-brand-primary" />
+                            Roles & Responsibilities
+                        </h3>
+                        <div className="bg-brand-bg p-5 rounded-xl border border-brand-border text-left">
+                            {user.responsibilities ? (
+                                <p className="text-brand-text text-sm whitespace-pre-line leading-relaxed font-semibold">
+                                    {user.responsibilities}
+                                </p>
+                            ) : (
+                                <p className="text-brand-muted text-xs italic">
+                                    No specific roles & responsibilities assigned by administration yet.
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
                     {/* Operational Matrix */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 shadow-sm">
