@@ -11,18 +11,18 @@ const StatCard = ({ title, value, icon: Icon, color, delay, onClick }: any) => (
         transition={{ delay }}
         onClick={onClick}
         className={cn(
-            "bg-brand-surface border border-brand-border p-4 md:p-6 rounded-2xl md:rounded-3xl hover:shadow-lg transition-all group",
+            "bg-brand-surface border border-brand-border p-3 md:p-6 rounded-2xl md:rounded-3xl hover:shadow-lg transition-all group",
             onClick && "cursor-pointer hover:border-brand-primary/50"
         )}
     >
-        <div className="flex justify-between items-start mb-4">
-            <div className={cn("p-3 rounded-2xl group-hover:scale-110 transition-transform shadow-sm", color)}>
-                <Icon className="w-6 h-6 text-white" />
+        <div className="flex justify-between items-start mb-2 md:mb-4">
+            <div className={cn("p-2 md:p-3 rounded-xl md:rounded-2xl group-hover:scale-110 transition-transform shadow-sm", color)}>
+                <Icon className="w-4 h-4 md:w-6 md:h-6 text-white" />
             </div>
-            {onClick && <ExternalLink className="w-4 h-4 text-brand-muted group-hover:text-brand-primary transition-colors" />}
+            {onClick && <ExternalLink className="w-3 h-3 md:w-4 md:h-4 text-brand-muted group-hover:text-brand-primary transition-colors" />}
         </div>
-        <h3 className="text-brand-muted text-sm font-bold uppercase tracking-wider">{title}</h3>
-        <p className="text-2xl font-black text-brand-text mt-1">{value}</p>
+        <h3 className="text-brand-muted text-[10px] md:text-sm font-bold uppercase tracking-wider leading-tight">{title}</h3>
+        <p className="text-lg md:text-2xl font-black text-brand-text mt-0.5 md:mt-1 truncate">{value}</p>
     </motion.div>
 );
 
@@ -82,7 +82,7 @@ const AdminHome = () => {
                 <p className="text-brand-muted font-medium text-sm md:text-base">Welcome back! Here's what's happening today.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
                 <StatCard
                     title="Total Employees"
                     value={stats.totalEmployees.toString()}
