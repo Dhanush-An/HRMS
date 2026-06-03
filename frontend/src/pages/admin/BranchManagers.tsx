@@ -228,7 +228,7 @@ const BranchManagers: React.FC = () => {
                                 className="bg-brand-surface border border-brand-border rounded-xl p-4 hover:border-brand-primary/30 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-brand-primary/20 flex-sBMink-0">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-brand-primary/20 flex-shrink-0">
                                         {contact.avatar}
                                     </div>
                                     <div className="min-w-0">
@@ -241,24 +241,24 @@ const BranchManagers: React.FC = () => {
                                 <div className="flex items-center justify-between sm:justify-end gap-4 md:gap-8 w-full sm:w-auto border-t sm:border-t-0 border-brand-border pt-4 sm:pt-0">
                                     <div className="flex items-center gap-4 md:gap-8 overflow-hidden">
                                         <div className="flex items-center gap-2 text-xs sm:text-sm text-brand-muted">
-                                            <Mail className="w-3.5 h-3.5 text-brand-primary flex-sBMink-0" />
+                                            <Mail className="w-3.5 h-3.5 text-brand-primary flex-shrink-0" />
                                             <span className="truncate max-w-[150px] sm:max-w-none">{contact.email}</span>
                                         </div>
                                         <div className="items-center gap-2 text-xs sm:text-sm text-brand-muted hidden md:flex">
-                                            <Phone className="w-3.5 h-3.5 text-brand-primary flex-sBMink-0" />
+                                            <Phone className="w-3.5 h-3.5 text-brand-primary flex-shrink-0" />
                                             <span>{contact.phone}</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); openEditModal(contact); }}
-                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 rounded-lg transition-colors flex-sBMink-0"
+                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 rounded-lg transition-colors flex-shrink-0"
                                     >
                                         <Edit2 className="w-3.5 h-3.5" />
                                         <span className="hidden sm:inline">Edit</span>
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleDelete(contact.id); }}
-                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors flex-sBMink-0"
+                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors flex-shrink-0"
                                     >
                                         <Trash2 className="w-3.5 h-3.5" />
                                         <span className="hidden sm:inline">Delete</span>
@@ -279,43 +279,43 @@ const BranchManagers: React.FC = () => {
             {/* Add Branch Manager Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-2xl font-black text-brand-text">{isEditing ? 'Edit Branch Manager' : 'Add Branch Manager'}</h2>
+                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-4 sm:p-6 md:p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6 sm:mb-8">
+                            <h2 className="text-xl sm:text-2xl font-black text-brand-text">{isEditing ? 'Edit Branch Manager' : 'Add Branch Manager'}</h2>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-brand-bg rounded-xl transition-colors text-brand-muted">
-                                <XCircle className="w-6 h-6" />
+                                <XCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                             </button>
                         </div>
-                        <form onSubmit={handleSubmit} className="space-y-6 text-left">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 text-left">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Full Name</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Full Name</label>
                                     <input
                                         name="name"
                                         value={formData.name}
                                         onChange={handleInputChange}
                                         placeholder="Enter full name"
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-3 sm:p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">BranchManagers ID</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">BranchManagers ID</label>
                                     <input
                                         name="id"
                                         value={formData.id}
                                         onChange={handleInputChange}
                                         placeholder="Auto-generated if empty"
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium disabled:opacity-50"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-3 sm:p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base disabled:opacity-50"
                                         disabled={isEditing}
                                     />
                                 </div>
                             </div>
 
                             {!isEditing && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Username</label>
+                                        <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Username</label>
                                         <div className="relative group/field">
                                             <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within/field:text-brand-primary transition-colors" />
                                             <input
@@ -323,12 +323,12 @@ const BranchManagers: React.FC = () => {
                                                 value={formData.username}
                                                 onChange={handleInputChange}
                                                 placeholder="Custom username"
-                                                className="w-full bg-brand-bg border border-brand-border rounded-2xl py-4 pl-12 pr-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                                className="w-full bg-brand-bg border border-brand-border rounded-2xl py-3 sm:py-4 pl-12 pr-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base"
                                             />
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Initial Password</label>
+                                        <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Initial Password</label>
                                         <div className="relative group/field">
                                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within/field:text-brand-primary transition-colors" />
                                             <input
@@ -337,7 +337,7 @@ const BranchManagers: React.FC = () => {
                                                 value={formData.password}
                                                 onChange={handleInputChange}
                                                 placeholder="••••••••"
-                                                className="w-full bg-brand-bg border border-brand-border rounded-2xl py-4 pl-12 pr-12 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                                className="w-full bg-brand-bg border border-brand-border rounded-2xl py-3 sm:py-4 pl-12 pr-12 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base"
                                             />
                                             <button
                                                 type="button"
@@ -351,21 +351,21 @@ const BranchManagers: React.FC = () => {
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Email Address</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Email Address</label>
                                     <input
                                         name="email"
                                         type="email"
                                         value={formData.email}
                                         onChange={handleInputChange}
                                         placeholder="name@company.com"
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-3 sm:p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Phone Number</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Phone Number</label>
                                     <input
                                         name="phone"
                                         type="tel"
@@ -375,55 +375,55 @@ const BranchManagers: React.FC = () => {
                                         maxLength={10}
                                         pattern="[0-9]{10}"
                                         title="Please enter exactly 10 digits"
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-3 sm:p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base"
                                         required
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Role</label>
-                                    <div className="w-full bg-brand-bg border border-brand-primary/30 rounded-2xl p-4 flex items-center gap-3 cursor-not-allowed">
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Role</label>
+                                    <div className="w-full bg-brand-bg border border-brand-primary/30 rounded-2xl p-3 sm:p-4 flex items-center gap-3 cursor-not-allowed">
                                         <span className="px-2.5 py-0.5 bg-brand-primary/10 text-brand-primary text-xs font-black rounded-full uppercase tracking-widest border border-brand-primary/20">BM</span>
                                         <span className="text-brand-muted text-sm font-medium">Branch Manager</span>
                                         <input type="hidden" name="role" value="subadmin" />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Department</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Department</label>
                                     <input
                                         name="department"
                                         value={formData.department}
                                         onChange={handleInputChange}
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-3 sm:p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Joining Date</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Joining Date</label>
                                     <input
                                         name="joiningDate"
                                         type="date"
                                         value={formData.joiningDate}
                                         onChange={handleInputChange}
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-3 sm:p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base"
                                         required
                                     />
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 mt-10">
+                            <div className="flex gap-3 sm:gap-4 mt-8 sm:mt-10">
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="flex-1 py-4 rounded-2xl border border-brand-border text-brand-text font-bold hover:bg-brand-bg transition-colors active:scale-95"
+                                    className="flex-1 py-3 sm:py-4 rounded-2xl border border-brand-border text-brand-text font-bold hover:bg-brand-bg transition-colors active:scale-95 text-sm"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 py-4 rounded-2xl bg-brand-primary text-white font-black hover:opacity-90 shadow-lg shadow-brand-primary/20 transition-all active:scale-95"
+                                    className="flex-1 py-3 sm:py-4 rounded-2xl bg-brand-primary text-white font-black hover:opacity-90 shadow-lg shadow-brand-primary/20 transition-all active:scale-95 text-sm"
                                 >
                                     {isEditing ? 'Save Changes' : 'Save Branch Manager'}
                                 </button>

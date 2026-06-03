@@ -440,7 +440,7 @@ const Employees = () => {
             {/* Add/Edit Employee Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-5 md:p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-2xl font-black text-brand-text">{isEditing ? 'Edit Employee' : 'Add New Employee'}</h2>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-brand-bg rounded-xl transition-colors text-brand-muted">
@@ -599,7 +599,7 @@ const Employees = () => {
             {/* Profile Modal */}
             {isProfileOpen && selectedEmployee && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsProfileOpen(false)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-brand-surface border border-brand-border rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
                         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 flex justify-between items-start">
                             <div className="flex items-center gap-6">
                                 <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-black text-3xl border-2 border-white/40 shadow-xl">
@@ -681,7 +681,7 @@ const Employees = () => {
             {/* Role & Responsibility Modal */}
             {isRoleModalOpen && selectedEmployeeForRole && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsRoleModalOpen(false)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-8 w-full max-w-lg shadow-2xl animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-5 md:p-8 w-full max-w-lg shadow-2xl animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <div>
                                 <h2 className="text-2xl font-black text-brand-text">Role & Responsibilities</h2>

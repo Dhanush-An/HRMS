@@ -180,7 +180,7 @@ const EmployeeHome = () => {
     }, []);
 
     return (
-        <div className="p-4 md:p-8 space-y-6 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="space-y-6 md:space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <AnnouncementPopup 
                 items={pendingNotifications} 
                 onDismiss={handleDismissNotification} 

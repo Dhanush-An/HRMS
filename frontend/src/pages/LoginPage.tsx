@@ -70,7 +70,7 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <div className="h-screen w-full flex items-center justify-center bg-gradient-to-br from-[#e0f2fe] via-[#f0f9ff] to-[#e0e7ff] overflow-hidden font-sans p-6 md:p-12">
+        <div className="h-dvh w-full flex items-center justify-center bg-gradient-to-br from-[#e0f2fe] via-[#f0f9ff] to-[#e0e7ff] overflow-hidden font-sans p-6 md:p-12">
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}

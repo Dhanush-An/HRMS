@@ -1074,26 +1074,28 @@ const AttendanceSection = ({ attendance, employees }: any) => {
                         {period === 'daily' ? `Today — ${today}` : period === 'weekly' ? 'This Week' : 'This Month'}
                     </p>
                 </div>
-                <table className="w-full text-left">
-                    <thead className="border-b border-brand-border">
-                        <tr>{['Employee', 'Date', 'Check In', 'Check Out', 'Status'].map(h => (
-                            <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
-                        ))}</tr>
-                    </thead>
-                    <tbody className="divide-y divide-brand-border">
-                        {todayRecords.slice(0, 20).map((rec: any) => (
-                            <tr key={rec._id || rec.id} className="hover:bg-brand-bg/40 transition-colors">
-                                <td className="px-4 py-3 text-sm font-medium text-brand-text">
-                                    {employees?.find((e: any) => e.employeeId === rec.employeeId || e.id === rec.employeeId)?.name || rec.employeeName || rec.name || rec.employeeId}
-                                </td>
-                                <td className="px-4 py-3 text-xs text-brand-muted">{rec.date}</td>
-                                <td className="px-4 py-3 text-xs text-brand-muted">{rec.checkIn || '—'}</td>
-                                <td className="px-4 py-3 text-xs text-brand-muted">{rec.checkOut || '—'}</td>
-                                <td className="px-4 py-3"><Badge status={rec.status} /></td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left">
+                        <thead className="border-b border-brand-border">
+                            <tr>{['Employee', 'Date', 'Check In', 'Check Out', 'Status'].map(h => (
+                                <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
+                            ))}</tr>
+                        </thead>
+                        <tbody className="divide-y divide-brand-border">
+                            {todayRecords.slice(0, 20).map((rec: any) => (
+                                <tr key={rec._id || rec.id} className="hover:bg-brand-bg/40 transition-colors">
+                                    <td className="px-4 py-3 text-sm font-medium text-brand-text">
+                                        {employees?.find((e: any) => e.employeeId === rec.employeeId || e.id === rec.employeeId)?.name || rec.employeeName || rec.name || rec.employeeId}
+                                    </td>
+                                    <td className="px-4 py-3 text-xs text-brand-muted">{rec.date}</td>
+                                    <td className="px-4 py-3 text-xs text-brand-muted">{rec.checkIn || '—'}</td>
+                                    <td className="px-4 py-3 text-xs text-brand-muted">{rec.checkOut || '—'}</td>
+                                    <td className="px-4 py-3"><Badge status={rec.status} /></td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
                 {!todayRecords.length && <p className="px-6 py-8 text-center text-brand-muted text-sm">No attendance records for today.</p>}
             </div>
         </div>
@@ -1135,34 +1137,36 @@ const LeavesSection = ({ leaves, onRefresh }: any) => {
                 </div>
             </div>
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-brand-bg border-b border-brand-border">
-                        <tr>{['Employee', 'Type', 'Duration', 'Reason', 'Status', 'Actions'].map(h => (
-                            <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
-                        ))}</tr>
-                    </thead>
-                    <tbody className="divide-y divide-brand-border">
-                        {visible.map((l: any) => (
-                            <tr key={l._id || l.id} className="hover:bg-brand-bg/40 transition-colors group">
-                                <td className="px-4 py-3 text-sm font-semibold text-brand-text">{l.employeeName || l.name || '—'}</td>
-                                <td className="px-4 py-3 text-xs text-brand-muted">{l.type}</td>
-                                <td className="px-4 py-3 text-xs text-brand-muted">{l.startDate} → {l.endDate}</td>
-                                <td className="px-4 py-3 text-xs text-brand-muted max-w-[150px] truncate">{l.reason || '—'}</td>
-                                <td className="px-4 py-3"><Badge status={l.status} /></td>
-                                <td className="px-4 py-3">
-                                    {l.status === 'Pending' && (
-                                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => update(l._id || l.id, 'Approved')}
-                                                className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-lg transition-all"><CheckCircle className="w-4 h-4" /></button>
-                                            <button onClick={() => update(l._id || l.id, 'Rejected')}
-                                                className="p-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white rounded-lg transition-all"><XCircle className="w-4 h-4" /></button>
-                                        </div>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left">
+                        <thead className="bg-brand-bg border-b border-brand-border">
+                            <tr>{['Employee', 'Type', 'Duration', 'Reason', 'Status', 'Actions'].map(h => (
+                                <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
+                            ))}</tr>
+                        </thead>
+                        <tbody className="divide-y divide-brand-border">
+                            {visible.map((l: any) => (
+                                <tr key={l._id || l.id} className="hover:bg-brand-bg/40 transition-colors group">
+                                    <td className="px-4 py-3 text-sm font-semibold text-brand-text">{l.employeeName || l.name || '—'}</td>
+                                    <td className="px-4 py-3 text-xs text-brand-muted">{l.type}</td>
+                                    <td className="px-4 py-3 text-xs text-brand-muted">{l.startDate} → {l.endDate}</td>
+                                    <td className="px-4 py-3 text-xs text-brand-muted max-w-[150px] truncate">{l.reason || '—'}</td>
+                                    <td className="px-4 py-3"><Badge status={l.status} /></td>
+                                    <td className="px-4 py-3">
+                                        {l.status === 'Pending' && (
+                                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => update(l._id || l.id, 'Approved')}
+                                                    className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-lg transition-all"><CheckCircle className="w-4 h-4" /></button>
+                                                <button onClick={() => update(l._id || l.id, 'Rejected')}
+                                                    className="p-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white rounded-lg transition-all"><XCircle className="w-4 h-4" /></button>
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
                 {!visible.length && <p className="px-6 py-8 text-center text-brand-muted text-sm">No leave requests found.</p>}
             </div>
         </div>
@@ -1341,34 +1345,36 @@ const TasksSection = ({ employees }: { employees: any[] }) => {
                 </div>
             </div>
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
-                    <thead className="bg-brand-bg border-b border-brand-border">
-                        <tr>{['Employee', 'Project', 'Activity', 'Priority', 'Status', 'Date'].map(h => (
-                            <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
-                        ))}</tr>
-                    </thead>
-                    <tbody className="divide-y divide-brand-border">
-                        {tasks.filter((t: any) => employees.some(e => e.employeeId === t.employeeId || e.id === t.employeeId)).map((t: any) => (
-                            <tr key={t._id || t.id} className="hover:bg-brand-bg/40 transition-colors">
-                                <td className="px-4 py-3 text-sm font-semibold text-brand-text">
-                                    {employees.find(e => e.employeeId === t.employeeId || e.id === t.employeeId)?.name || t.employeeId}
-                                </td>
-                                <td className="px-4 py-3 text-xs text-brand-text">{t.projectName || '—'}</td>
-                                <td className="px-4 py-3 text-xs text-brand-muted max-w-[200px] truncate">{t.description}</td>
-                                <td className="px-4 py-3 text-xs">
-                                    <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border',
-                                        t.priority === 'High' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
-                                        t.priority === 'Medium' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                                        'bg-brand-bg text-brand-muted border-brand-border')}>
-                                        {t.priority}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-3"><Badge status={t.status} /></td>
-                                <td className="px-4 py-3 text-xs text-brand-muted">{t.date}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <div className="overflow-x-auto no-scrollbar">
+                    <table className="w-full text-left">
+                        <thead className="bg-brand-bg border-b border-brand-border">
+                            <tr>{['Employee', 'Project', 'Activity', 'Priority', 'Status', 'Date'].map(h => (
+                                <th key={h} className="px-4 py-3 text-[10px] font-black uppercase tracking-widest text-brand-muted">{h}</th>
+                            ))}</tr>
+                        </thead>
+                        <tbody className="divide-y divide-brand-border">
+                            {tasks.filter((t: any) => employees.some(e => e.employeeId === t.employeeId || e.id === t.employeeId)).map((t: any) => (
+                                <tr key={t._id || t.id} className="hover:bg-brand-bg/40 transition-colors">
+                                    <td className="px-4 py-3 text-sm font-semibold text-brand-text">
+                                        {employees.find(e => e.employeeId === t.employeeId || e.id === t.employeeId)?.name || t.employeeId}
+                                    </td>
+                                    <td className="px-4 py-3 text-xs text-brand-text">{t.projectName || '—'}</td>
+                                    <td className="px-4 py-3 text-xs text-brand-muted max-w-[200px] truncate">{t.description}</td>
+                                    <td className="px-4 py-3 text-xs">
+                                        <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest border',
+                                            t.priority === 'High' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                                            t.priority === 'Medium' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                            'bg-brand-bg text-brand-muted border-brand-border')}>
+                                            {t.priority}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3"><Badge status={t.status} /></td>
+                                    <td className="px-4 py-3 text-xs text-brand-muted">{t.date}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
                 {!tasks.length && (
                     <div className="py-20 text-center">
                         <FileText className="w-10 h-10 mx-auto mb-3 text-brand-muted opacity-30" />
@@ -1598,7 +1604,7 @@ const HRPortal: React.FC = () => {
     };
 
     return (
-        <div className="h-screen flex overflow-hidden bg-brand-bg text-brand-text font-sans">
+        <div className="h-dvh flex overflow-hidden bg-brand-bg text-brand-text font-sans">
             {/* Mobile overlay */}
             {sidebar && (
                 <div
@@ -1609,7 +1615,7 @@ const HRPortal: React.FC = () => {
 
             {/* Sidebar */}
             <aside className={cn(
-                'fixed inset-y-0 left-0 w-64 bg-brand-surface border-r border-brand-border flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-screen',
+                'fixed inset-y-0 left-0 w-64 bg-brand-surface border-r border-brand-border flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-dvh',
                 sidebar ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
             )}>
                 {/* Logo */}

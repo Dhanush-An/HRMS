@@ -75,7 +75,7 @@ const SubAdminSettings = () => {
     };
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto">
             {/* Employee Credential Management */}
             <div className="bg-brand-surface border border-brand-border rounded-3xl overflow-visible shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-100">
                 <div className="p-8 border-b border-brand-border bg-table-header rounded-t-3xl flex items-center justify-between">

@@ -227,7 +227,7 @@ const AdminPolicies = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
                     <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-2xl shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-8 border-b border-brand-border flex justify-between items-center bg-brand-surface/80 backdrop-blur-xl">
+                        <div className="p-5 md:p-8 border-b border-brand-border flex justify-between items-center bg-brand-surface/80 backdrop-blur-xl">
                             <div>
                                 <h2 className="text-2xl font-black text-brand-text uppercase tracking-tight">{isEditing ? 'Modify Policy' : 'Define Policy'}</h2>
                                 <p className="text-[10px] font-black text-brand-muted uppercase tracking-[0.2em] mt-1">Changes are synced in real-time</p>
@@ -237,7 +237,7 @@ const AdminPolicies = () => {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-8 space-y-8 max-h-[70vh] overflow-y-auto no-scrollbar">
+                        <form onSubmit={handleSubmit} className="p-5 md:p-8 space-y-8 max-h-[70vh] overflow-y-auto no-scrollbar">
                             <div className="space-y-3">
                                 <label className="block text-[10px] font-black uppercase text-brand-muted tracking-[0.2em]">Policy Title</label>
                                 <input
@@ -315,7 +315,7 @@ const AdminPolicies = () => {
                             </div>
                         </form>
 
-                        <div className="p-8 bg-brand-bg/50 border-t border-brand-border flex gap-4">
+                        <div className="p-5 md:p-8 bg-brand-bg/50 border-t border-brand-border flex gap-4">
                             <button
                                 type="button"
                                 onClick={() => setIsModalOpen(false)}

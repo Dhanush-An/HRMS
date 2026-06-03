@@ -303,7 +303,7 @@ const HR: React.FC = () => {
             {/* Add Human Resource Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsModalOpen(false)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in duration-200" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-brand-surface border border-brand-border rounded-3xl p-5 md:p-8 w-full max-w-2xl shadow-2xl animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-8">
                             <h2 className="text-2xl font-black text-brand-text">{isEditing ? 'Edit Human Resource' : 'Add Human Resource'}</h2>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-brand-bg rounded-xl transition-colors text-brand-muted">

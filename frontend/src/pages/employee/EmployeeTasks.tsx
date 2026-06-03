@@ -129,7 +129,7 @@ const EmployeeTasks = () => {
     );
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
@@ -287,7 +287,7 @@ const EmployeeTasks = () => {
             {/* Premium Entry Modal */}
             {showModal && (
                 <div className="fixed inset-0 bg-brand-bg/95 backdrop-blur-2xl flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-                    <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-xl p-8 shadow-[0_32px_128px_rgba(0,0,0,0.4)] relative group/modal">
+                    <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-xl p-5 md:p-8 shadow-[0_32px_128px_rgba(0,0,0,0.4)] relative group/modal max-h-[90vh] overflow-y-auto no-scrollbar">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-primary/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 
                         <div className="flex justify-between items-center mb-6">

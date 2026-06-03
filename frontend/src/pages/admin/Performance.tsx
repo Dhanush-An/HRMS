@@ -88,7 +88,7 @@ const Performance = () => {
     };
 
     return (
-        <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
                 <div>
                     <h1 className="text-3xl font-black text-brand-text tracking-tight">Performance Management</h1>
@@ -140,7 +140,7 @@ const Performance = () => {
 
             {showModal && selectedEmployee && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto p-8 shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="bg-brand-surface border border-brand-border rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto no-scrollbar p-5 md:p-8 shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-8">
                             <div>
                                 <h2 className="text-xl font-black text-brand-text uppercase tracking-tight">Post Review</h2>

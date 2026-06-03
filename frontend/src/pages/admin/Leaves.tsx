@@ -175,7 +175,7 @@ const Leaves = () => {
         : (Array.isArray(employees) ? employees.filter((e: Employee) => e.id === user?.id) : []);
 
     return (
-        <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-4">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-brand-text tracking-tight">Leave Management</h1>
@@ -264,7 +264,7 @@ const Leaves = () => {
                     </div>
                 )}
 
-                <div className="p-8 space-y-12">
+                <div className="p-4 sm:p-6 md:p-8 space-y-8 sm:space-y-12">
                     {(isAdmin || activeTab === 'requests') && (
                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                             {isAdmin && (
@@ -450,7 +450,7 @@ const Leaves = () => {
                                     <p className="text-brand-muted text-[10px] font-bold uppercase tracking-widest mt-1">Summary of remaining leave entitlements across the organization.</p>
                                 </div>
                             )}
-                            <div className="bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden no-scrollbar">
+                            <div className="bg-brand-surface border border-brand-border rounded-2xl shadow-sm overflow-x-auto no-scrollbar">
                                 <table className="w-full text-left border-collapse">
                                     <thead className="bg-brand-bg/50">
                                         <tr>
@@ -493,7 +493,7 @@ const Leaves = () => {
             {/* Premium Apply Leave Modal */}
             {showApplyModal && (
                 <div className="fixed inset-0 bg-brand-bg/95 backdrop-blur-2xl flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-                    <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-xl p-8 shadow-[0_32px_128px_rgba(0,0,0,0.4)] relative group/modal">
+                    <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-xl p-5 md:p-8 shadow-[0_32px_128px_rgba(0,0,0,0.4)] relative group/modal max-h-[90vh] overflow-y-auto no-scrollbar">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-primary/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
 
                         <div className="flex justify-between items-center mb-6">

@@ -82,7 +82,7 @@ const SubAdminHome = () => {
                 <p className="text-brand-muted font-medium text-sm md:text-base">Welcome back! Here's what's happening in your branch.</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
                 <StatCard
                     title="Total Employees"
                     value={stats.totalEmployees.toString()}

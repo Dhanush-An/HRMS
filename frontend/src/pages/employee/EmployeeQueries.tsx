@@ -159,8 +159,8 @@ const EmployeeQueries = () => {
             {/* New Query Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-[100] p-4" onClick={() => !isSubmitting && setIsModalOpen(false)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-[3rem] w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in duration-300" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-8 border-b border-brand-border bg-gradient-to-br from-brand-primary/5 to-transparent flex justify-between items-center">
+                    <div className="bg-brand-surface border border-brand-border rounded-[3rem] w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-5 md:p-8 border-b border-brand-border bg-gradient-to-br from-brand-primary/5 to-transparent flex justify-between items-center">
                             <div>
                                 <h2 className="text-2xl font-black text-brand-text tracking-tighter uppercase italic">Raise a Query</h2>
                                 <p className="text-brand-muted text-[10px] font-black uppercase tracking-[0.2em] mt-1 opacity-60">Ticketing System</p>
@@ -170,7 +170,7 @@ const EmployeeQueries = () => {
                             </button>
                         </div>
                         
-                        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-5 md:p-8 space-y-6">
                             <div>
                                 <label className="block text-[10px] font-black uppercase text-brand-muted tracking-[0.2em] mb-4 ml-1">Subject / Title</label>
                                 <input

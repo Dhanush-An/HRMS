@@ -554,7 +554,7 @@ const SubAdminDashboard: React.FC = () => {
     ];
 
     return (
-        <div className="h-screen bg-brand-bg text-brand-text flex overflow-hidden font-sans relative">
+        <div className="h-dvh bg-brand-bg text-brand-text flex overflow-hidden font-sans relative">
             {/* Mobile Sidebar Backdrop */}
             {isSidebarOpen && (
                 <div
@@ -565,7 +565,7 @@ const SubAdminDashboard: React.FC = () => {
 
             {/* Sidebar */}
             <aside className={cn(
-                "fixed inset-y-0 left-0 w-72 border-r border-brand-border bg-brand-surface flex flex-col p-6 z-50 transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen lg:flex",
+                "fixed inset-y-0 left-0 w-72 border-r border-brand-border bg-brand-surface flex flex-col p-6 z-50 transition-transform duration-300 lg:translate-x-0 lg:static lg:h-dvh lg:flex",
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="flex items-center justify-between mb-10 px-2">
@@ -656,7 +656,7 @@ const SubAdminDashboard: React.FC = () => {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Mobile Top Nav */}
-                <header className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-brand-border bg-brand-surface sticky top-0 z-30">
+                <header className="lg:hidden flex items-center justify-between px-4 sm:px-6 py-4 border-b border-brand-border bg-brand-surface sticky top-0 z-30">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20 relative overflow-hidden">
                             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-brand-primary to-blue-600">

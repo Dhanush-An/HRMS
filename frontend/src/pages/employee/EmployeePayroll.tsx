@@ -137,7 +137,7 @@ const EmployeePayroll = () => {
     );
 
     return (
-        <div className="p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-black text-brand-text tracking-tight uppercase">Payroll Hub</h1>

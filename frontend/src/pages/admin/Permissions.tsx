@@ -176,7 +176,7 @@ const Permissions = () => {
     });
 
     return (
-        <div className="p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-4">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-black text-brand-text tracking-tight">Permissions</h1>
@@ -230,7 +230,7 @@ const Permissions = () => {
 
             {/* Main Content Area */}
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm animate-in slide-in-from-bottom-8 duration-700 delay-100">
-                <div className="p-8 space-y-8">
+                <div className="p-4 sm:p-6 md:p-8 space-y-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                         <div className="flex flex-wrap items-center gap-3">
                             <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest mr-2 flex items-center gap-2">
@@ -352,7 +352,7 @@ const Permissions = () => {
             {/* Apply Permission Modal */}
             {showApplyModal && (
                 <div className="fixed inset-0 bg-brand-bg/95 backdrop-blur-2xl flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-                    <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-xl p-8 shadow-[0_32px_128px_rgba(0,0,0,0.4)] relative group/modal">
+                    <div className="bg-brand-surface border border-brand-border rounded-[2.5rem] w-full max-w-xl p-5 md:p-8 shadow-[0_32px_128px_rgba(0,0,0,0.4)] relative group/modal max-h-[90vh] overflow-y-auto no-scrollbar">
                         <div className="flex justify-between items-center mb-6">
                             <div>
                                 <h2 className="text-2xl font-black text-brand-text tracking-tighter uppercase">Request Permission</h2>

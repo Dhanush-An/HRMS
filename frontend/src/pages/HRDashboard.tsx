@@ -200,7 +200,7 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
 
             {profile && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setProfile(null)}>
-                    <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl p-5 md:p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-black text-brand-text">{profile.isNew ? 'Add New Employee' : 'Edit Employee'}</h3>
                             <button onClick={() => setProfile(null)} className="text-brand-muted hover:text-brand-text"><XCircle className="w-5 h-5" /></button>
@@ -520,14 +520,14 @@ const HRDashboard: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="h-screen bg-brand-bg flex items-center justify-center">
+            <div className="h-dvh bg-brand-bg flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
             </div>
         );
     }
 
     return (
-        <div className="h-screen bg-brand-bg text-brand-text flex overflow-hidden font-sans relative">
+        <div className="h-dvh bg-brand-bg text-brand-text flex overflow-hidden font-sans relative">
             {/* Mobile backdrop */}
             {isSidebarOpen && (
                 <div
@@ -538,7 +538,7 @@ const HRDashboard: React.FC = () => {
 
             {/* ── Sidebar ── */}
             <aside className={cn(
-                'fixed inset-y-0 left-0 w-72 border-r border-brand-border bg-brand-surface flex flex-col p-6 z-50 transition-transform duration-300 lg:translate-x-0 lg:static lg:h-screen lg:flex',
+                'fixed inset-y-0 left-0 w-72 border-r border-brand-border bg-brand-surface flex flex-col p-6 z-50 transition-transform duration-300 lg:translate-x-0 lg:static lg:h-dvh lg:flex',
                 isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
             )}>
                 {/* Logo */}
@@ -625,7 +625,7 @@ const HRDashboard: React.FC = () => {
             {/* ── Main content ── */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Mobile top nav */}
-                <header className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-brand-border bg-brand-surface sticky top-0 z-30">
+                <header className="lg:hidden flex items-center justify-between px-4 sm:px-6 py-4 border-b border-brand-border bg-brand-surface sticky top-0 z-30">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center shadow-lg shadow-brand-primary/20 relative overflow-hidden">
                             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-tr from-brand-primary to-blue-600">
