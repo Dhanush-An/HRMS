@@ -463,8 +463,14 @@ app.put('/api/employees/:id', async (req, res) => {
         }
 
         if (updateData.password) {
-            const salt = await bcrypt.genSalt(10);
-            updateData.password = await bcrypt.hash(updateData.password, salt);
+            if (typeof updateData.password === 'string' && updateData.password.trim() !== '' && !updateData.password.startsWith('$2')) {
+                const salt = await bcrypt.genSalt(10);
+                updateData.password = await bcrypt.hash(updateData.password.trim(), salt);
+            } else {
+                delete updateData.password;
+            }
+        } else {
+            delete updateData.password;
         }
 
         const updatedEmployee = await Employee.findOneAndUpdate(
@@ -680,14 +686,13 @@ app.put('/api/branches/:id', authorizeRoles('admin'), async (req, res) => {
                     existingEmp.phone = updatedBranch.phone || existingEmp.phone;
                     existingEmp.branchId = updatedBranch.branchId;
                     existingEmp.branchName = updatedBranch.name;
-                    if (password) {
+                    if (password && typeof password === 'string' && password.trim() !== '' && !password.startsWith('$2')) {
                         const salt = await bcrypt.genSalt(10);
-                        existingEmp.password = await bcrypt.hash(password, salt);
+                        existingEmp.password = await bcrypt.hash(password.trim(), salt);
                     }
                     await existingEmp.save();
                 }
             }
-            // Sync Sub Admin employee account if subAdminEmail is provided
             const targetSubEmail = subAdminEmail || (updatedBranch as any).subAdminEmail;
             if (targetSubEmail) {
                 const existingSub = await Employee.findOne({ email: targetSubEmail.toLowerCase() });
@@ -697,15 +702,16 @@ app.put('/api/branches/:id', authorizeRoles('admin'), async (req, res) => {
                     if (updatedBranch.managerName) {
                         existingSub.name = updatedBranch.managerName;
                     }
-                    if (subAdminPassword) {
+                    if (subAdminPassword && typeof subAdminPassword === 'string' && subAdminPassword.trim() !== '' && !subAdminPassword.startsWith('$2')) {
                         const salt2 = await bcrypt.genSalt(10);
-                        existingSub.password = await bcrypt.hash(subAdminPassword, salt2);
+                        existingSub.password = await bcrypt.hash(subAdminPassword.trim(), salt2);
                     }
                     await existingSub.save();
                 } else if (subAdminEmail) {
                     // Create new sub admin account
                     const salt2 = await bcrypt.genSalt(10);
-                    const subHash = await bcrypt.hash(subAdminPassword || 'Password123!', salt2);
+                    const rawPassword = (subAdminPassword && typeof subAdminPassword === 'string' && subAdminPassword.trim() !== '') ? subAdminPassword : 'Password123!';
+                    const subHash = rawPassword.startsWith('$2') ? rawPassword : await bcrypt.hash(rawPassword, salt2);
                     const subEmpId = await generateEmpId();
                     await new Employee({
                         employeeId: subEmpId,
