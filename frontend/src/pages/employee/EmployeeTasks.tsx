@@ -12,13 +12,9 @@ import {
     X,
     MessageSquare,
     ChevronRight,
-    Sparkles,
-    Download
+    Sparkles
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
 
 interface Task {
     id: string;
@@ -33,14 +29,11 @@ interface Task {
 
 const EmployeeTasks = () => {
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [allTasks, setAllTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
     const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
-    const [filterMonth, setFilterMonth] = useState(new Date().toISOString().substring(0, 7));
-    const [viewMode, setViewMode] = useState<'daily' | 'monthly'>('daily');
 
     // Get user from local storage
     const userStr = localStorage.getItem('user');
@@ -60,7 +53,7 @@ const EmployeeTasks = () => {
         if (currentEmployeeId) {
             fetchData();
         }
-    }, [currentEmployeeId, filterDate, filterMonth, viewMode]);
+    }, [currentEmployeeId, filterDate]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -68,16 +61,10 @@ const EmployeeTasks = () => {
             const response = await api.get(`/api/tasks?employeeId=${currentEmployeeId}`);
             const data = await response.json();
 
-            const employeeTasks = Array.isArray(data) ? data.filter((task: Task) => task.employeeId === currentEmployeeId) : [];
-            setAllTasks(employeeTasks);
-
-            const filteredTasks = employeeTasks.filter((task: Task) => {
-                if (viewMode === 'daily') {
-                    return task.date === filterDate;
-                } else {
-                    return task.date.startsWith(filterMonth);
-                }
-            });
+            const filteredTasks = Array.isArray(data) ? data.filter((task: Task) =>
+                (task.employeeId === currentEmployeeId) &&
+                (task.date === filterDate)
+            ) : [];
 
             setTasks(filteredTasks.reverse());
         } catch (error) {
@@ -106,95 +93,13 @@ const EmployeeTasks = () => {
             employeeId: currentEmployeeId,
             projectName: '',
             description: '',
-            date: viewMode === 'daily' ? filterDate : (filterMonth === new Date().toISOString().substring(0, 7) ? new Date().toISOString().split('T')[0] : `${filterMonth}-01`),
+            date: new Date().toISOString().split('T')[0],
             priority: 'Medium',
             status: 'Completed'
         });
         setIsEditing(false);
         setEditingTaskId(null);
         setShowModal(true);
-    };
-
-    const handleDownloadMonthlyPDF = () => {
-        const monthlyReports = allTasks.filter((task: Task) => task.date.startsWith(filterMonth));
-        if (monthlyReports.length === 0) {
-            alert(`No report entries found for the month of ${getMonthName(filterMonth)}.`);
-            return;
-        }
-
-        const sortedReports = [...monthlyReports].sort((a, b) => a.date.localeCompare(b.date));
-        const doc = new jsPDF();
-        
-        // Header
-        doc.setFillColor(31, 41, 55);
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(20);
-        doc.setFont('helvetica', 'bold');
-        doc.text('FORGE INDIA CONNECT HRMS', 105, 18, { align: 'center' });
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        doc.text('MONTHLY WORK REPORT - ' + getMonthName(filterMonth).toUpperCase(), 105, 28, { align: 'center' });
-
-        // Info
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Employee Information', 15, 52);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Name: ${user?.name || 'N/A'}`, 15, 60);
-        doc.text(`Employee ID: ${user?.employeeId || user?.id || 'N/A'}`, 15, 67);
-        doc.text(`Designation: ${user?.role || 'Team Member'}`, 15, 74);
-        
-        doc.text(`Report Period: ${getMonthName(filterMonth)}`, 130, 60);
-        doc.text(`Total Entries: ${monthlyReports.length}`, 130, 67);
-        doc.text(`Generated Date: ${new Date().toLocaleDateString()}`, 130, 74);
-
-        doc.setDrawColor(229, 231, 235);
-        doc.line(15, 82, 195, 82);
-
-        const tableBody = sortedReports.map((task) => [
-            new Date(task.date).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }),
-            task.projectName || 'Internal',
-            task.type || 'Work Report',
-            task.priority,
-            task.status,
-            task.description
-        ]);
-
-        autoTable(doc, {
-            startY: 88,
-            head: [['Date', 'Project', 'Type', 'Priority', 'Status', 'Description']],
-            body: tableBody,
-            theme: 'striped',
-            headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold' },
-            columnStyles: {
-                0: { cellWidth: 25 },
-                1: { cellWidth: 25 },
-                2: { cellWidth: 25 },
-                3: { cellWidth: 20 },
-                4: { cellWidth: 22 },
-                5: { cellWidth: 'auto' }
-            },
-            styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' }
-        });
-
-        const pageCount = (doc.internal as any).getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setFont('helvetica', 'italic');
-            doc.setTextColor(150);
-            doc.text(`Page ${i} of ${pageCount} - FORGE INDIA CONNECT HRMS`, 105, 287, { align: 'center' });
-        }
-
-        doc.save(`Work_Report_${(user?.name || 'Employee').replace(/\s+/g, '_')}_${filterMonth}.pdf`);
-    };
-
-    const getMonthName = (monthStr: string) => {
-        const [year, month] = monthStr.split('-');
-        const date = new Date(Number(year), Number(month) - 1, 1);
-        return date.toLocaleString('default', { month: 'long', year: 'numeric' });
     };
 
     const handleSubmitReport = async (e: React.FormEvent) => {
@@ -228,70 +133,21 @@ const EmployeeTasks = () => {
             {/* Header Area */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-text tracking-tight uppercase">
-                        {viewMode === 'daily' ? 'Daily Reports' : 'Monthly Reports'}
-                    </h1>
-                    <p className="text-brand-muted font-medium">
-                        {viewMode === 'daily' 
-                            ? "Documenting today's progress for tomorrow's success." 
-                            : `Showing full report logs for the month of ${getMonthName(filterMonth)}.`}
-                    </p>
+                    <h1 className="text-3xl font-black text-brand-text tracking-tight uppercase">Daily Reports</h1>
+                    <p className="text-brand-muted font-medium">Documenting today's progress for tomorrow's success.</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-                    {/* Day/Month View Selector */}
-                    <div className="flex bg-brand-surface border border-brand-border rounded-xl p-1 gap-1">
-                        <button
-                            onClick={() => setViewMode('daily')}
-                            className={cn(
-                                "px-3.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer",
-                                viewMode === 'daily' ? "bg-brand-primary text-white" : "text-brand-muted hover:text-brand-text"
-                            )}
-                        >
-                            Day
-                        </button>
-                        <button
-                            onClick={() => setViewMode('monthly')}
-                            className={cn(
-                                "px-3.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer",
-                                viewMode === 'monthly' ? "bg-brand-primary text-white" : "text-brand-muted hover:text-brand-text"
-                            )}
-                        >
-                            Month
-                        </button>
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-48 group">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-muted" />
+                        <input
+                            type="date"
+                            value={filterDate}
+                            onChange={(e) => setFilterDate(e.target.value)}
+                            className="w-full bg-brand-surface text-brand-text border border-brand-border rounded-xl py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all font-bold text-xs"
+                        />
                     </div>
 
-                    {/* Conditional Picker */}
-                    <div className="relative w-full sm:w-40 group">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-muted pointer-events-none" />
-                        {viewMode === 'daily' ? (
-                            <input
-                                type="date"
-                                value={filterDate}
-                                onChange={(e) => setFilterDate(e.target.value)}
-                                className="w-full bg-brand-surface text-brand-text border border-brand-border rounded-xl py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all font-bold text-xs"
-                            />
-                        ) : (
-                            <input
-                                type="month"
-                                value={filterMonth}
-                                onChange={(e) => setFilterMonth(e.target.value)}
-                                className="w-full bg-brand-surface text-brand-text border border-brand-border rounded-xl py-2 pl-10 pr-4 focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all font-bold text-xs"
-                            />
-                        )}
-                    </div>
-
-                    {/* PDF Download Button */}
-                    <button
-                        onClick={handleDownloadMonthlyPDF}
-                        className="bg-brand-surface text-brand-text border border-brand-border px-4 py-2.5 rounded-xl font-black flex items-center gap-2 transition-all hover:bg-brand-bg hover:text-brand-primary active:scale-95 text-xs uppercase tracking-widest cursor-pointer"
-                        title="Download monthly work report as PDF"
-                    >
-                        <Download className="w-4 h-4" />
-                        Download
-                    </button>
-
-                    {/* Create Entry Button */}
                     <button
                         onClick={handleOpenModal}
                         className="bg-brand-primary text-white px-6 py-2.5 rounded-xl font-black flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-brand-primary/20 text-xs uppercase tracking-widest"
@@ -315,11 +171,7 @@ const EmployeeTasks = () => {
                         <div className="bg-brand-surface border border-brand-border border-dashed rounded-2xl p-12 flex flex-col items-center justify-center text-center">
                             <Layout className="w-12 h-12 text-brand-muted opacity-20 mb-4" />
                             <h3 className="text-brand-text font-black uppercase text-xs mb-2">No Entries Recorded</h3>
-                            <p className="text-brand-muted text-[11px] font-medium leading-relaxed italic max-w-xs">
-                                {viewMode === 'daily' 
-                                    ? "No updates found for this date. Initialize a new entry to track your progress." 
-                                    : `No updates found for the month of ${getMonthName(filterMonth)}. Initialize a new entry to start tracking.`}
-                            </p>
+                            <p className="text-brand-muted text-[11px] font-medium leading-relaxed italic max-w-xs">No updates found for this date. Initialize a new entry to track your progress.</p>
                         </div>
                     ) : (
                         <div className="grid gap-4">
