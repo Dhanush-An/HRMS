@@ -149,7 +149,7 @@ const Attendance = () => {
     }, [selectedDate]);
 
     const getAttendanceStatus = (empId: string) => {
-        const emp = employees.find(e => e.id === empId);
+        const emp = employees.find(e => e.id === empId || e.employeeId === empId);
         const record = attendance.find(r =>
             ((r.employeeId === empId) ||
                 (emp && r.employeeId === emp.email) ||
@@ -251,7 +251,7 @@ const Attendance = () => {
         doc.text(`Attendance Report - ${reportMonth}`, 14, 22);
 
         const tableData = data.map(r => {
-            const emp = employees.find(e => e.id === r.employeeId);
+            const emp = employees.find(e => e.employeeId === r.employeeId || e.id === r.employeeId);
             return [
                 emp?.name || 'Unknown',
                 r.date,
@@ -274,7 +274,7 @@ const Attendance = () => {
     const handleExportExcel = async () => {
         const data = await fetchMonthlyData();
         const excelData = data.map(r => {
-            const emp = employees.find(e => e.id === r.employeeId);
+            const emp = employees.find(e => e.employeeId === r.employeeId || e.id === r.employeeId);
             return {
                 Employee: emp?.name || 'Unknown',
                 Date: r.date,
@@ -753,7 +753,7 @@ const Attendance = () => {
                             {attendance
                                 .filter(record => record.date === selectedDate)
                                 .flatMap(record => {
-                                    const emp = employees.find(e => e.id === record.employeeId);
+                                    const emp = employees.find(e => e.employeeId === record.employeeId || e.id === record.employeeId);
                                     return (record.breaks || []).map((b, idx) => ({ 
                                         ...b, 
                                         empName: emp?.name || 'Unknown',

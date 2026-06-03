@@ -1084,7 +1084,7 @@ const AttendanceSection = ({ attendance, employees }: any) => {
                         {todayRecords.slice(0, 20).map((rec: any) => (
                             <tr key={rec._id || rec.id} className="hover:bg-brand-bg/40 transition-colors">
                                 <td className="px-4 py-3 text-sm font-medium text-brand-text">
-                                    {employees?.find((e: any) => e.id === rec.employeeId)?.name || rec.employeeName || rec.name || rec.employeeId}
+                                    {employees?.find((e: any) => e.employeeId === rec.employeeId || e.id === rec.employeeId)?.name || rec.employeeName || rec.name || rec.employeeId}
                                 </td>
                                 <td className="px-4 py-3 text-xs text-brand-muted">{rec.date}</td>
                                 <td className="px-4 py-3 text-xs text-brand-muted">{rec.checkIn || '—'}</td>
