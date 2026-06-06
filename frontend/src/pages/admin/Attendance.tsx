@@ -93,6 +93,7 @@ const Attendance = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [viewPeriod, setViewPeriod] = useState<'daily' | 'monthly'>('daily');
 
     // Report State
     const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
@@ -129,13 +130,22 @@ const Attendance = () => {
 
     const fetchData = async () => {
         try {
+            const url = viewPeriod === 'daily'
+                ? `/api/attendance?date=${selectedDate}`
+                : `/api/attendance`;
             const [empRes, attRes] = await Promise.all([
                 api.get('/api/employees'),
-                api.get(`/api/attendance?date=${selectedDate}`)
+                api.get(url)
             ]);
 
             const empData = await empRes.json();
-            const attData = await attRes.json();
+            let attData = await attRes.json();
+
+            if (viewPeriod === 'monthly') {
+                attData = Array.isArray(attData)
+                    ? attData.filter((r: any) => r && r.date && r.date.startsWith(reportMonth))
+                    : [];
+            }
 
             setEmployees(empData);
             setAttendance(attData);
@@ -146,7 +156,7 @@ const Attendance = () => {
 
     useEffect(() => {
         fetchData();
-    }, [selectedDate]);
+    }, [selectedDate, reportMonth, viewPeriod]);
 
     // Helper: find employee by any identifier (employeeId, id, email, or username)
     const findEmployee = (identifier: string) =>
@@ -185,20 +195,21 @@ const Attendance = () => {
 
 
     // Change attendance status from the kebab menu
-    const handleChangeStatus = async (empId: string, newStatus: 'Present' | 'Half Day' | 'Absent') => {
-        const record = getAttendanceStatus(empId);
+    const handleChangeStatus = async (empId: string, newStatus: 'Present' | 'Half Day' | 'Absent', record?: AttendanceRecord, date?: string) => {
+        const targetRecord = record || getAttendanceStatus(empId);
+        const targetDate = date || selectedDate;
         setOpenMenuId(null);
         try {
-            if (record && record.id && !(record as any).isWeeklyOff) {
+            if (targetRecord && targetRecord.id && !(targetRecord as any).isWeeklyOff) {
                 // Update existing record
-                await api.put(`/api/attendance/${record.id}`, { status: newStatus });
+                await api.put(`/api/attendance/${targetRecord.id}`, { status: newStatus });
             } else {
                 // Create a new attendance record
                 const emp = employees.find(e => e.id === empId);
                 await api.post('/api/attendance', {
                     employeeId: empId,
                     employeeName: emp?.name || '',
-                    date: selectedDate,
+                    date: targetDate,
                     status: newStatus,
                     checkIn: newStatus === 'Absent' ? undefined : '--:--',
                 });
@@ -304,11 +315,57 @@ const Attendance = () => {
 
     // Stats Calculation
     const stats = {
-        present: Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0,
-        absent: Math.max((employees?.length || 0) - (Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0), 0),
+        present: Array.isArray(attendance)
+            ? (viewPeriod === 'daily'
+                ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length
+                : attendance.filter(r => r.status === 'Present').length)
+            : 0,
+        absent: Array.isArray(attendance)
+            ? (viewPeriod === 'daily'
+                ? Math.max((employees?.length || 0) - attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length, 0)
+                : attendance.filter(r => r.status === 'Absent').length)
+            : 0,
         late: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late').length : 0,
         halfDay: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Half Day').length : 0,
     };
+
+    const tableRows = viewPeriod === 'daily'
+        ? employees
+            .filter(emp =>
+                emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                emp.department.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map(emp => {
+                const record = getAttendanceStatus(emp.id);
+                return {
+                    id: emp.id,
+                    emp,
+                    record,
+                    date: selectedDate
+                };
+            })
+        : attendance
+            .filter(record => {
+                const emp = findEmployee(record.employeeId);
+                return !searchQuery || (
+                    emp?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    emp?.department.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+            })
+            .map(record => {
+                const emp = findEmployee(record.employeeId) || {
+                    id: record.employeeId,
+                    name: (record as any).employeeName || record.employeeId,
+                    department: 'Unknown'
+                };
+                return {
+                    id: record.id || (record as any)._id,
+                    emp,
+                    record,
+                    date: record.date
+                };
+            })
+            .sort((a, b) => b.date.localeCompare(a.date) || a.emp.name.localeCompare(b.emp.name));
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -348,24 +405,36 @@ const Attendance = () => {
 
             <div className="flex flex-col sm:flex-row items-center gap-4 bg-brand-surface p-2 rounded-2xl border border-brand-border shadow-sm backdrop-blur-md w-full lg:w-auto ml-auto">
                     {/* Compact Date/Report Bar */}
-                    <div className="flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border border-brand-border group hover:border-brand-primary/30 transition-all cursor-pointer w-full sm:w-auto">
-                        <Calendar className="w-4 h-4 text-brand-muted group-hover:text-brand-primary transition-colors" />
+                    <div className={cn(
+                        "flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border transition-all cursor-pointer w-full sm:w-auto",
+                        viewPeriod === 'daily' ? "border-brand-primary shadow-sm" : "border-brand-border hover:border-brand-primary/30"
+                    )}>
+                        <Calendar className={cn("w-4 h-4 transition-colors", viewPeriod === 'daily' ? "text-brand-primary" : "text-brand-muted")} />
                         <input
                             type="date"
                             value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
+                            onChange={(e) => {
+                                setSelectedDate(e.target.value);
+                                setViewPeriod('daily');
+                            }}
                             className="bg-transparent border-none text-brand-text focus:ring-0 text-sm font-black p-0 w-full sm:w-28 cursor-pointer"
                         />
                     </div>
 
                     <div className="hidden sm:block w-[1.5px] h-8 bg-brand-border" />
 
-                    <div className="flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border border-brand-border group hover:border-brand-primary/30 transition-all cursor-pointer w-full sm:w-auto">
-                        <span className="text-[10px] text-brand-muted font-black uppercase tracking-widest mr-1">Monthly</span>
+                    <div className={cn(
+                        "flex items-center gap-3 px-4 py-2 bg-brand-bg rounded-xl border transition-all cursor-pointer w-full sm:w-auto",
+                        viewPeriod === 'monthly' ? "border-brand-primary shadow-sm" : "border-brand-border hover:border-brand-primary/30"
+                    )}>
+                        <span className={cn("text-[10px] font-black uppercase tracking-widest mr-1 transition-colors", viewPeriod === 'monthly' ? "text-brand-primary" : "text-brand-muted")}>Monthly</span>
                         <input
                             type="month"
                             value={reportMonth}
-                            onChange={(e) => setReportMonth(e.target.value)}
+                            onChange={(e) => {
+                                setReportMonth(e.target.value);
+                                setViewPeriod('monthly');
+                            }}
                             className="bg-transparent border-none text-brand-text focus:ring-0 text-sm font-black p-0 w-full sm:w-28 cursor-pointer"
                         />
                         <div className="flex items-center gap-2 ml-2 border-l border-brand-border pl-3">
@@ -428,14 +497,14 @@ const Attendance = () => {
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-brand-primary text-[10px] font-black uppercase tracking-widest mb-2">
-                                {new Date(selectedDate).getDay() === 0 ? 'Status' : 'Half Day'}
+                                {viewPeriod === 'monthly' ? 'Half Day' : (new Date(selectedDate).getDay() === 0 ? 'Status' : 'Half Day')}
                             </p>
                             <h3 className="text-3xl font-black text-brand-text leading-none">
-                                {new Date(selectedDate).getDay() === 0 ? 'OFF' : stats.halfDay}
+                                {viewPeriod === 'monthly' ? stats.halfDay : (new Date(selectedDate).getDay() === 0 ? 'OFF' : stats.halfDay)}
                             </h3>
                         </div>
                         <div className="p-3 bg-brand-primary/10 rounded-xl">
-                            {new Date(selectedDate).getDay() === 0 ? <Calendar className="w-5 h-5 text-brand-primary" /> : <AlertCircle className="w-5 h-5 text-status-info" />}
+                            {viewPeriod === 'monthly' ? <AlertCircle className="w-5 h-5 text-status-info" /> : (new Date(selectedDate).getDay() === 0 ? <Calendar className="w-5 h-5 text-brand-primary" /> : <AlertCircle className="w-5 h-5 text-status-info" />)}
                         </div>
                     </div>
                 </div>
@@ -444,7 +513,9 @@ const Attendance = () => {
             {/* Attendance Table */}
             <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm">
                 <div className="p-6 border-b border-brand-border flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <h2 className="text-lg font-black text-brand-text">Daily Attendance List</h2>
+                    <h2 className="text-lg font-black text-brand-text">
+                        {viewPeriod === 'daily' ? 'Daily Attendance List' : 'Monthly Attendance List'}
+                    </h2>
                     <div className="flex gap-4 w-full md:w-auto">
                         <div className="relative flex-1 md:w-64">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
@@ -465,6 +536,9 @@ const Attendance = () => {
                         <thead>
                             <tr className="bg-table-header border-b border-brand-border">
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Employee</th>
+                                {viewPeriod === 'monthly' && (
+                                    <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Date</th>
+                                )}
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Status</th>
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Shift</th>
                                 <th className="px-4 py-4 text-[11px] font-black uppercase text-brand-muted tracking-widest">Check In</th>
@@ -474,13 +548,9 @@ const Attendance = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-brand-border">
-                            {employees.filter(emp =>
-                                emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                emp.department.toLowerCase().includes(searchQuery.toLowerCase())
-                            ).map((emp) => {
-                                const record = getAttendanceStatus(emp.id);
+                            {tableRows.map(({ id, emp, record, date }) => {
                                 return (
-                                    <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
+                                    <tr key={id} className="hover:bg-brand-bg transition-colors group">
                                         <td className="px-4 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-10 w-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black text-xs shadow-sm group-hover:scale-110 transition-transform">
@@ -492,6 +562,11 @@ const Attendance = () => {
                                                 </div>
                                             </div>
                                         </td>
+                                        {viewPeriod === 'monthly' && (
+                                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-brand-text">
+                                                {date}
+                                            </td>
+                                        )}
                                         <td className="px-4 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 <div className={cn(
@@ -602,21 +677,21 @@ const Attendance = () => {
                                                                 <p className="text-[9px] font-black text-brand-muted uppercase tracking-widest">Mark Attendance</p>
                                                             </div>
                                                             <button
-                                                                onClick={() => handleChangeStatus(emp.id, 'Present')}
+                                                                onClick={() => handleChangeStatus(emp.id, 'Present', record, date)}
                                                                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-emerald-500 hover:bg-emerald-500/10 transition-colors"
                                                             >
                                                                 <CheckCircle className="w-3.5 h-3.5" />
                                                                 Present
                                                             </button>
                                                             <button
-                                                                onClick={() => handleChangeStatus(emp.id, 'Half Day')}
+                                                                onClick={() => handleChangeStatus(emp.id, 'Half Day', record, date)}
                                                                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-blue-400 hover:bg-blue-400/10 transition-colors"
                                                             >
                                                                 <MinusCircle className="w-3.5 h-3.5" />
                                                                 Half Day
                                                             </button>
                                                             <button
-                                                                onClick={() => handleChangeStatus(emp.id, 'Absent')}
+                                                                onClick={() => handleChangeStatus(emp.id, 'Absent', record, date)}
                                                                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-colors"
                                                             >
                                                                 <XCircle className="w-3.5 h-3.5" />
@@ -630,19 +705,22 @@ const Attendance = () => {
                                     </tr>
                                 );
                             })}
+                            {tableRows.length === 0 && (
+                                <tr>
+                                    <td colSpan={viewPeriod === 'monthly' ? 8 : 7} className="px-4 py-12 text-center text-brand-muted font-bold italic">
+                                        No attendance records found.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
 
                 {/* Attendance List - Card View (Mobile) */}
                 <div className="lg:hidden p-4 space-y-4 bg-brand-bg/50">
-                    {employees.filter(emp =>
-                        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        emp.department.toLowerCase().includes(searchQuery.toLowerCase())
-                    ).map((emp) => {
-                        const record = getAttendanceStatus(emp.id);
+                    {tableRows.map(({ id, emp, record, date }) => {
                         return (
-                            <div key={emp.id} className="bg-brand-surface border border-brand-border rounded-2xl p-5 shadow-sm">
+                            <div key={id} className="bg-brand-surface border border-brand-border rounded-2xl p-5 shadow-sm">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-3">
                                         <div className="h-10 w-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black text-xs">
@@ -650,7 +728,9 @@ const Attendance = () => {
                                         </div>
                                         <div>
                                             <div className="text-sm font-black text-brand-text">{emp.name}</div>
-                                            <div className="text-[10px] font-bold text-brand-muted uppercase tracking-widest">{emp.department}</div>
+                                            <div className="text-[10px] font-bold text-brand-muted uppercase tracking-widest">
+                                                {emp.department} {viewPeriod === 'monthly' && `· ${date}`}
+                                            </div>
                                         </div>
                                     </div>
                                     <div className={cn(
@@ -698,21 +778,21 @@ const Attendance = () => {
                                 {/* Mobile status change buttons */}
                                 <div className="flex gap-2 mt-4">
                                     <button
-                                        onClick={() => handleChangeStatus(emp.id, 'Present')}
+                                        onClick={() => handleChangeStatus(emp.id, 'Present', record, date)}
                                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 text-[10px] font-black uppercase tracking-widest border border-emerald-500/20 active:scale-95 transition-all"
                                     >
                                         <CheckCircle className="w-3.5 h-3.5" />
                                         Present
                                     </button>
                                     <button
-                                        onClick={() => handleChangeStatus(emp.id, 'Half Day')}
+                                        onClick={() => handleChangeStatus(emp.id, 'Half Day', record, date)}
                                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-blue-400/10 text-blue-400 text-[10px] font-black uppercase tracking-widest border border-blue-400/20 active:scale-95 transition-all"
                                     >
                                         <MinusCircle className="w-3.5 h-3.5" />
                                         Half Day
                                     </button>
                                     <button
-                                        onClick={() => handleChangeStatus(emp.id, 'Absent')}
+                                        onClick={() => handleChangeStatus(emp.id, 'Absent', record, date)}
                                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-widest border border-rose-500/20 active:scale-95 transition-all"
                                     >
                                         <XCircle className="w-3.5 h-3.5" />
@@ -731,6 +811,11 @@ const Attendance = () => {
                             </div>
                         );
                     })}
+                    {tableRows.length === 0 && (
+                        <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 text-center text-brand-muted font-bold italic">
+                            No attendance records found.
+                        </div>
+                    )}
                 </div>
             </div>
         </>
@@ -762,7 +847,7 @@ const Attendance = () => {
                         </thead>
                         <tbody className="divide-y divide-brand-border">
                             {attendance
-                                .filter(record => record.date === selectedDate)
+                                .filter(record => viewPeriod === 'daily' ? record.date === selectedDate : record.date.startsWith(reportMonth))
                                 .flatMap(record => {
                                     const emp = findEmployee(record.employeeId);
                                     return (record.breaks || []).map((b, idx) => ({ 
@@ -805,10 +890,10 @@ const Attendance = () => {
                                         </td>
                                     </tr>
                                 ))}
-                            {attendance.filter(r => r.date === selectedDate).every(r => !(r.breaks && r.breaks.length)) && (
+                            {attendance.filter(r => viewPeriod === 'daily' ? r.date === selectedDate : r.date.startsWith(reportMonth)).every(r => !(r.breaks && r.breaks.length)) && (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-brand-muted font-bold italic">
-                                        No break logs found for this date.
+                                        {viewPeriod === 'daily' ? 'No break logs found for this date.' : 'No break logs found for this month.'}
                                     </td>
                                 </tr>
                             )}
