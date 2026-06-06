@@ -620,7 +620,7 @@ const EmployeeDashboard = () => {
                                 <div className="w-full h-full rounded-[10px] bg-brand-surface flex items-center justify-center overflow-hidden">
                                     {user.avatar ? (
                                         <img
-                                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.avatar}`}
+                                            src={user.avatar.startsWith('http') ? user.avatar : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.avatar}`}
                                             alt="Avatar"
                                             className="w-full h-full object-cover"
                                         />

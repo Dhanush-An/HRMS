@@ -226,7 +226,7 @@ const EmployeeExpenses = () => {
                                         <div className="flex justify-end gap-2">
                                             {claim.receiptName && claim.receiptUrl && (
                                                 <a 
-                                                    href={`${API_URL}${claim.receiptUrl}`}
+                                                    href={claim.receiptUrl.startsWith('http') ? claim.receiptUrl : `${API_URL}${claim.receiptUrl}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="flex items-center gap-1.5 px-3 py-1 bg-brand-bg text-brand-muted hover:text-brand-primary border border-brand-border rounded-xl text-[10px] font-bold transition-all hover:scale-105"

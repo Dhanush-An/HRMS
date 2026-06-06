@@ -225,6 +225,15 @@ app.use(cors({
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Redirect route for Cloudinary files stored as relative /uploads/hrms_uploads/ paths
+app.get('/uploads/hrms_uploads/:filename', (req, res, next) => {
+    if (process.env.CLOUDINARY_CLOUD_NAME) {
+        const cloudinaryUrl = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/hrms_uploads/${req.params.filename}`;
+        return res.redirect(cloudinaryUrl);
+    }
+    next();
+});
+
 // --- AUTH MIDDLEWARE ---
 const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
     const authHeader = req.headers['authorization'];
@@ -501,7 +510,8 @@ app.post('/api/employees/:id/avatar', upload.single('avatar'), async (req, res) 
             return res.status(400).json({ success: false, message: 'No file uploaded' });
         }
         
-        const avatarUrl = `/uploads/${req.file.filename}`;
+        const isCloudinary = process.env.CLOUDINARY_CLOUD_NAME ? true : false;
+        const avatarUrl = isCloudinary ? req.file.path : `/uploads/${req.file.filename}`;
         const employee = await Employee.findOneAndUpdate(
             { employeeId: req.params.id },
             { $set: { avatar: avatarUrl } },
@@ -1201,6 +1211,7 @@ app.get('/api/expenses', async (req, res) => {
 app.post('/api/expenses', upload.single('receipt'), async (req, res) => {
     try {
         const { employeeId, employeeName, employeeRole, category, amount, date, description } = req.body;
+        const isCloudinary = process.env.CLOUDINARY_CLOUD_NAME ? true : false;
         const newExpense = new Expense({
             employeeId,
             employeeName,
@@ -1211,7 +1222,7 @@ app.post('/api/expenses', upload.single('receipt'), async (req, res) => {
             description,
             status: 'Pending',
             receiptName: req.file ? req.file.originalname : undefined,
-            receiptUrl: req.file ? `/uploads/${req.file.filename}` : undefined
+            receiptUrl: req.file ? (isCloudinary ? req.file.path : `/uploads/${req.file.filename}`) : undefined
         });
         await newExpense.save();
         res.status(201).json(newExpense);
@@ -1410,12 +1421,13 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
             return res.status(400).json({ success: false, message: 'No file uploaded' });
         }
 
+        const isCloudinary = process.env.CLOUDINARY_CLOUD_NAME ? true : false;
         const newDoc = new DocumentModel({
             employeeId,
             title,
             type,
             uploadedBy,
-            fileUrl: `/uploads/${req.file.filename}`,
+            fileUrl: isCloudinary ? req.file.path : `/uploads/${req.file.filename}`,
             uploadDate: new Date().toISOString().split('T')[0],
             status: 'Pending'
         });

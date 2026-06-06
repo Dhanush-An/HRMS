@@ -198,7 +198,7 @@ const EmployeeProfile = () => {
                                 <div className="w-full h-full rounded-full bg-brand-bg flex items-center justify-center overflow-hidden border-2 border-brand-border">
                                     {user.avatar ? (
                                         <img
-                                            src={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.avatar}`}
+                                            src={user.avatar.startsWith('http') ? user.avatar : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${user.avatar}`}
                                             alt="Avatar"
                                             className="w-full h-full object-cover"
                                         />

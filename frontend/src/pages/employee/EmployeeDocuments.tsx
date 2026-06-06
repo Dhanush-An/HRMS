@@ -54,7 +54,7 @@ const EmployeeDocuments = () => {
                     type: title,
                     status: uploaded ? 'Uploaded' : 'Pending',
                     uploadDate: uploaded?.uploadDate || undefined,
-                    url: uploaded?.url || undefined
+                    url: uploaded?.fileUrl || uploaded?.url || undefined
                 };
             });
             setDocuments(mergedDocs);
@@ -78,7 +78,9 @@ const EmployeeDocuments = () => {
     const handleDownload = (doc: DocumentParams) => {
         if (doc.url) {
             const link = document.createElement('a');
-            link.href = doc.url;
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const fullUrl = doc.url.startsWith('http') ? doc.url : `${baseUrl}${doc.url}`;
+            link.href = fullUrl;
             link.setAttribute('download', `${doc.title}.pdf`); // Attempt to force download
             link.target = "_blank";
             document.body.appendChild(link);

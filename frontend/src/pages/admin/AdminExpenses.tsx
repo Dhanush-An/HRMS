@@ -328,7 +328,7 @@ const AdminExpenses = () => {
                                     <td className="px-6 py-6 whitespace-nowrap">
                                         {expense.receiptName && expense.receiptUrl ? (
                                             <a 
-                                                href={`${API_URL}${expense.receiptUrl}`} 
+                                                href={expense.receiptUrl.startsWith('http') ? expense.receiptUrl : `${API_URL}${expense.receiptUrl}`} 
                                                 target="_blank" 
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-bg text-brand-muted hover:text-brand-primary border border-brand-border rounded-xl text-[10px] font-bold transition-all hover:scale-105"
@@ -439,7 +439,7 @@ const AdminExpenses = () => {
                             <div className="flex justify-between items-center pt-2">
                                 {expense.receiptName && expense.receiptUrl ? (
                                     <a 
-                                        href={`${API_URL}${expense.receiptUrl}`} 
+                                        href={expense.receiptUrl.startsWith('http') ? expense.receiptUrl : `${API_URL}${expense.receiptUrl}`} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-surface text-brand-muted hover:text-brand-primary border border-brand-border rounded-xl text-[10px] font-bold transition-all"
