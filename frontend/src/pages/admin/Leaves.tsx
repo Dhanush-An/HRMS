@@ -88,20 +88,20 @@ const Leaves = () => {
 
     useEffect(() => {
         if (user) {
-            // Pre-fill for non-admin
-            if (!isAdmin) {
+            // Pre-fill for non-super-admin (employees and sub-admins requesting for themselves)
+            if (user?.role?.toLowerCase() !== 'admin') {
                 setFormData((prev: any) => ({ ...prev, employeeId: user.id }));
             }
         }
         fetchData();
-    }, [user, isAdmin]);
+    }, [user]);
 
     const handleApplyLeave = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // If user is employee, ensure ID is theirs
-        const isUserAdmin = user?.role?.toLowerCase().includes('admin') || user?.role?.toLowerCase() === 'hr';
-        const targetEmployeeId = !isUserAdmin ? user.id : formData.employeeId;
+        // If user is employee or subadmin requesting for themselves, ensure ID is theirs
+        const isSuperAdmin = user?.role?.toLowerCase() === 'admin';
+        const targetEmployeeId = isSuperAdmin ? formData.employeeId : user.id;
 
         const emp = employees.find(e => e.id === targetEmployeeId);
         if (!emp) {
@@ -121,9 +121,9 @@ const Leaves = () => {
             if (response.ok) {
                 setShowApplyModal(false);
                 fetchData();
-                // Reset form but keep ID for employees
+                // Reset form but keep ID for non-super-admins
                 setFormData({
-                    employeeId: !isAdmin ? user.id : '',
+                    employeeId: isSuperAdmin ? '' : user.id,
                     type: 'Sick Leave',
                     startDate: '',
                     endDate: '',
@@ -514,7 +514,7 @@ const Leaves = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-2 pl-1">Assign Employee</label>
-                                    {isAdmin ? (
+                                    {user?.role?.toLowerCase() === 'admin' ? (
                                         <div className="custom-select-container">
                                             <select
                                                 className="w-full bg-brand-bg border border-brand-border rounded-xl p-4 text-brand-text font-black text-sm focus:ring-4 focus:ring-brand-primary/10 focus:border-brand-primary outline-none transition-all shadow-inner cursor-pointer appearance-none"
