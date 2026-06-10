@@ -181,7 +181,7 @@ const Leaves = () => {
                     <h1 className="text-2xl md:text-3xl font-black text-brand-text tracking-tight">Leave Management</h1>
                     <p className="text-brand-muted font-medium text-sm md:text-base leading-relaxed">Coordinate time off, monitor presence, and manage balances.</p>
                 </div>
-                {!isAdmin && (
+                {(!isAdmin || user?.role?.toLowerCase() === 'subadmin') && (
                     <div className="flex gap-4">
                         <button
                             onClick={() => setShowApplyModal(true)}
@@ -356,7 +356,7 @@ const Leaves = () => {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-6 whitespace-nowrap text-right">
-                                                    {isAdmin && leave.status === 'Pending' && (
+                                                    {isAdmin && leave.status === 'Pending' && leave.employeeId !== user?.id && (
                                                         <div className="flex justify-end gap-2">
                                                             <button
                                                                 onClick={() => handleStatusUpdate(leave.id, 'Approved')}
@@ -420,7 +420,7 @@ const Leaves = () => {
                                             </div>
                                         </div>
 
-                                        {isAdmin && leave.status === 'Pending' && (
+                                        {isAdmin && leave.status === 'Pending' && leave.employeeId !== user?.id && (
                                             <div className="flex gap-2 mt-5">
                                                 <button
                                                     onClick={() => handleStatusUpdate(leave.id, 'Approved')}
