@@ -1104,8 +1104,16 @@ const AttendanceSection = ({ attendance, employees }: any) => {
 
 // ─── Section: Leaves ──────────────────────────────────────────────────────────
 const LeavesSection = ({ leaves, onRefresh }: any) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const [filter, setFilter] = useState('All');
     const [q, setQ] = useState('');
+    const [showApplyModal, setShowApplyModal] = useState(false);
+    const [formData, setFormData] = useState({
+        type: 'Sick Leave',
+        startDate: '',
+        endDate: '',
+        reason: ''
+    });
 
     const visible = leaves
         .filter((l: any) => filter === 'All' || l.status === filter)
@@ -1116,11 +1124,50 @@ const LeavesSection = ({ leaves, onRefresh }: any) => {
         catch (e: any) { alert(e.message); }
     };
 
+    const handleApplyLeave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const payload = {
+                employeeId: user.id,
+                employeeName: user.name,
+                type: formData.type,
+                startDate: formData.startDate,
+                endDate: formData.endDate,
+                reason: formData.reason
+            };
+
+            const response = await api.post('/api/leaves', payload);
+
+            if (response.ok) {
+                setShowApplyModal(false);
+                onRefresh();
+                setFormData({
+                    type: 'Sick Leave',
+                    startDate: '',
+                    endDate: '',
+                    reason: ''
+                });
+            } else {
+                const data = await response.json();
+                alert(data.message || "Failed to submit leave request.");
+            }
+        } catch (error: any) {
+            console.error("Error applying for leave:", error);
+            alert(`Failed to submit request: ${error.message}`);
+        }
+    };
+
     return (
         <div className="space-y-5">
-            <div>
-                <h2 className="text-2xl font-black text-brand-text">Leave Management</h2>
-                <p className="text-sm text-brand-muted mt-0.5">Approve or reject employee leave requests.</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-black text-brand-text">Leave Management</h2>
+                    <p className="text-sm text-brand-muted mt-0.5">Approve or reject employee leave requests.</p>
+                </div>
+                <button onClick={() => setShowApplyModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-brand-primary/20">
+                    <Plus className="w-4 h-4" /> Request Leave
+                </button>
             </div>
             <div className="flex flex-wrap gap-2 items-center">
                 {['All', 'Pending', 'Approved', 'Rejected'].map(s => (
@@ -1153,7 +1200,7 @@ const LeavesSection = ({ leaves, onRefresh }: any) => {
                                     <td className="px-4 py-3 text-xs text-brand-muted max-w-[150px] truncate">{l.reason || '—'}</td>
                                     <td className="px-4 py-3"><Badge status={l.status} /></td>
                                     <td className="px-4 py-3">
-                                        {l.status === 'Pending' && (
+                                        {l.status === 'Pending' && l.employeeId !== user.id && (
                                             <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button onClick={() => update(l._id || l.id, 'Approved')}
                                                     className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white rounded-lg transition-all"><CheckCircle className="w-4 h-4" /></button>
@@ -1169,6 +1216,83 @@ const LeavesSection = ({ leaves, onRefresh }: any) => {
                 </div>
                 {!visible.length && <p className="px-6 py-8 text-center text-brand-muted text-sm">No leave requests found.</p>}
             </div>
+
+            {showApplyModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowApplyModal(false)}>
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 w-full max-w-lg" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-5">
+                            <div>
+                                <h3 className="text-xl font-black text-brand-text">Request Leave</h3>
+                                <p className="text-xs text-brand-muted mt-0.5">Submit a leave request for yourself.</p>
+                            </div>
+                            <button onClick={() => setShowApplyModal(false)}><XCircle className="w-5 h-5 text-brand-muted hover:text-brand-primary transition-colors" /></button>
+                        </div>
+                        <form onSubmit={handleApplyLeave} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">Type of Leave</label>
+                                <select 
+                                    value={formData.type} 
+                                    onChange={e => setFormData({ ...formData, type: e.target.value })}
+                                    className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                                >
+                                    <option value="Casual Leave">Casual Leave</option>
+                                    <option value="Sick Leave">Sick Leave</option>
+                                    <option value="Emergency Leave">Emergency Leave</option>
+                                    <option value="Vacation">Vacation</option>
+                                </select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">Start Date</label>
+                                    <input 
+                                        type="date" 
+                                        value={formData.startDate} 
+                                        onChange={e => setFormData({ ...formData, startDate: e.target.value })} 
+                                        required
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/30" 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">End Date</label>
+                                    <input 
+                                        type="date" 
+                                        value={formData.endDate} 
+                                        onChange={e => setFormData({ ...formData, endDate: e.target.value })} 
+                                        required
+                                        className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/30" 
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-brand-muted uppercase tracking-widest block mb-1.5">Reason</label>
+                                <textarea 
+                                    value={formData.reason} 
+                                    onChange={e => setFormData({ ...formData, reason: e.target.value })} 
+                                    required 
+                                    rows={4}
+                                    placeholder="Provide a reason for leave request…"
+                                    className="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-brand-text text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/30 resize-none" 
+                                />
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowApplyModal(false)}
+                                    className="flex-1 py-3 border border-brand-border text-brand-muted rounded-xl font-bold text-sm hover:bg-brand-bg transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    className="flex-1 py-3 bg-brand-primary text-white rounded-xl font-bold text-sm hover:opacity-90 shadow-lg shadow-brand-primary/20 transition-all"
+                                >
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
