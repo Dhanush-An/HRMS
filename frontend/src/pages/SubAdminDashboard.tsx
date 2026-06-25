@@ -397,9 +397,9 @@ const SubAdminDashboard: React.FC = () => {
 
         let status = 'Present';
         if (loginOptions.shiftType === 'Day Shift') {
-            const nineFortyFive = new Date();
-            nineFortyFive.setHours(9, 45, 0, 0);
-            if (now > nineFortyFive) {
+            const ten = new Date();
+            ten.setHours(10, 0, 0, 0);
+            if (now > ten) {
                 status = 'Half Day';
             }
         } else {

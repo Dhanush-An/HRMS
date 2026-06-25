@@ -350,6 +350,9 @@ app.post('/api/login', async (req, res) => {
             }
 
             if (isMatch) {
+                if (user.status === 'Inactive') {
+                    return res.status(403).json({ success: false, message: 'Your account is inactive. Please contact HR.' });
+                }
                 const empUser = {
                     id: user.employeeId,
                     name: user.name,
@@ -958,14 +961,14 @@ app.get('/api/attendance', async (req, res) => {
         }
         const attendance = await Attendance.find(query).sort({ createdAt: -1 }).limit(Number(limit) || 0);
         
-        // Auto-correct 'Half Day' to 'Present' if it meets the new 9:45 AM rule
+        // Auto-correct 'Half Day' to 'Present' if it meets the new 10:00 AM rule
         const correctedAttendance = attendance.map(record => {
             const r = record.toObject ? record.toObject() : record;
             if (r.status === 'Half Day' && r.checkIn && r.shiftType === 'Day Shift') {
                 const [h, m] = r.checkIn.split(':').map(Number);
                 const totalMins = h * 60 + m;
-                // If checked in at or before 9:45 AM, it should be Present
-                if (totalMins <= 9 * 60 + 45) {
+                // If checked in at or before 10:00 AM, it should be Present
+                if (totalMins <= 10 * 60 + 0) {
                     return { ...r, status: 'Present' };
                 }
             }
@@ -1861,6 +1864,13 @@ app.put('/api/resignations/:id', authorizeRoles('admin', 'subadmin', 'hr'), asyn
             { new: true }
         );
         if (updatedResignation) {
+            if (req.body.status === 'Approved') {
+                await Employee.findOneAndUpdate(
+                    { employeeId: updatedResignation.employeeId },
+                    { status: 'Inactive' }
+                );
+                console.log(`[INFO] Employee ${updatedResignation.employeeId} set to Inactive due to approved resignation.`);
+            }
             res.json(updatedResignation);
         } else {
             res.status(404).json({ message: 'Resignation not found' });

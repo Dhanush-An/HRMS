@@ -25,6 +25,7 @@ interface Employee {
     name: string;
     department: string;
     role: string;
+    branchName?: string;
     salary?: SalaryStructure;
 }
 
@@ -63,6 +64,17 @@ const Payroll = () => {
     const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toLocaleString('default', { month: '2-digit' }));
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [processData, setProcessData] = useState<{ [key: string]: { bonus: number, tax?: number, pf?: number } }>({});
+    const [selectedBranch, setSelectedBranch] = useState<string>('All');
+
+    // Derive unique branch names from employees
+    const branchNames = Array.from(new Set(
+        employees.map(e => e.branchName || 'Unknown').filter(Boolean)
+    )).sort();
+
+    // Filtered employees by branch
+    const filteredEmployees = selectedBranch === 'All'
+        ? employees
+        : employees.filter(e => (e.branchName || 'Unknown') === selectedBranch);
 
     const fetchEmployees = async () => {
         setEmployeesLoading(true);
@@ -173,19 +185,26 @@ const Payroll = () => {
             r.date.startsWith(prefix)
         );
 
-        // Calculate Sundays in month
+        // Calculate total days in month and Sundays
+        const totalDaysInMonth = new Date(parseInt(selectedYear.toString()), monthNum, 0).getDate();
         let sundays = 0;
         const date = new Date(selectedYear, monthNum - 1, 1);
         while (date.getMonth() === monthNum - 1) {
             if (date.getDay() === 0) sundays++;
             date.setDate(date.getDate() + 1);
         }
+        // Total working days = all days minus Sundays
+        const totalWorkingDays = totalDaysInMonth - sundays;
 
         // Differentiate Present and Absent days
         const present = records.filter(r => r.status === 'Present').length;
         const halfDay = records.filter(r => r.status === 'Half Day').length;
         const absents = records.filter(r => r.status === 'Absent');
         
+        // 2 half days = 1 full present day
+        const effectivePresent = present + Math.floor(halfDay / 2);
+        const remainingHalfDay = halfDay % 2; // leftover half day (0 or 1)
+
         // Check for penalties (unapproved leaves)
         let penalties = 0;
         absents.forEach(abs => {
@@ -202,15 +221,20 @@ const Payroll = () => {
             }
         });
 
+        // Absent days = working days - effective present - remaining half day (0.5) - approved leaves
+        const approvedLeaveCount = absents.length - penalties;
+        const absentDays = Math.max(0, totalWorkingDays - effectivePresent - (remainingHalfDay * 0.5) - approvedLeaveCount);
+
         // Sundays are counted as Present (Paid Off)
         const totalPayableDays = Math.max(0, present + (halfDay * 0.5) + sundays - penalties);
 
-        return { present, halfDay, sundays, penalties, totalPayableDays };
+        return { present, halfDay, sundays, penalties, totalPayableDays, totalWorkingDays, effectivePresent, absentDays, remainingHalfDay };
     };
 
     const calculateNetSalary = (emp: Employee) => {
         const salary = emp.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 };
-        const { present, halfDay, sundays, penalties, totalPayableDays } = calculateAttendanceStats(emp.id);
+        const stats = calculateAttendanceStats(emp.id);
+        const { present, halfDay, sundays, penalties, totalPayableDays, totalWorkingDays, effectivePresent, absentDays, remainingHalfDay } = stats;
         
         // Calculate Total Gross (Earnings minus Deductions)
         const grossEarnings = (salary.basic || 0) + (salary.hra || 0) + (salary.conveyance || 0) + (salary.medical || 0) + (salary.special || 0) + (salary.other || 0);
@@ -229,7 +253,7 @@ const Payroll = () => {
             totalEarnings: earnedSalary + bonus,
             actualBase: earnedSalary,
             totalPayableDays,
-            presentData: { present, halfDay, sundays, penalties, totalPayableDays },
+            presentData: { present, halfDay, sundays, penalties, totalPayableDays, totalWorkingDays, effectivePresent, absentDays, remainingHalfDay },
             tax,
             pf,
             netSalary: earnedSalary + bonus 
@@ -405,6 +429,21 @@ const Payroll = () => {
                     </div>
                 ) : (
                     <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center gap-3 p-4 border-b border-brand-border">
+                            <label className="text-[10px] font-black text-brand-muted uppercase tracking-widest">Branch:</label>
+                            <div className="custom-select-container">
+                                <select
+                                    value={selectedBranch}
+                                    onChange={(e) => setSelectedBranch(e.target.value)}
+                                    className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2 text-brand-text font-bold text-sm focus:ring-2 focus:ring-brand-primary outline-none transition-all appearance-none pr-8"
+                                >
+                                    <option value="All">All Branches</option>
+                                    {branchNames.map(b => (
+                                        <option key={b} value={b}>{b}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                         <div className="overflow-x-auto no-scrollbar">
                             <table className="w-full text-left border-collapse">
                                 <thead>
@@ -422,7 +461,7 @@ const Payroll = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-brand-border">
-                                    {Array.isArray(employees) && employees.map((emp) => {
+                                    {Array.isArray(filteredEmployees) && filteredEmployees.map((emp) => {
                                         const salary = emp.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 };
                                         const grossEarnings = (salary.basic || 0) + (salary.hra || 0) + (salary.conveyance || 0) + (salary.medical || 0) + (salary.special || 0) + (salary.other || 0);
                                         const deductions = (salary.pf || 0) + (salary.tax || 0);
@@ -430,8 +469,9 @@ const Payroll = () => {
                                         return (
                                             <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
                                                 <td className="px-2 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-bold text-brand-text truncate max-w-[100px]">{emp.name}</div>
-                                                    <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider truncate max-w-[100px]">{emp.role}</div>
+                                                    <div className="text-sm font-bold text-brand-text truncate max-w-[120px]">{emp.name}</div>
+                                                    <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider truncate max-w-[120px]">{emp.role}</div>
+                                                    {emp.branchName && <div className="text-[9px] font-bold text-brand-primary uppercase tracking-wider truncate max-w-[120px]">{emp.branchName}</div>}
                                                 </td>
                                                 {['basic', 'hra', 'conveyance', 'medical', 'special', 'other', 'pf', 'tax'].map((field) => (
                                                     <td key={field} className="px-2 py-4 whitespace-nowrap">
@@ -523,6 +563,21 @@ const Payroll = () => {
                         </div>
 
                         <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-x-auto no-scrollbar shadow-sm">
+                            <div className="flex items-center gap-3 p-4 border-b border-brand-border">
+                                <label className="text-[10px] font-black text-brand-muted uppercase tracking-widest">Branch:</label>
+                                <div className="custom-select-container">
+                                    <select
+                                        value={selectedBranch}
+                                        onChange={(e) => setSelectedBranch(e.target.value)}
+                                        className="bg-brand-bg border border-brand-border rounded-xl px-4 py-2 text-brand-text font-bold text-sm focus:ring-2 focus:ring-brand-primary outline-none transition-all appearance-none pr-8"
+                                    >
+                                        <option value="All">All Branches</option>
+                                        {branchNames.map(b => (
+                                            <option key={b} value={b}>{b}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
@@ -534,20 +589,25 @@ const Payroll = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-brand-border">
-                                    {Array.isArray(employees) && employees.map((emp) => {
+                                    {Array.isArray(filteredEmployees) && filteredEmployees.map((emp) => {
                                         const { netSalary, actualBase, presentData } = calculateNetSalary(emp);
                                         return (
                                             <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
-                                                <td className="px-2 py-4 whitespace-nowrap text-brand-text font-bold truncate max-w-[120px]">{emp.name}</td>
                                                 <td className="px-2 py-4 whitespace-nowrap">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-[10px] font-black text-status-approved uppercase">P: {presentData.present}</span>
-                                                        <span className="text-[10px] font-black text-status-pending uppercase">H: {presentData.halfDay}</span>
+                                                    <div className="text-brand-text font-bold truncate max-w-[120px]">{emp.name}</div>
+                                                    {emp.branchName && <div className="text-[9px] font-bold text-brand-primary uppercase tracking-wider truncate max-w-[120px]">{emp.branchName}</div>}
+                                                </td>
+                                                <td className="px-2 py-4 whitespace-nowrap">
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="text-[9px] font-black text-brand-muted uppercase tracking-tighter">Total: {presentData.totalWorkingDays} working days</span>
+                                                        <span className="text-[10px] font-black text-status-approved uppercase">P: {presentData.effectivePresent}{presentData.remainingHalfDay ? '.5' : ''}</span>
+                                                        <span className="text-[10px] font-black text-status-pending uppercase">H: {presentData.halfDay} {presentData.halfDay >= 2 ? `(=${Math.floor(presentData.halfDay / 2)}d)` : ''}</span>
+                                                        <span className="text-[10px] font-black text-status-rejected uppercase">Abs: {presentData.absentDays}</span>
                                                         <span className="text-[10px] font-black text-brand-primary uppercase">Sun: {presentData.sundays}</span>
                                                         {presentData.penalties > 0 && (
                                                             <span className="text-[10px] font-black text-status-rejected uppercase">Penalty: -{presentData.penalties}d</span>
                                                         )}
-                                                        <span className="text-[9px] font-bold text-brand-muted uppercase tracking-tighter border-t border-brand-border mt-1 pt-1">{presentData.totalPayableDays} Days</span>
+                                                        <span className="text-[9px] font-bold text-brand-muted uppercase tracking-tighter border-t border-brand-border mt-1 pt-1">{presentData.totalPayableDays} Paid Days</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">
