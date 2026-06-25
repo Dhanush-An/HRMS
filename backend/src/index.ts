@@ -29,12 +29,31 @@ import dns from 'dns';
 
 dns.setServers(["1.1.1.1","8.8.8.8"]);
 
-const generateEmpId = async () => {
+const generateEmpId = async (branchId?: string, joiningDate?: string) => {
+    let branchPrefix = 'BLR';
+    if (branchId) {
+        const branch = await Branch.findOne({ branchId });
+        if (branch && branch.branchCode) {
+            branchPrefix = branch.branchCode.replace(/[0-9]/g, '').toUpperCase();
+        }
+    }
+    
+    let year = 2026;
+    if (joiningDate) {
+        const parsedYear = parseInt(joiningDate.split('-')[0]);
+        if (!isNaN(parsedYear)) {
+            year = parsedYear;
+        }
+    } else {
+        year = new Date().getFullYear();
+    }
+
     let count = await Employee.countDocuments();
-    let empId = `EMP${String(count + 1).padStart(3, '0')}`;
+    let empNumber = count + 1;
+    let empId = `FIC/${branchPrefix}/${year}/EMP${String(empNumber).padStart(3, '0')}`;
     while (await Employee.findOne({ employeeId: empId })) {
-        count++;
-        empId = `EMP${String(count + 1).padStart(3, '0')}`;
+        empNumber++;
+        empId = `FIC/${branchPrefix}/${year}/EMP${String(empNumber).padStart(3, '0')}`;
     }
     return empId;
 };
@@ -133,7 +152,7 @@ const seedBranchHRManagers = async () => {
             if (!existing) {
                 const salt = await bcrypt.genSalt(10);
                 const hashedPassword = await bcrypt.hash('Password123!', salt);
-                const empId = await generateEmpId();
+                const empId = await generateEmpId(branch.branchId, branch.openingDate);
                 const newEmp = new Employee({
                     employeeId: empId,
                     name: branch.managerName || `${branch.city} HR Manager`,
@@ -424,16 +443,16 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
         const { id, name, email, role, department, status, phone, joiningDate, branchId, branchName } = req.body;
         const user = (req as any).user;
 
-        let finalId = id;
-        if (!finalId) {
-            finalId = await generateEmpId();
-        }
-
         let finalBranchId = branchId;
         let finalBranchName = branchName;
         if (user.role !== 'admin') {
             finalBranchId = user.branchId;
             finalBranchName = user.branchName;
+        }
+
+        let finalId = id;
+        if (!finalId) {
+            finalId = await generateEmpId(finalBranchId, joiningDate);
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -659,7 +678,7 @@ app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
                 existingEmp.role = 'hr';
                 await existingEmp.save();
             } else {
-                const empId = await generateEmpId();
+                const empId = await generateEmpId(finalBranchId, openingDate);
                 const newEmp = new Employee({
                     employeeId: empId,
                     name: managerName || 'Branch Manager',
@@ -692,7 +711,7 @@ app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
                 existingSub.password = subAdminHash;
                 await existingSub.save();
             } else {
-                const subEmpId = await generateEmpId();
+                const subEmpId = await generateEmpId(finalBranchId, openingDate);
                 const subEmp = new Employee({
                     employeeId: subEmpId,
                     name: managerName || `${name} Sub Admin`,
@@ -764,7 +783,7 @@ app.put('/api/branches/:id', authorizeRoles('admin'), async (req, res) => {
                     const salt2 = await bcrypt.genSalt(10);
                     const rawPassword = (subAdminPassword && typeof subAdminPassword === 'string' && subAdminPassword.trim() !== '') ? subAdminPassword : 'Password123!';
                     const subHash = rawPassword.startsWith('$2') ? rawPassword : await bcrypt.hash(rawPassword, salt2);
-                    const subEmpId = await generateEmpId();
+                    const subEmpId = await generateEmpId(updatedBranch.branchId);
                     await new Employee({
                         employeeId: subEmpId,
                         name: updatedBranch.managerName || `${updatedBranch.name} Sub Admin`,

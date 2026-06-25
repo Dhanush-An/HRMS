@@ -788,16 +788,31 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
     const [profile, setProfile] = useState<any>(null);
 
     const generateNextEmployeeId = () => {
-        if (!employees || employees.length === 0) return 'EMP001';
+        let branchPrefix = 'BLR';
+        try {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user && user.branchName) {
+                if (user.branchName.toLowerCase().includes('chennai')) {
+                    branchPrefix = 'CHE';
+                } else if (user.branchName.toLowerCase().includes('bangalore')) {
+                    branchPrefix = 'BLR';
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        const year = new Date().getFullYear();
+
+        if (!employees || employees.length === 0) return `FIC/${branchPrefix}/${year}/EMP001`;
         let maxId = 0;
         employees.forEach(emp => {
-            const match = (emp.employeeId || '').match(/^EMP(\d+)$/i);
+            const match = (emp.employeeId || '').match(/EMP(\d+)$/i);
             if (match) {
                 const num = parseInt(match[1], 10);
                 if (num > maxId) maxId = num;
             }
         });
-        return `EMP${String(maxId + 1).padStart(3, '0')}`;
+        return `FIC/${branchPrefix}/${year}/EMP${String(maxId + 1).padStart(3, '0')}`;
     };
 
     const filtered = employees
