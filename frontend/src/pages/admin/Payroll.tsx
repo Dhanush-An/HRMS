@@ -470,6 +470,7 @@ const Payroll = () => {
                     ))}
                 </div>
             </div>
+        </div>
 
             {/* Salary Structure Tab */}
             {activeTab === 'structure' && (
