@@ -61,13 +61,19 @@ async function run() {
             // Branch Prefix
             let branchPrefix = 'BLR';
             const branch = branches.find(b => b.branchId === employee.branchId);
-            if (branch && branch.branchCode) {
-                branchPrefix = branch.branchCode.replace(/[0-9]/g, '').toUpperCase();
+            if (branch) {
+                if (branch.name && branch.name.toLowerCase().includes('palacode')) {
+                    branchPrefix = 'PLCD';
+                } else if (branch.branchCode) {
+                    branchPrefix = branch.branchCode.replace(/[0-9]/g, '').toUpperCase();
+                }
             } else if (employee.branchName) {
                 if (employee.branchName.toLowerCase().includes('chennai')) {
                     branchPrefix = 'CHE';
                 } else if (employee.branchName.toLowerCase().includes('bangalore')) {
                     branchPrefix = 'BLR';
+                } else if (employee.branchName.toLowerCase().includes('palacode')) {
+                    branchPrefix = 'PLCD';
                 }
             }
 

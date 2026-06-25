@@ -33,8 +33,12 @@ const generateEmpId = async (branchId?: string, joiningDate?: string, role?: str
     let branchPrefix = 'BLR';
     if (branchId) {
         const branch = await Branch.findOne({ branchId });
-        if (branch && branch.branchCode) {
-            branchPrefix = branch.branchCode.replace(/[0-9]/g, '').toUpperCase();
+        if (branch) {
+            if (branch.name && branch.name.toLowerCase().includes('palacode')) {
+                branchPrefix = 'PLCD';
+            } else if (branch.branchCode) {
+                branchPrefix = branch.branchCode.replace(/[0-9]/g, '').toUpperCase();
+            }
         }
     }
     

@@ -796,6 +796,8 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
                     branchPrefix = 'CHE';
                 } else if (user.branchName.toLowerCase().includes('bangalore')) {
                     branchPrefix = 'BLR';
+                } else if (user.branchName.toLowerCase().includes('palacode')) {
+                    branchPrefix = 'PLCD';
                 }
             }
         } catch (e) {
