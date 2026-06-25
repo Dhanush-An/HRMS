@@ -519,14 +519,7 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
     doc.setFontSize(8);
     doc.text('Employee Signature', 45, signY + 22.5, { align: 'center' });
 
-    // Right side - Employer Signatory
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('For FORGE INDIA CONNECT PVT. LTD.', 165, signY + 3.5, { align: 'center' });
-    
-    doc.line(135, signY + 18, 195, signY + 18);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Authorized Signatory', 165, signY + 22.5, { align: 'center' });
+
 
 
     // --- 7. FOOTER ---
