@@ -8,6 +8,10 @@ frontend/.env
 frontend/.env.local
 backend/.env
 backend/.env.local
+.env.example
+*.env.example
+backend/.env.example
+frontend/.env.example
 
 # Build outputs
 frontend/dist/
