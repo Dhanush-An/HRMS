@@ -8,6 +8,7 @@ import {
 import { cn } from '../../utils/cn';
 import api from '../../api';
 import { generatePayslipPDF } from '../../utils/generatePayslipPDF';
+import EmployeePayroll from '../employee/EmployeePayroll';
 
 interface SalaryStructure {
     basic: number;
@@ -46,6 +47,11 @@ interface PayrollRecord {
 }
 
 const Payroll = () => {
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
+    const isHrOrSubAdmin = user && (user.role === 'hr' || user.role === 'subadmin');
+    const [showMyPayroll, setShowMyPayroll] = useState(false);
+
     const [activeTab, setActiveTab] = useState<'structure' | 'process' | 'history'>('structure');
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [payrollHistory, setPayrollHistory] = useState<PayrollRecord[]>([]);
@@ -410,6 +416,26 @@ const Payroll = () => {
         }
     };
 
+    if (showMyPayroll) {
+        return (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="flex justify-between items-center bg-brand-surface p-4 rounded-xl border border-brand-border shadow-sm">
+                    <div>
+                        <h2 className="text-xl font-black text-brand-text uppercase">My Personal Payroll</h2>
+                        <p className="text-xs text-brand-muted font-medium italic">View and download your personal payslips.</p>
+                    </div>
+                    <button
+                        onClick={() => setShowMyPayroll(false)}
+                        className="bg-brand-primary hover:opacity-90 text-white px-4 py-2 rounded-xl font-bold text-xs transition-all active:scale-95 shadow-lg shadow-brand-primary/20"
+                    >
+                        Back to Management
+                    </button>
+                </div>
+                <EmployeePayroll />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-4">
@@ -417,7 +443,17 @@ const Payroll = () => {
                     <h1 className="text-3xl font-black text-brand-text tracking-tight">Payroll Management</h1>
                     <p className="text-brand-muted font-medium">Automate and manage your workforce payouts securely.</p>
                 </div>
-                <div className="flex bg-brand-surface p-1 rounded-xl border border-brand-border shadow-sm">
+                <div className="flex items-center gap-4">
+                    {isHrOrSubAdmin && (
+                        <button
+                            onClick={() => setShowMyPayroll(true)}
+                            className="bg-brand-primary-light border border-brand-primary/20 hover:bg-brand-primary/10 text-brand-primary px-4 py-2 rounded-xl flex items-center gap-2 font-bold text-xs transition-all active:scale-95 shadow-sm"
+                        >
+                            <BadgeDollarSign className="w-4 h-4" />
+                            My Payroll
+                        </button>
+                    )}
+                    <div className="flex bg-brand-surface p-1 rounded-xl border border-brand-border shadow-sm">
                     {['structure', 'process', 'history'].map((tab) => (
                         <button
                             key={tab}

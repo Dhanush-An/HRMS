@@ -209,7 +209,7 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
     
     doc.setTextColor(110, 110, 110);
     doc.setFontSize(7.5);
-    doc.text('CIN: U29309PN2021PTC198162   |   Email: hr@forgeindiaconnect.com', 105, 29, { align: 'center' });
+    doc.text('Email: hr@forgeindiaconnect.com', 105, 29, { align: 'center' });
     doc.text('Website: www.forgeindiaconnect.com   |   Phone: +91 6369406416', 105, 33, { align: 'center' });
 
     // PAYSLIP Capsule Box
