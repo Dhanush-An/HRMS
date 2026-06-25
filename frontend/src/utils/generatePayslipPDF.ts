@@ -25,6 +25,7 @@ export interface PayslipFinancials {
     esi: number;
     loanDeduction: number;
     otherDeductions: number;
+    lopDeduction: number;
     totalDeductions: number;
 
     netPay: number;
@@ -86,40 +87,29 @@ export const computeFinancials = (employee: any, payroll: any): PayslipFinancial
     const esi = payroll.esi !== undefined && payroll.esi !== null ? payroll.esi : (employee?.salary?.esi || 0);
     const loanDeduction = payroll.loanDeduction !== undefined && payroll.loanDeduction !== null ? payroll.loanDeduction : 0;
     const otherDeductions = payroll.otherDeductions !== undefined && payroll.otherDeductions !== null ? payroll.otherDeductions : 0;
-    const totalDeductions = pf + profTax + esi + loanDeduction + otherDeductions;
 
     // 2. Get Net Pay
     const netPay = payroll.netSalary || 0;
-
-    // 3. Compute Gross Earnings based on Net Pay + Deductions
-    const grossEarnings = netPay + totalDeductions;
-
-    // 4. Split Gross Earnings into components (excluding bonus)
     const bonus = payroll.bonus || 0;
-    const grossBase = Math.max(0, grossEarnings - bonus);
 
     // Get configured salary structure from employee
     const struct = employee?.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0 };
-    const configuredBasic = struct.basic || 0;
-    const configuredHra = struct.hra || 0;
-    const configuredConveyance = struct.conveyance || struct.transport || 0;
-    const configuredMedical = struct.medical || 0;
-    const configuredSpecial = struct.special || 0;
-    const configuredOther = struct.other || 0;
+    const basic = struct.basic || 0;
+    const hra = struct.hra || 0;
+    const conveyance = struct.conveyance || struct.transport || 0;
+    const medical = struct.medical || 0;
+    const special = struct.special || 0;
+    const otherAllowance = (struct.other || 0) + bonus;
 
-    const totalConfiguredEarnings = configuredBasic + configuredHra + configuredConveyance + configuredMedical + configuredSpecial + configuredOther;
+    const configuredGross = basic + hra + conveyance + medical + special + (struct.other || 0);
+    const grossEarnings = basic + hra + conveyance + medical + special + otherAllowance;
 
-    let scale = 1;
-    if (totalConfiguredEarnings > 0) {
-        scale = grossBase / totalConfiguredEarnings;
-    }
-
-    const basic = Math.round(configuredBasic * scale);
-    const hra = Math.round(configuredHra * scale);
-    const conveyance = Math.round(configuredConveyance * scale);
-    const medical = Math.round(configuredMedical * scale);
-    const special = Math.round(configuredSpecial * scale);
-    const otherAllowance = Math.round(configuredOther * scale) + bonus;
+    // Calculate actual base gross (gross before deductions and bonus)
+    const actualBaseGross = netPay + pf + profTax + esi + loanDeduction + otherDeductions - bonus;
+    
+    // LOP is configured gross minus actual gross
+    const lopDeduction = Math.max(0, Math.round(configuredGross - actualBaseGross));
+    const totalDeductions = pf + profTax + esi + loanDeduction + otherDeductions + lopDeduction;
 
     return {
         basic,
@@ -134,6 +124,7 @@ export const computeFinancials = (employee: any, payroll: any): PayslipFinancial
         esi,
         loanDeduction,
         otherDeductions,
+        lopDeduction,
         totalDeductions,
         netPay
     };
@@ -447,7 +438,7 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
         ['ESI', financials.esi],
         ['Loan / Advance Deduction', financials.loanDeduction],
         ['Other Deductions', financials.otherDeductions],
-        ['', 0] // padded row to match
+        ['Loss of Pay (LOP) Deduction', financials.lopDeduction]
     ];
 
     doc.setTextColor(50, 50, 50);
