@@ -1704,7 +1704,11 @@ const HRPortal: React.FC = () => {
         } catch (e) { console.error(e); }
     }, []);
 
-    useEffect(() => { fetchAll(); }, [fetchAll]);
+    useEffect(() => {
+        fetchAll();
+        const interval = setInterval(fetchAll, 1000);
+        return () => clearInterval(interval);
+    }, [fetchAll]);
 
     const logout = () => {
         localStorage.removeItem('token');
