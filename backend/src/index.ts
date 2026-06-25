@@ -580,6 +580,19 @@ app.delete('/api/employees/:id', authorizeRoles('admin', 'subadmin', 'hr'), asyn
 
         const result = await Employee.findOneAndDelete({ employeeId: req.params.id });
         if (result) {
+            // Cascading delete across all other collections linked to this employeeId
+            await Promise.all([
+                Attendance.deleteMany({ employeeId: req.params.id }),
+                Leave.deleteMany({ employeeId: req.params.id }),
+                Performance.deleteMany({ employeeId: req.params.id }),
+                Task.deleteMany({ employeeId: req.params.id }),
+                Resignation.deleteMany({ employeeId: req.params.id }),
+                Query.deleteMany({ employeeId: req.params.id }),
+                Expense.deleteMany({ employeeId: req.params.id }),
+                DocumentModel.deleteMany({ employeeId: req.params.id }),
+                Permission.deleteMany({ employeeId: req.params.id }),
+                Payroll.updateMany({}, { $pull: { records: { employeeId: req.params.id } } })
+            ]);
             res.json({ message: 'Employee deleted' });
         } else {
             res.status(404).json({ message: 'Employee not found' });
