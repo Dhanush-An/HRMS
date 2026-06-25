@@ -65,6 +65,23 @@ const Payroll = () => {
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [processData, setProcessData] = useState<{ [key: string]: { bonus: number, tax?: number, pf?: number } }>({});
     const [selectedBranch, setSelectedBranch] = useState<string>('All');
+    const [adminTotalWorkingDays, setAdminTotalWorkingDays] = useState<number | null>(null);
+
+    // Calculate default working days for the selected month/year
+    const getDefaultWorkingDays = () => {
+        const monthNum = parseInt(selectedMonth);
+        const totalDaysInMonth = new Date(selectedYear, monthNum, 0).getDate();
+        let sundays = 0;
+        const date = new Date(selectedYear, monthNum - 1, 1);
+        while (date.getMonth() === monthNum - 1) {
+            if (date.getDay() === 0) sundays++;
+            date.setDate(date.getDate() + 1);
+        }
+        return totalDaysInMonth - sundays;
+    };
+
+    // The effective total working days (admin override or auto-calculated)
+    const effectiveTotalWorkingDays = adminTotalWorkingDays ?? getDefaultWorkingDays();
 
     // Derive unique branch names from employees
     const branchNames = Array.from(new Set(
@@ -193,8 +210,8 @@ const Payroll = () => {
             if (date.getDay() === 0) sundays++;
             date.setDate(date.getDate() + 1);
         }
-        // Total working days = all days minus Sundays
-        const totalWorkingDays = totalDaysInMonth - sundays;
+        // Total working days = admin override or (all days minus Sundays)
+        const totalWorkingDays = effectiveTotalWorkingDays;
 
         // Differentiate Present and Absent days
         const present = records.filter(r => r.status === 'Present').length;
@@ -315,7 +332,7 @@ const Payroll = () => {
         });
 
         const totalDaysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-        const totalWorkingDays = totalDaysInMonth - sundays;
+        const totalWorkingDays = effectiveTotalWorkingDays;
         const paidDays = Math.max(0, present + (halfDay * 0.5) + sundays - penalties);
         const leaveDays = leavesData.filter(l => 
             l.employeeId === empId && 
@@ -553,6 +570,17 @@ const Payroll = () => {
                                 </div>
                             </div>
                             <div className="flex-1"></div>
+                            <div className="flex items-center gap-2 bg-brand-bg border border-brand-border rounded-xl px-4 py-2">
+                                <label className="text-[10px] font-black text-brand-muted uppercase tracking-widest whitespace-nowrap">Working Days:</label>
+                                <input
+                                    type="number"
+                                    value={effectiveTotalWorkingDays}
+                                    onChange={(e) => setAdminTotalWorkingDays(Number(e.target.value) || null)}
+                                    className="w-14 bg-brand-surface border border-brand-border rounded-lg px-2 py-1 text-brand-primary font-black text-center text-sm focus:ring-2 focus:ring-brand-primary outline-none"
+                                    min={0}
+                                    max={31}
+                                />
+                            </div>
                             <button
                                 onClick={handleGeneratePayroll}
                                 className="bg-status-approved hover:opacity-90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-status-approved/20"

@@ -182,81 +182,82 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
     // Company Logo
     try {
         const img = await loadImage(logo);
-        doc.addImage(img, 'JPEG', 12, 11, 16, 16);
+        doc.addImage(img, 'JPEG', 12, 11, 18, 18);
     } catch (e) {
         console.error('Failed to load company logo', e);
         // Fallback text logo
         doc.setTextColor(11, 59, 96);
         doc.setFont('helvetica', 'bolditalic');
-        doc.setFontSize(24);
+        doc.setFontSize(26);
         doc.text('FiC', 12, 22);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7.5);
-        doc.text('FORGE INDIA CONNECT PVT. LTD.', 12, 26);
+        doc.setFontSize(8.5);
+        doc.text('FORGE INDIA CONNECT PVT. LTD.', 12, 27);
     }
 
     // Center Company details
+    doc.setTextColor(15, 36, 62);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
+    doc.setFontSize(16);
     doc.text('FORGE INDIA CONNECT PVT. LTD.', 105, 16, { align: 'center' });
     
     doc.setTextColor(80, 80, 80);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7.5);
-    doc.text('1st & 2nd Floor, No 62, 11th Block, Marilingappa Extension,', 105, 20.5, { align: 'center' });
-    doc.text('Nagarbhavi, Bengaluru, Karnataka - 560072', 105, 24, { align: 'center' });
+    doc.setFontSize(8.5);
+    doc.text('1st & 2nd Floor, No 62, 11th Block, Marilingappa Extension,', 105, 21, { align: 'center' });
+    doc.text('Nagarbhavi, Bengaluru, Karnataka - 560072', 105, 25, { align: 'center' });
     
     doc.setTextColor(110, 110, 110);
-    doc.setFontSize(6.5);
-    doc.text('CIN: U29309PN2021PTC198162   |   Email: hr@forgeindiaconnect.com', 105, 27.5, { align: 'center' });
-    doc.text('Website: www.forgeindiaconnect.com   |   Phone: +91 6369406416', 105, 31, { align: 'center' });
+    doc.setFontSize(7.5);
+    doc.text('CIN: U29309PN2021PTC198162   |   Email: hr@forgeindiaconnect.com', 105, 29, { align: 'center' });
+    doc.text('Website: www.forgeindiaconnect.com   |   Phone: +91 6369406416', 105, 33, { align: 'center' });
 
     // PAYSLIP Capsule Box
     doc.setFillColor(15, 36, 62); // Dark Blue #0F243E
-    doc.roundedRect(168, 12, 32, 19, 1.5, 1.5, 'F');
+    doc.roundedRect(168, 11, 32, 22, 1.5, 1.5, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
+    doc.setFontSize(10.5);
     doc.text('PAYSLIP', 184, 18, { align: 'center' });
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8.5);
-    doc.text(`${formattedMonth} ${rawYear}`, 184, 24, { align: 'center' });
+    doc.setFontSize(9);
+    doc.text(`${formattedMonth} ${rawYear}`, 184, 25, { align: 'center' });
 
     // Separator line
     doc.setDrawColor(15, 36, 62);
     doc.setLineWidth(0.4);
-    doc.line(10, 35.5, 200, 35.5);
+    doc.line(10, 39, 200, 39);
 
     // --- 2. SUBHEADER METADATA BAR ---
-    doc.setFontSize(7.5);
+    doc.setFontSize(8);
     doc.setTextColor(50, 50, 50);
     
     doc.setFont('helvetica', 'normal');
-    doc.text('Payslip No.', 12, 39.5);
-    doc.text(':', 28, 39.5);
+    doc.text('Payslip No.', 12, 44);
+    doc.text(':', 28, 44);
     doc.setFont('helvetica', 'bold');
-    doc.text(payslipNo, 31, 39.5);
+    doc.text(payslipNo, 31, 44);
 
     doc.setFont('helvetica', 'normal');
-    doc.text('Pay Period', 82, 39.5);
-    doc.text(':', 98, 39.5);
+    doc.text('Pay Period', 82, 44);
+    doc.text(':', 98, 44);
     doc.setFont('helvetica', 'bold');
-    doc.text(`${payPeriodStart} to ${payPeriodEnd}`, 101, 39.5);
+    doc.text(`${payPeriodStart} to ${payPeriodEnd}`, 101, 44);
 
     doc.setFont('helvetica', 'normal');
-    doc.text('Date of Issue', 152, 39.5);
-    doc.text(':', 170, 39.5);
+    doc.text('Date of Issue', 152, 44);
+    doc.text(':', 170, 44);
     doc.setFont('helvetica', 'bold');
-    doc.text(dateOfIssue, 173, 39.5);
+    doc.text(dateOfIssue, 173, 44);
 
     // Separator line
-    doc.line(10, 42.5, 200, 42.5);
+    doc.line(10, 47.5, 200, 47.5);
 
     // --- 3. EMPLOYEE & ATTENDANCE DETAILS GRIDS ---
-    const grid1Y = 46;
+    const grid1Y = 53;
     const boxW = 92;
-    const boxH = 49.2;
-    const rHeight = 4.8;
+    const boxH = 62;
+    const rHeight = 6.0;
 
     // LEFT: EMPLOYEE DETAILS
     doc.setDrawColor(15, 36, 62);
@@ -265,11 +266,11 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
 
     // Header bar
     doc.setFillColor(15, 36, 62);
-    doc.rect(10, grid1Y, boxW, 6, 'F');
+    doc.rect(10, grid1Y, boxW, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('EMPLOYEE DETAILS', 12, grid1Y + 4.2);
+    doc.setFontSize(8.5);
+    doc.text('EMPLOYEE DETAILS', 12, grid1Y + 5.5);
 
     const roleMap: Record<string, string> = {
         'admin': 'HR Administrator',
@@ -296,22 +297,22 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
 
     doc.setFontSize(7.5);
     doc.setTextColor(50, 50, 50);
-    let currY = grid1Y + 6;
+    let currY = grid1Y + 8;
     for (let i = 0; i < empDetails.length; i++) {
         // Horizontal line
         doc.setDrawColor(220, 224, 230);
         doc.line(10, currY + rHeight, 10 + boxW, currY + rHeight);
 
         doc.setFont('helvetica', 'normal');
-        doc.text(empDetails[i][0], 12, currY + 3.5);
-        doc.text(':', 42, currY + 3.5);
+        doc.text(empDetails[i][0], 12, currY + 4.2);
+        doc.text(':', 40, currY + 4.2);
         doc.setFont('helvetica', 'semibold');
-        doc.text(String(empDetails[i][1] || ''), 45, currY + 3.5);
+        doc.text(String(empDetails[i][1] || ''), 43, currY + 4.2);
         currY += rHeight;
     }
     // Vertical line in Employee box
     doc.setDrawColor(220, 224, 230);
-    doc.line(40, grid1Y + 6, 40, grid1Y + boxH);
+    doc.line(38, grid1Y + 8, 38, grid1Y + boxH);
 
 
     // RIGHT: ATTENDANCE DETAILS
@@ -321,17 +322,17 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
 
     // Header bar
     doc.setFillColor(15, 36, 62);
-    doc.rect(rightX, grid1Y, boxW, 6, 'F');
+    doc.rect(rightX, grid1Y, boxW, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.text('ATTENDANCE DETAILS', rightX + 2, grid1Y + 4.2);
+    doc.text('ATTENDANCE DETAILS', rightX + 2, grid1Y + 5.5);
 
     // Subheader row
     doc.setFillColor(221, 235, 247); // #DDEBF7
-    doc.rect(rightX, grid1Y + 6, boxW, 5, 'F');
+    doc.rect(rightX, grid1Y + 8, boxW, 6, 'F');
     doc.setTextColor(31, 78, 120); // #1F4E78
-    doc.text('Particulars', rightX + 2, grid1Y + 9.5);
-    doc.text('Details', rightX + boxW - 2, grid1Y + 9.5, { align: 'right' });
+    doc.text('Particulars', rightX + 2, grid1Y + 12.2);
+    doc.text('Details', rightX + boxW - 2, grid1Y + 12.2, { align: 'right' });
 
     const attendanceData = [
         ['Total Working Days', attendanceStats?.totalWorkingDays !== undefined ? attendanceStats.totalWorkingDays : 26],
@@ -342,43 +343,46 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
     ];
 
     doc.setTextColor(50, 50, 50);
-    currY = grid1Y + 11;
+    const attRowH = 9.6;
+    currY = grid1Y + 14;
     for (let i = 0; i < attendanceData.length; i++) {
         doc.setDrawColor(220, 224, 230);
-        doc.line(rightX, currY + rHeight, rightX + boxW, currY + rHeight);
+        doc.line(rightX, currY + attRowH, rightX + boxW, currY + attRowH);
 
         doc.setFont('helvetica', 'normal');
-        doc.text(attendanceData[i][0] as string, rightX + 2, currY + 3.5);
+        doc.text(attendanceData[i][0] as string, rightX + 2, currY + 6.0);
         doc.setFont('helvetica', 'bold');
-        doc.text(String(attendanceData[i][1]), rightX + boxW - 2, currY + 3.5, { align: 'right' });
-        currY += rHeight;
+        doc.text(String(attendanceData[i][1]), rightX + boxW - 2, currY + 6.0, { align: 'right' });
+        currY += attRowH;
     }
     // Vertical line in Attendance box
     doc.setDrawColor(220, 224, 230);
-    doc.line(rightX + 68, grid1Y + 6, rightX + 68, grid1Y + boxH);
+    doc.line(rightX + 68, grid1Y + 8, rightX + 68, grid1Y + boxH);
 
 
     // --- 4. EARNINGS & DEDUCTIONS TABLES ---
-    const tableY = 99;
-    const totalRowH = 5.8;
+    const tableY = 125;
+    const tableH = 75;
+    const earnRowH = 8.0;
+    const totalRowH = 13;
 
     // LEFT: EARNINGS
     doc.setDrawColor(15, 36, 62);
-    doc.rect(10, tableY, boxW, 45.6);
+    doc.rect(10, tableY, boxW, tableH);
 
     // Header bar
     doc.setFillColor(15, 36, 62);
-    doc.rect(10, tableY, boxW, 6, 'F');
+    doc.rect(10, tableY, boxW, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.text('EARNINGS', 12, tableY + 4.2);
+    doc.text('EARNINGS', 12, tableY + 5.5);
 
     // Subheader row
     doc.setFillColor(221, 235, 247);
-    doc.rect(10, tableY + 6, boxW, 5, 'F');
+    doc.rect(10, tableY + 8, boxW, 6, 'F');
     doc.setTextColor(31, 78, 120);
-    doc.text('Particulars', 12, tableY + 9.5);
-    doc.text('Amount (Rs)', 100, tableY + 9.5, { align: 'right' });
+    doc.text('Particulars', 12, tableY + 12.2);
+    doc.text('Amount (Rs)', 100, tableY + 12.2, { align: 'right' });
 
     const earnings = [
         ['Basic Salary', financials.basic],
@@ -390,51 +394,52 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
     ];
 
     doc.setTextColor(50, 50, 50);
-    currY = tableY + 11;
+    currY = tableY + 14;
     for (let i = 0; i < earnings.length; i++) {
         doc.setDrawColor(220, 224, 230);
-        doc.line(10, currY + rHeight, 10 + boxW, currY + rHeight);
+        doc.line(10, currY + earnRowH, 10 + boxW, currY + earnRowH);
 
         doc.setFont('helvetica', 'normal');
-        doc.text(earnings[i][0] as string, 12, currY + 3.5);
-        doc.text((earnings[i][1] as number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 100, currY + 3.5, { align: 'right' });
-        currY += rHeight;
+        doc.text(earnings[i][0] as string, 12, currY + 5.5);
+        doc.text((earnings[i][1] as number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 100, currY + 5.5, { align: 'right' });
+        currY += earnRowH;
     }
 
     // Gross Earnings Total Footer
     doc.setFillColor(221, 235, 247);
-    doc.rect(10, tableY + 11 + (6 * rHeight), boxW, totalRowH, 'F');
+    doc.rect(10, tableY + 14 + (6 * earnRowH), boxW, totalRowH, 'F');
     doc.setDrawColor(15, 36, 62);
-    doc.line(10, tableY + 11 + (6 * rHeight), 10 + boxW, tableY + 11 + (6 * rHeight));
+    doc.line(10, tableY + 14 + (6 * earnRowH), 10 + boxW, tableY + 14 + (6 * earnRowH));
     
     doc.setTextColor(31, 78, 120);
     doc.setFont('helvetica', 'bold');
-    doc.text('GROSS EARNINGS', 12, tableY + 11 + (6 * rHeight) + 4);
-    doc.text('Rs.', 80, tableY + 11 + (6 * rHeight) + 4);
-    doc.text(financials.grossEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 100, tableY + 11 + (6 * rHeight) + 4, { align: 'right' });
+    doc.setFontSize(8.5);
+    doc.text('GROSS EARNINGS', 12, tableY + 14 + (6 * earnRowH) + 8);
+    doc.text('Rs.', 80, tableY + 14 + (6 * earnRowH) + 8);
+    doc.text(financials.grossEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 100, tableY + 14 + (6 * earnRowH) + 8, { align: 'right' });
 
     // Vertical line in Earnings table
     doc.setDrawColor(220, 224, 230);
-    doc.line(78, tableY + 6, 78, tableY + 45.6);
+    doc.line(78, tableY + 8, 78, tableY + tableH);
 
 
     // RIGHT: DEDUCTIONS
     doc.setDrawColor(15, 36, 62);
-    doc.rect(rightX, tableY, boxW, 45.6);
+    doc.rect(rightX, tableY, boxW, tableH);
 
     // Header bar
     doc.setFillColor(15, 36, 62);
-    doc.rect(rightX, tableY, boxW, 6, 'F');
+    doc.rect(rightX, tableY, boxW, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.text('DEDUCTIONS', rightX + 2, tableY + 4.2);
+    doc.text('DEDUCTIONS', rightX + 2, tableY + 5.5);
 
     // Subheader row
     doc.setFillColor(221, 235, 247);
-    doc.rect(rightX, tableY + 6, boxW, 5, 'F');
+    doc.rect(rightX, tableY + 8, boxW, 6, 'F');
     doc.setTextColor(31, 78, 120);
-    doc.text('Particulars', rightX + 2, tableY + 9.5);
-    doc.text('Amount (Rs)', rightX + boxW - 2, tableY + 9.5, { align: 'right' });
+    doc.text('Particulars', rightX + 2, tableY + 12.2);
+    doc.text('Amount (Rs)', rightX + boxW - 2, tableY + 12.2, { align: 'right' });
 
     const deductions = [
         ['Provident Fund (PF)', financials.pf],
@@ -446,71 +451,97 @@ export const generatePayslipPDF = async (employee: any, payroll: any, attendance
     ];
 
     doc.setTextColor(50, 50, 50);
-    currY = tableY + 11;
+    doc.setFontSize(7.5);
+    currY = tableY + 14;
     for (let i = 0; i < deductions.length; i++) {
         doc.setDrawColor(220, 224, 230);
-        doc.line(rightX, currY + rHeight, rightX + boxW, currY + rHeight);
+        doc.line(rightX, currY + earnRowH, rightX + boxW, currY + earnRowH);
 
         if (deductions[i][0]) {
             doc.setFont('helvetica', 'normal');
-            doc.text(deductions[i][0] as string, rightX + 2, currY + 3.5);
-            doc.text((deductions[i][1] as number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), rightX + boxW - 2, currY + 3.5, { align: 'right' });
+            doc.text(deductions[i][0] as string, rightX + 2, currY + 5.5);
+            doc.text((deductions[i][1] as number).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), rightX + boxW - 2, currY + 5.5, { align: 'right' });
         }
-        currY += rHeight;
+        currY += earnRowH;
     }
 
     // Deductions Total Footer
     doc.setFillColor(221, 235, 247);
-    doc.rect(rightX, tableY + 11 + (6 * rHeight), boxW, totalRowH, 'F');
+    doc.rect(rightX, tableY + 14 + (6 * earnRowH), boxW, totalRowH, 'F');
     doc.setDrawColor(15, 36, 62);
-    doc.line(rightX, tableY + 11 + (6 * rHeight), rightX + boxW, tableY + 11 + (6 * rHeight));
+    doc.line(rightX, tableY + 14 + (6 * earnRowH), rightX + boxW, tableY + 14 + (6 * earnRowH));
     
     doc.setTextColor(31, 78, 120);
     doc.setFont('helvetica', 'bold');
-    doc.text('TOTAL DEDUCTIONS', rightX + 2, tableY + 11 + (6 * rHeight) + 4);
-    doc.text('Rs.', rightX + 68 + 2, tableY + 11 + (6 * rHeight) + 4);
-    doc.text(financials.totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), rightX + boxW - 2, tableY + 11 + (6 * rHeight) + 4, { align: 'right' });
+    doc.setFontSize(8.5);
+    doc.text('TOTAL DEDUCTIONS', rightX + 2, tableY + 14 + (6 * earnRowH) + 8);
+    doc.text('Rs.', rightX + 68 + 2, tableY + 14 + (6 * earnRowH) + 8);
+    doc.text(financials.totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), rightX + boxW - 2, tableY + 14 + (6 * earnRowH) + 8, { align: 'right' });
 
     // Vertical line in Deductions table
     doc.setDrawColor(220, 224, 230);
-    doc.line(rightX + 68, tableY + 6, rightX + 68, tableY + 45.6);
+    doc.line(rightX + 68, tableY + 8, rightX + 68, tableY + tableH);
 
 
     // --- 5. NET SALARY BANNER ---
-    const netY = 149;
+    const netY = 210;
+    const netH = 30;
     doc.setDrawColor(15, 36, 62);
-    doc.rect(10, netY, 190, 22);
+    doc.rect(10, netY, 190, netH);
 
     // Header
     doc.setFillColor(15, 36, 62);
-    doc.rect(10, netY, 190, 5, 'F');
+    doc.rect(10, netY, 190, 7, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('NET SALARY', 105, netY + 3.6, { align: 'center' });
+    doc.setFontSize(8.5);
+    doc.text('NET SALARY', 105, netY + 5.0, { align: 'center' });
 
     // Amount
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text(`Rs. ${financials.netPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 105, netY + 11.5, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text(`Rs. ${financials.netPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 105, netY + 16, { align: 'center' });
 
     // Divider line inside
     doc.setDrawColor(220, 224, 230);
-    doc.line(10, netY + 14.5, 200, netY + 14.5);
+    doc.line(10, netY + 21, 200, netY + 21);
 
     // Amount in Words
-    doc.setFontSize(7.5);
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
-    doc.text('Amount in Words', 12, netY + 19);
-    doc.text(':', 38, netY + 19);
+    doc.setTextColor(50, 50, 50);
+    doc.text('Amount in Words', 12, netY + 26.5);
+    doc.text(':', 38, netY + 26.5);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Rupees ${numberToWords(financials.netPay)}`, 41, netY + 19);
+    doc.text(`Rupees ${numberToWords(financials.netPay)}`, 41, netY + 26.5);
 
 
-    // --- 6. FOOTER ---
-    const footY = 176;
-    doc.setTextColor(110, 110, 110);
+    // --- 6. SIGNATURE / SIGN-OFF AREA ---
+    const signY = 248;
+    doc.setTextColor(50, 50, 50);
+    
+    // Left side - Employee Signature
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(15, signY + 18, 75, signY + 18);
     doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Employee Signature', 45, signY + 22.5, { align: 'center' });
+
+    // Right side - Employer Signatory
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('For FORGE INDIA CONNECT PVT. LTD.', 165, signY + 3.5, { align: 'center' });
+    
+    doc.line(135, signY + 18, 195, signY + 18);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Authorized Signatory', 165, signY + 22.5, { align: 'center' });
+
+
+    // --- 7. FOOTER ---
+    const footY = 284;
+    doc.setTextColor(120, 120, 120);
+    doc.setFont('helvetica', 'italic');
     doc.setFontSize(7.5);
     doc.text('This is a system generated payslip and does not require any signature.', 105, footY, { align: 'center' });
 
