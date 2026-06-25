@@ -533,7 +533,7 @@ const Payroll = () => {
                 ) : (
                     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                         <div className="flex flex-col md:flex-row gap-6 items-stretch md:items-center bg-brand-surface p-6 rounded-2xl border border-brand-border shadow-sm">
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <div className="custom-select-container">
                                     <select
                                         value={selectedMonth}
@@ -568,19 +568,19 @@ const Payroll = () => {
                                         <option value={2025} className="bg-brand-surface text-brand-text">2025</option>
                                     </select>
                                 </div>
+                                <div className="flex items-center gap-2 bg-brand-bg border border-brand-border rounded-xl px-4 py-2">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-widest whitespace-nowrap">Working Days:</label>
+                                    <input
+                                        type="number"
+                                        value={effectiveTotalWorkingDays}
+                                        onChange={(e) => setAdminTotalWorkingDays(Number(e.target.value) || null)}
+                                        className="w-14 bg-brand-surface border border-brand-border rounded-lg px-2 py-1 text-brand-primary font-black text-center text-sm focus:ring-2 focus:ring-brand-primary outline-none"
+                                        min={0}
+                                        max={31}
+                                    />
+                                </div>
                             </div>
                             <div className="flex-1"></div>
-                            <div className="flex items-center gap-2 bg-brand-bg border border-brand-border rounded-xl px-4 py-2">
-                                <label className="text-[10px] font-black text-brand-muted uppercase tracking-widest whitespace-nowrap">Working Days:</label>
-                                <input
-                                    type="number"
-                                    value={effectiveTotalWorkingDays}
-                                    onChange={(e) => setAdminTotalWorkingDays(Number(e.target.value) || null)}
-                                    className="w-14 bg-brand-surface border border-brand-border rounded-lg px-2 py-1 text-brand-primary font-black text-center text-sm focus:ring-2 focus:ring-brand-primary outline-none"
-                                    min={0}
-                                    max={31}
-                                />
-                            </div>
                             <button
                                 onClick={handleGeneratePayroll}
                                 className="bg-status-approved hover:opacity-90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-status-approved/20"
