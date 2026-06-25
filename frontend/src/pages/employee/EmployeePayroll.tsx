@@ -227,7 +227,7 @@ const EmployeePayroll = () => {
             }
         }
         
-        const attStats = getAttendanceStats(employeeInfo.id, monthVal, yearVal);
+        const attStats = data.attendanceStats || getAttendanceStats(employeeInfo.id, monthVal, yearVal);
         generatePayslipPDF(employeeInfo, data, attStats);
     };
 

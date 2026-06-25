@@ -7,6 +7,15 @@ export interface IPayrollRecord {
     bonus: number;
     deductions: number;
     netSalary: number;
+    tax?: number;
+    pf?: number;
+    attendanceStats?: {
+        totalWorkingDays: number;
+        presentDays: number;
+        leaveDays: number;
+        lossOfPayDays: number;
+        paidDays: number;
+    };
 }
 
 export interface IPayroll extends Document {
@@ -28,7 +37,14 @@ const PayrollSchema: Schema = new Schema({
         deductions: { type: Number, default: 0 },
         tax: { type: Number, default: 0 },
         pf: { type: Number, default: 0 },
-        netSalary: { type: Number, required: true }
+        netSalary: { type: Number, required: true },
+        attendanceStats: {
+            totalWorkingDays: { type: Number },
+            presentDays: { type: Number },
+            leaveDays: { type: Number },
+            lossOfPayDays: { type: Number },
+            paidDays: { type: Number }
+        }
     }]
 }, {
     timestamps: true,

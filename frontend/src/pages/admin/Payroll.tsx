@@ -3,7 +3,11 @@ import {
     Calculator,
     History,
     Download,
-    BadgeDollarSign
+    BadgeDollarSign,
+    Pencil,
+    Check,
+    X,
+    RotateCcw
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -43,6 +47,13 @@ interface PayrollRecord {
         tax: number;
         pf: number;
         netSalary: number;
+        attendanceStats?: {
+            totalWorkingDays: number;
+            presentDays: number;
+            leaveDays: number;
+            lossOfPayDays: number;
+            paidDays: number;
+        };
     }[];
 }
 
@@ -57,6 +68,58 @@ const Payroll = () => {
     const [payrollHistory, setPayrollHistory] = useState<PayrollRecord[]>([]);
     const [attendanceData, setAttendanceData] = useState<any[]>([]);
     const [leavesData, setLeavesData] = useState<any[]>([]);
+
+    const [attendanceOverrides, setAttendanceOverrides] = useState<{
+        [empId: string]: {
+            present: number;
+            halfDay: number;
+            absents: number;
+            penalties: number;
+        }
+    }>({});
+    const [editingAttendanceEmpId, setEditingAttendanceEmpId] = useState<string | null>(null);
+    const [tempAttendance, setTempAttendance] = useState<{
+        present: number;
+        halfDay: number;
+        absents: number;
+        penalties: number;
+    } | null>(null);
+
+    const handleStartEditingAttendance = (empId: string, currentStats: any) => {
+        setEditingAttendanceEmpId(empId);
+        setTempAttendance({
+            present: currentStats.present,
+            halfDay: currentStats.halfDay,
+            absents: currentStats.absentDays,
+            penalties: currentStats.penalties
+        });
+    };
+
+    const handleSaveAttendanceOverride = (empId: string) => {
+        if (tempAttendance) {
+            setAttendanceOverrides(prev => ({
+                ...prev,
+                [empId]: tempAttendance
+            }));
+        }
+        setEditingAttendanceEmpId(null);
+        setTempAttendance(null);
+    };
+
+    const handleCancelAttendanceEditing = () => {
+        setEditingAttendanceEmpId(null);
+        setTempAttendance(null);
+    };
+
+    const handleResetAttendanceOverride = (empId: string) => {
+        setAttendanceOverrides(prev => {
+            const updated = { ...prev };
+            delete updated[empId];
+            return updated;
+        });
+        setEditingAttendanceEmpId(null);
+        setTempAttendance(null);
+    };
 
     // Loading states
     const [employeesLoading, setEmployeesLoading] = useState(false);
@@ -218,34 +281,37 @@ const Payroll = () => {
         // Total working days = admin override or (all days minus Sundays)
         const totalWorkingDays = effectiveTotalWorkingDays;
 
-        // Differentiate Present and Absent days
-        const present = records.filter(r => r.status === 'Present').length;
-        const halfDay = records.filter(r => r.status === 'Half Day').length;
-        const absents = records.filter(r => r.status === 'Absent');
+        const override = attendanceOverrides[empId];
+
+        const present = override !== undefined ? override.present : records.filter(r => r.status === 'Present').length;
+        const halfDay = override !== undefined ? override.halfDay : records.filter(r => r.status === 'Half Day').length;
         
         // 2 half days = 1 full present day
         const effectivePresent = present + Math.floor(halfDay / 2);
         const remainingHalfDay = halfDay % 2; // leftover half day (0 or 1)
 
-        // Check for penalties (unapproved leaves)
         let penalties = 0;
-        absents.forEach(abs => {
-            // Check if there is an approved leave for this date
-            const hasApprovedLeave = leavesData.find(l => 
-                l.employeeId === empId && 
-                l.status === 'Approved' &&
-                abs.date >= l.startDate && 
-                abs.date <= l.endDate
-            );
+        let absentDays = 0;
 
-            if (!hasApprovedLeave) {
-                penalties++; // Deduct one extra day for unapproved absence
-            }
-        });
-
-        // Absent days = working days - effective present - remaining half day (0.5) - approved leaves
-        const approvedLeaveCount = absents.length - penalties;
-        const absentDays = Math.max(0, totalWorkingDays - effectivePresent - (remainingHalfDay * 0.5) - approvedLeaveCount);
+        if (override !== undefined) {
+            penalties = override.penalties;
+            absentDays = override.absents;
+        } else {
+            const absents = records.filter(r => r.status === 'Absent');
+            absents.forEach(abs => {
+                const hasApprovedLeave = leavesData.find(l => 
+                    l.employeeId === empId && 
+                    l.status === 'Approved' &&
+                    abs.date >= l.startDate && 
+                    abs.date <= l.endDate
+                );
+                if (!hasApprovedLeave) {
+                    penalties++;
+                }
+            });
+            const approvedLeaveCount = absents.length - penalties;
+            absentDays = Math.max(0, totalWorkingDays - effectivePresent - (remainingHalfDay * 0.5) - approvedLeaveCount);
+        }
 
         // Sundays are counted as Present (Paid Off)
         const totalPayableDays = Math.max(0, present + (halfDay * 0.5) + sundays - penalties);
@@ -371,13 +437,25 @@ const Payroll = () => {
             netSalary: record.netSalary
         };
 
-        const attStats = getAttendanceStats(employee.id, payroll.month, payroll.year);
+        const attStats = record.attendanceStats || getAttendanceStats(employee.id, payroll.month, payroll.year);
         generatePayslipPDF(employee, mergedPayroll, attStats);
     };
 
     const handleGeneratePayroll = async () => {
         const records = employees.map(emp => {
-            const { netSalary, tax, pf, actualBase } = calculateNetSalary(emp);
+            const { netSalary, tax, pf, actualBase, presentData } = calculateNetSalary(emp);
+
+            const attendanceStats = {
+                totalWorkingDays: presentData.totalWorkingDays,
+                presentDays: presentData.present,
+                leaveDays: leavesData.filter(l => 
+                    l.employeeId === emp.id && 
+                    l.status === 'Approved' &&
+                    new Date(l.startDate).getMonth() === (parseInt(selectedMonth) - 1)
+                ).length,
+                lossOfPayDays: presentData.penalties,
+                paidDays: presentData.totalPayableDays
+            };
 
             return {
                 employeeId: emp.id,
@@ -386,7 +464,8 @@ const Payroll = () => {
                 bonus: processData[emp.id]?.bonus || 0,
                 tax,
                 pf,
-                netSalary: Number(netSalary.toFixed(2))
+                netSalary: Number(netSalary.toFixed(2)),
+                attendanceStats
             };
         });
 
@@ -661,17 +740,105 @@ const Payroll = () => {
                                                     {emp.branchName && <div className="text-[9px] font-bold text-brand-primary uppercase tracking-wider truncate max-w-[120px]">{emp.branchName}</div>}
                                                 </td>
                                                 <td className="px-2 py-4 whitespace-nowrap">
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[9px] font-black text-brand-muted uppercase tracking-tighter">Total: {presentData.totalWorkingDays} working days</span>
-                                                        <span className="text-[10px] font-black text-status-approved uppercase">P: {presentData.effectivePresent}{presentData.remainingHalfDay ? '.5' : ''}</span>
-                                                        <span className="text-[10px] font-black text-status-pending uppercase">H: {presentData.halfDay} {presentData.halfDay >= 2 ? `(=${Math.floor(presentData.halfDay / 2)}d)` : ''}</span>
-                                                        <span className="text-[10px] font-black text-status-rejected uppercase">Abs: {presentData.absentDays}</span>
-                                                        <span className="text-[10px] font-black text-brand-primary uppercase">Sun: {presentData.sundays}</span>
-                                                        {presentData.penalties > 0 && (
-                                                            <span className="text-[10px] font-black text-status-rejected uppercase">Penalty: -{presentData.penalties}d</span>
-                                                        )}
-                                                        <span className="text-[9px] font-bold text-brand-muted uppercase tracking-tighter border-t border-brand-border mt-1 pt-1">{presentData.totalPayableDays} Paid Days</span>
-                                                    </div>
+                                                    {editingAttendanceEmpId === emp.id && tempAttendance ? (
+                                                        <div className="flex flex-col gap-2 bg-brand-bg p-2.5 rounded-xl border border-brand-border shadow-inner max-w-[140px] animate-in zoom-in-95 duration-100">
+                                                            <div className="flex items-center justify-between gap-1.5">
+                                                                <span className="text-[10px] font-black text-status-approved uppercase">Pres:</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tempAttendance.present}
+                                                                    onChange={(e) => setTempAttendance({ ...tempAttendance, present: Math.max(0, Number(e.target.value)) })}
+                                                                    className="w-12 bg-brand-surface border border-brand-border rounded px-1.5 py-0.5 text-xs text-brand-text text-center font-bold outline-none"
+                                                                    min={0}
+                                                                    max={31}
+                                                                />
+                                                            </div>
+                                                            <div className="flex items-center justify-between gap-1.5">
+                                                                <span className="text-[10px] font-black text-status-pending uppercase">Half:</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tempAttendance.halfDay}
+                                                                    onChange={(e) => setTempAttendance({ ...tempAttendance, halfDay: Math.max(0, Number(e.target.value)) })}
+                                                                    className="w-12 bg-brand-surface border border-brand-border rounded px-1.5 py-0.5 text-xs text-brand-text text-center font-bold outline-none"
+                                                                    min={0}
+                                                                    max={31}
+                                                                />
+                                                            </div>
+                                                            <div className="flex items-center justify-between gap-1.5">
+                                                                <span className="text-[10px] font-black text-status-rejected uppercase">Abs:</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tempAttendance.absents}
+                                                                    onChange={(e) => setTempAttendance({ ...tempAttendance, absents: Math.max(0, Number(e.target.value)) })}
+                                                                    className="w-12 bg-brand-surface border border-brand-border rounded px-1.5 py-0.5 text-xs text-brand-text text-center font-bold outline-none"
+                                                                    min={0}
+                                                                    max={31}
+                                                                />
+                                                            </div>
+                                                            <div className="flex items-center justify-between gap-1.5">
+                                                                <span className="text-[10px] font-black text-status-rejected uppercase">Pen:</span>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tempAttendance.penalties}
+                                                                    onChange={(e) => setTempAttendance({ ...tempAttendance, penalties: Math.max(0, Number(e.target.value)) })}
+                                                                    className="w-12 bg-brand-surface border border-brand-border rounded px-1.5 py-0.5 text-xs text-brand-text text-center font-bold outline-none"
+                                                                    min={0}
+                                                                    max={31}
+                                                                />
+                                                            </div>
+                                                            <div className="flex items-center justify-between gap-1 border-t border-brand-border pt-1.5 mt-0.5">
+                                                                <button
+                                                                    onClick={() => handleSaveAttendanceOverride(emp.id)}
+                                                                    className="p-1 bg-status-approved hover:opacity-90 text-white rounded transition-all"
+                                                                    title="Save Changes"
+                                                                >
+                                                                    <Check className="w-3.5 h-3.5" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={handleCancelAttendanceEditing}
+                                                                    className="p-1 bg-brand-border hover:bg-brand-border-dark text-brand-muted rounded transition-all"
+                                                                    title="Cancel"
+                                                                >
+                                                                    <X className="w-3.5 h-3.5" />
+                                                                </button>
+                                                                {attendanceOverrides[emp.id] !== undefined && (
+                                                                    <button
+                                                                        onClick={() => handleResetAttendanceOverride(emp.id)}
+                                                                        className="p-1 bg-status-rejected hover:opacity-90 text-white rounded transition-all"
+                                                                        title="Reset to Auto"
+                                                                    >
+                                                                        <RotateCcw className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-start gap-2 group/cell">
+                                                            <div className="flex flex-col gap-0.5">
+                                                                <span className="text-[9px] font-black text-brand-muted uppercase tracking-tighter">Total: {presentData.totalWorkingDays} working days</span>
+                                                                <span className="text-[10px] font-black text-status-approved uppercase">P: {presentData.effectivePresent}{presentData.remainingHalfDay ? '.5' : ''}</span>
+                                                                <span className="text-[10px] font-black text-status-pending uppercase">H: {presentData.halfDay} {presentData.halfDay >= 2 ? `(=${Math.floor(presentData.halfDay / 2)}d)` : ''}</span>
+                                                                <span className="text-[10px] font-black text-status-rejected uppercase">Abs: {presentData.absentDays}</span>
+                                                                <span className="text-[10px] font-black text-brand-primary uppercase">Sun: {presentData.sundays}</span>
+                                                                {presentData.penalties > 0 && (
+                                                                    <span className="text-[10px] font-black text-status-rejected uppercase">Penalty: -{presentData.penalties}d</span>
+                                                                )}
+                                                                <span className="text-[9px] font-bold text-brand-muted uppercase tracking-tighter border-t border-brand-border mt-1 pt-1 flex items-center justify-between">
+                                                                    <span>{presentData.totalPayableDays} Paid Days</span>
+                                                                    {attendanceOverrides[emp.id] !== undefined && (
+                                                                        <span className="text-[8px] text-brand-primary font-black uppercase ml-1 px-1 py-0.2 bg-brand-primary-light rounded border border-brand-primary/10">Manual</span>
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleStartEditingAttendance(emp.id, presentData)}
+                                                                className="opacity-0 group-hover/cell:opacity-100 text-brand-muted hover:text-brand-primary p-1 hover:bg-brand-primary-light rounded-lg transition-all"
+                                                                title="Edit Attendance"
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">
                                                     <div className="flex flex-col">
