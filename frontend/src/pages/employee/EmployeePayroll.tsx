@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
-import { IndianRupee, Download, ShieldCheck, Receipt } from 'lucide-react';
+import { IndianRupee, Download, ShieldCheck, Receipt, Pencil } from 'lucide-react';
 import { generatePayslipPDF } from '../../utils/generatePayslipPDF';
 
 const generatePAN = (name: string, id: string) => {
@@ -23,6 +23,51 @@ const EmployeePayroll = () => {
     const [payrollHistory, setPayrollHistory] = useState<any[]>([]);
     const [employeeInfo, setEmployeeInfo] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
+    // Edit modal states
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editPan, setEditPan] = useState('');
+    const [editUan, setEditUan] = useState('');
+    const [editPfNo, setEditPfNo] = useState('');
+    const [editEsiNo, setEditEsiNo] = useState('');
+    const [editBankName, setEditBankName] = useState('');
+    const [editBankAccount, setEditBankAccount] = useState('');
+    const [editIfsc, setEditIfsc] = useState('');
+
+    const handleOpenEdit = () => {
+        if (!employeeInfo) return;
+        const idNumeric = (employeeInfo.employeeId || employeeInfo.id || '').replace(/\D/g, '').padStart(6, '0');
+        setEditPan(employeeInfo.pan || generatePAN(employeeInfo.name, employeeInfo.employeeId || employeeInfo.id));
+        setEditUan(employeeInfo.uan || ('101' + idNumeric.padEnd(9, '2')));
+        setEditPfNo(employeeInfo.pfNo || ('TNKRK' + idNumeric.padEnd(10, '3')));
+        setEditEsiNo(employeeInfo.esiNo || ('12' + idNumeric.padEnd(8, '4')));
+        setEditBankName(employeeInfo.bankName || 'State Bank of India');
+        setEditBankAccount(employeeInfo.bankAccount || ('388' + idNumeric.padEnd(8, '5')));
+        setEditIfsc(employeeInfo.ifsc || 'SBIN0001234');
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveDetails = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const targetId = employeeInfo.employeeId || employeeInfo.id;
+            const response = await api.put(`/api/employees/${targetId}`, {
+                pan: editPan,
+                uan: editUan,
+                pfNo: editPfNo,
+                esiNo: editEsiNo,
+                bankName: editBankName,
+                bankAccount: editBankAccount,
+                ifsc: editIfsc
+            });
+            const updated = await response.json();
+            setEmployeeInfo(updated);
+            setIsEditModalOpen(false);
+        } catch (error) {
+            console.error("Error saving bank details:", error);
+            alert("Failed to save bank/statutory details. Please try again.");
+        }
+    };
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -224,32 +269,152 @@ const EmployeePayroll = () => {
                                     <span className="text-brand-muted font-bold col-span-1">Joining Date</span>
                                     <span className="text-brand-text font-black col-span-2">: {employeeInfo.joiningDate || '21-Jan-2026'}</span>
                                 </div>
-                            </div>
-
-                            {/* Right: Bank & Statutory Details */}
+                                                        {/* Right: Bank & Statutory Details */}
                             <div className="space-y-4">
-                                <h3 className="text-brand-text text-sm font-black uppercase tracking-wider border-b border-brand-border/60 pb-2">Bank & Statutory Details</h3>
+                                <div className="flex justify-between items-center border-b border-brand-border/60 pb-2">
+                                    <h3 className="text-brand-text text-sm font-black uppercase tracking-wider">Bank & Statutory Details</h3>
+                                    <button
+                                        onClick={handleOpenEdit}
+                                        className="p-1.5 hover:bg-brand-bg rounded-lg text-brand-muted hover:text-brand-primary border border-transparent hover:border-brand-border transition-all active:scale-90"
+                                    >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
                                 <div className="grid grid-cols-3 gap-y-3 text-xs">
                                     <span className="text-brand-muted font-bold col-span-1">PAN Number</span>
-                                    <span className="text-brand-text font-black col-span-2">: {generatePAN(employeeInfo.name, employeeInfo.employeeId || employeeInfo.id)}</span>
+                                    <span className="text-brand-text font-black col-span-2">
+                                        : {employeeInfo.pan || generatePAN(employeeInfo.name, employeeInfo.employeeId || employeeInfo.id)}
+                                    </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">UAN Number</span>
-                                    <span className="text-brand-text font-black col-span-2">: {'101' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(9, '2')}</span>
+                                    <span className="text-brand-text font-black col-span-2">
+                                        : {employeeInfo.uan || ('101' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(9, '2'))}
+                                    </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">PF Number</span>
-                                    <span className="text-brand-text font-black col-span-2">: {'TNKRK' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(10, '3')}</span>
+                                    <span className="text-brand-text font-black col-span-2">
+                                        : {employeeInfo.pfNo || ('TNKRK' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(10, '3'))}
+                                    </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">Bank Name</span>
-                                    <span className="text-brand-text font-black col-span-2">: State Bank of India</span>
+                                    <span className="text-brand-text font-black col-span-2">
+                                        : {employeeInfo.bankName || 'State Bank of India'}
+                                    </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">Account No.</span>
-                                    <span className="text-brand-text font-black col-span-2">: {'388' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(8, '5')}</span>
+                                    <span className="text-brand-text font-black col-span-2">
+                                        : {employeeInfo.bankAccount || ('388' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(8, '5'))}
+                                    </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">IFSC Code</span>
-                                    <span className="text-brand-text font-black col-span-2">: SBIN0001234</span>
+                                    <span className="text-brand-text font-black col-span-2">
+                                        : {employeeInfo.ifsc || 'SBIN0001234'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Bank & Statutory Details Modal */}
+            {isEditModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl w-full max-w-lg shadow-xl p-6 relative animate-in fade-in zoom-in duration-200">
+                        <h2 className="text-lg font-black text-brand-text uppercase tracking-wide border-b border-brand-border/60 pb-3 mb-6">
+                            Edit Bank & Statutory Details
+                        </h2>
+
+                        <form onSubmit={handleSaveDetails} className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-wider">PAN Number</label>
+                                    <input
+                                        type="text"
+                                        value={editPan}
+                                        onChange={(e) => setEditPan(e.target.value.toUpperCase())}
+                                        className="w-full bg-brand-bg border border-brand-border text-brand-text text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary"
+                                        placeholder="e.g. ABCDE1234F"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-wider">UAN Number</label>
+                                    <input
+                                        type="text"
+                                        value={editUan}
+                                        onChange={(e) => setEditUan(e.target.value)}
+                                        className="w-full bg-brand-bg border border-brand-border text-brand-text text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary"
+                                        placeholder="e.g. 101234567890"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-wider">PF Number</label>
+                                    <input
+                                        type="text"
+                                        value={editPfNo}
+                                        onChange={(e) => setEditPfNo(e.target.value.toUpperCase())}
+                                        className="w-full bg-brand-bg border border-brand-border text-brand-text text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary"
+                                        placeholder="e.g. TNKRK1234567890"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-wider">ESI Number</label>
+                                    <input
+                                        type="text"
+                                        value={editEsiNo}
+                                        onChange={(e) => setEditEsiNo(e.target.value)}
+                                        className="w-full bg-brand-bg border border-brand-border text-brand-text text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary"
+                                        placeholder="e.g. 1234567890"
+                                    />
+                                </div>
+                                <div className="space-y-1 md:col-span-2">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-wider">Bank Name</label>
+                                    <input
+                                        type="text"
+                                        value={editBankName}
+                                        onChange={(e) => setEditBankName(e.target.value)}
+                                        className="w-full bg-brand-bg border border-brand-border text-brand-text text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary"
+                                        placeholder="e.g. HDFC Bank"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-wider">Account Number</label>
+                                    <input
+                                        type="text"
+                                        value={editBankAccount}
+                                        onChange={(e) => setEditBankAccount(e.target.value)}
+                                        className="w-full bg-brand-bg border border-brand-border text-brand-text text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary"
+                                        placeholder="e.g. 38801234587"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-wider">IFSC Code</label>
+                                    <input
+                                        type="text"
+                                        value={editIfsc}
+                                        onChange={(e) => setEditIfsc(e.target.value.toUpperCase())}
+                                        className="w-full bg-brand-bg border border-brand-border text-brand-text text-xs font-bold rounded-lg px-3 py-2 focus:outline-none focus:border-brand-primary"
+                                        placeholder="e.g. SBIN0001234"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-6 border-t border-brand-border/60 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditModalOpen(false)}
+                                    className="px-4 py-2 border border-brand-border text-brand-text text-xs font-black rounded-xl hover:bg-brand-bg active:scale-95 transition-all uppercase tracking-wider"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-brand-primary text-white text-xs font-black rounded-xl hover:bg-brand-primary/95 active:scale-95 transition-all uppercase tracking-wider shadow-md shadow-brand-primary/10"
+                                >
+                                    Save Changes
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

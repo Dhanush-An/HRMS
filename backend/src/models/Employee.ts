@@ -28,6 +28,13 @@ export interface IEmployee extends Document {
         wfh: number;
         paid?: number; // Added to match index.ts approve logic
     };
+    pan?: string;
+    uan?: string;
+    pfNo?: string;
+    esiNo?: string;
+    bankName?: string;
+    bankAccount?: string;
+    ifsc?: string;
 }
 
 const EmployeeSchema: Schema = new Schema({
@@ -57,7 +64,14 @@ const EmployeeSchema: Schema = new Schema({
         earned: { type: Number, default: 15 },
         wfh: { type: Number, default: 10 },
         paid: { type: Number, default: 15 },
-    }
+    },
+    pan: { type: String, default: '' },
+    uan: { type: String, default: '' },
+    pfNo: { type: String, default: '' },
+    esiNo: { type: String, default: '' },
+    bankName: { type: String, default: '' },
+    bankAccount: { type: String, default: '' },
+    ifsc: { type: String, default: '' }
 }, {
     timestamps: true,
     toJSON: {
