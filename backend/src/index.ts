@@ -1027,26 +1027,32 @@ app.post('/api/attendance', async (req, res) => {
         let status = req.body.status || 'Present';
         let workHours = req.body.workHours || 0;
 
-        if (checkIn) {
-            if (checkOut) {
-                // Both checkIn and checkOut are provided (e.g. manual admin entry)
-                const [inH, inM] = checkIn.split(':').map(Number);
+        if (checkIn && checkIn !== '--:--' && checkIn.includes(':')) {
+            const [inH, inM] = checkIn.split(':').map(Number);
+            const checkInMinutes = inH * 60 + inM;
+            
+            if (checkOut && checkOut !== '--:--' && checkOut.includes(':')) {
                 const [outH, outM] = checkOut.split(':').map(Number);
-                let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+                let diffMins = (outH * 60 + outM) - checkInMinutes;
                 if (diffMins < 0) diffMins += 24 * 60;
                 workHours = Number((diffMins / 60).toFixed(2));
                 
-                if (diffMins >= 530) { // 8h 50m
-                    status = 'Present';
-                } else if (diffMins >= 270) { // 4h 30m
+                if (checkInMinutes > 585) { // after 9:45 AM
                     status = 'Half Day';
                 } else {
-                    status = 'Absent';
+                    if (diffMins >= 530) { // 8h 50m
+                        status = 'Present';
+                    } else {
+                        status = 'Half Day';
+                    }
                 }
             } else {
                 // Only checkIn is provided (employee checking in)
-                // Rule 1 & 2: Mark as Present (whether between 9:30-9:45 or after 9:45, do not immediately mark Half Day)
-                status = 'Present';
+                if (checkInMinutes > 585) { // after 9:45 AM
+                    status = 'Half Day';
+                } else {
+                    status = 'Present';
+                }
             }
         }
 
@@ -1077,28 +1083,36 @@ app.put('/api/attendance/:id', async (req, res) => {
         let status = req.body.status !== undefined ? req.body.status : existingRecord.status;
         let workHours = req.body.workHours !== undefined ? req.body.workHours : existingRecord.workHours;
 
-        if (checkIn) {
-            if (checkOut) {
-                const [inH, inM] = checkIn.split(':').map(Number);
+        if (checkIn && checkIn !== '--:--' && checkIn.includes(':')) {
+            const [inH, inM] = checkIn.split(':').map(Number);
+            const checkInMinutes = inH * 60 + inM;
+            
+            if (checkOut && checkOut !== '--:--' && checkOut.includes(':')) {
                 const [outH, outM] = checkOut.split(':').map(Number);
-                let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+                let diffMins = (outH * 60 + outM) - checkInMinutes;
                 if (diffMins < 0) diffMins += 24 * 60;
                 workHours = Number((diffMins / 60).toFixed(2));
                 
                 // Recalculate status if checkIn/checkOut is modified OR if status is not explicitly sent
                 if (req.body.checkIn !== undefined || req.body.checkOut !== undefined || req.body.status === undefined) {
-                    if (diffMins >= 530) { // 8h 50m
-                        status = 'Present';
-                    } else if (diffMins >= 270) { // 4h 30m
+                    if (checkInMinutes > 585) { // after 9:45 AM
                         status = 'Half Day';
                     } else {
-                        status = 'Absent';
+                        if (diffMins >= 530) { // 8h 50m
+                            status = 'Present';
+                        } else {
+                            status = 'Half Day';
+                        }
                     }
                 }
             } else {
                 // Only checkIn is present
                 if (req.body.checkIn !== undefined || req.body.status === undefined) {
-                    status = 'Present';
+                    if (checkInMinutes > 585) { // after 9:45 AM
+                        status = 'Half Day';
+                    } else {
+                        status = 'Present';
+                    }
                 }
             }
         }
