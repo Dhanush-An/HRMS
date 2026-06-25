@@ -439,7 +439,7 @@ const Payroll = () => {
                                                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-brand-muted group-focus-within/input:text-brand-primary text-[10px] font-bold">₹</span>
                                                             <input
                                                                 type="number"
-                                                                value={salary[field as keyof SalaryStructure] !== undefined ? salary[field as keyof SalaryStructure] : ''}
+                                                                value={salary[field as keyof SalaryStructure] || ''}
                                                                 onChange={(e) => handleSalaryUpdate(emp.id, field as keyof SalaryStructure, e.target.value)}
                                                                 className={cn(
                                                                     "w-20 bg-brand-bg border border-brand-border rounded-lg py-2 pl-5 pr-1 font-bold text-xs focus:ring-2 focus:border-transparent transition-all outline-none",
