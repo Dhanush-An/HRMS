@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
 import { IndianRupee, Download, ShieldCheck, Receipt, Pencil } from 'lucide-react';
-import { generatePayslipPDF } from '../../utils/generatePayslipPDF';
+import { generatePayslipPDF, computeFinancials } from '../../utils/generatePayslipPDF';
 
-const generatePAN = (name: string, id: string) => {
-    const letters = 'ABCDE';
-    const nameChar = name?.replace(/[^A-Za-z]/g, '').charAt(0).toUpperCase() || 'P';
-    const numPart = id?.replace(/\D/g, '').padEnd(4, '0').substring(0, 4) || '0000';
-    return `${letters}${numPart}${nameChar}`;
-};
 
 const roleMap: Record<string, string> = {
     'admin': 'HR Administrator',
@@ -23,6 +17,8 @@ const EmployeePayroll = () => {
     const [payrollHistory, setPayrollHistory] = useState<any[]>([]);
     const [employeeInfo, setEmployeeInfo] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [attendanceData, setAttendanceData] = useState<any[]>([]);
+    const [leavesData, setLeavesData] = useState<any[]>([]);
 
     // Edit modal states
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -36,14 +32,13 @@ const EmployeePayroll = () => {
 
     const handleOpenEdit = () => {
         if (!employeeInfo) return;
-        const idNumeric = (employeeInfo.employeeId || employeeInfo.id || '').replace(/\D/g, '').padStart(6, '0');
-        setEditPan(employeeInfo.pan || generatePAN(employeeInfo.name, employeeInfo.employeeId || employeeInfo.id));
-        setEditUan(employeeInfo.uan || ('101' + idNumeric.padEnd(9, '2')));
-        setEditPfNo(employeeInfo.pfNo || ('TNKRK' + idNumeric.padEnd(10, '3')));
-        setEditEsiNo(employeeInfo.esiNo || ('12' + idNumeric.padEnd(8, '4')));
-        setEditBankName(employeeInfo.bankName || 'State Bank of India');
-        setEditBankAccount(employeeInfo.bankAccount || ('388' + idNumeric.padEnd(8, '5')));
-        setEditIfsc(employeeInfo.ifsc || 'SBIN0001234');
+        setEditPan(employeeInfo.pan || '');
+        setEditUan(employeeInfo.uan || '');
+        setEditPfNo(employeeInfo.pfNo || '');
+        setEditEsiNo(employeeInfo.esiNo || '');
+        setEditBankName(employeeInfo.bankName || '');
+        setEditBankAccount(employeeInfo.bankAccount || '');
+        setEditIfsc(employeeInfo.ifsc || '');
         setIsEditModalOpen(true);
     };
 
@@ -80,18 +75,24 @@ const EmployeePayroll = () => {
     const fetchPayrollData = async (employeeId: string) => {
         setLoading(true);
         try {
-            // 1. Fetch Salary Structure from Employee record
-            const empRes = await api.get('/api/employees');
-            const employees = await empRes.json();
-            const employee = employees.find((e: any) => e.id === employeeId);
+            // 1. Fetch all required resources
+            const [empRes, payRes, attRes, leavesRes] = await Promise.all([
+                api.get(`/api/employees/${employeeId}`),
+                api.get('/api/payroll'),
+                api.get('/api/attendance'),
+                api.get('/api/leaves')
+            ]);
+            const employee = await empRes.json();
+            const payrolls = await payRes.json();
+            const atts = await attRes.json();
+            const leaves = await leavesRes.json();
+
+            setAttendanceData(atts);
+            setLeavesData(leaves);
 
             if (employee) {
                 setEmployeeInfo(employee);
             }
-
-            // 2. Fetch Payroll History
-            const payRes = await api.get('/api/payroll');
-            const payrolls = await payRes.json();
 
             // Extract records for this employee
             const history = Array.isArray(payrolls) ? payrolls.map((p: any) => {
@@ -112,13 +113,24 @@ const EmployeePayroll = () => {
 
             // Set current month/basic from employee structure
             if (employee && employee.salary) {
+                const baseVal = employee.salary.base || 0;
+                const hraVal = employee.salary.hra || 0;
+                const transportVal = employee.salary.transport || 0;
+                const otherVal = employee.salary.other || 0;
+                const pfVal = employee.salary.pf || 0;
+                const taxVal = employee.salary.tax || 0;
+                const deds = pfVal + taxVal;
+                const net = baseVal + hraVal + transportVal + otherVal - deds;
+
                 setSalaryDetails({
                     month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
-                    basic: employee.salary.base || 0,
-                    hra: employee.salary.hra || 0,
-                    allowances: (employee.salary.transport || 0) + (employee.salary.other || 0),
-                    deductions: 0, // Mocked for now
-                    netSalary: (employee.salary.base || 0) + (employee.salary.hra || 0) + (employee.salary.transport || 0) + (employee.salary.other || 0),
+                    basic: baseVal,
+                    hra: hraVal,
+                    allowances: transportVal + otherVal,
+                    pf: pfVal,
+                    tax: taxVal,
+                    deductions: deds,
+                    netSalary: net,
                     status: history.length > 0 && history[0].month === new Date().toLocaleString('default', { month: 'long' }) ? 'Processed' : 'Draft'
                 });
             }
@@ -129,9 +141,89 @@ const EmployeePayroll = () => {
         }
     };
 
+    const getAttendanceStats = (empId: string, month: string, year: number) => {
+        let monthStr = month;
+        if (typeof monthStr === 'string') {
+            monthStr = monthStr.replace(/\s+/g, ' ').trim();
+            if (monthStr.includes(' ')) {
+                monthStr = monthStr.split(' ')[0];
+            }
+        }
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        let monthIndex = monthNames.findIndex(m => m.toLowerCase() === monthStr.toLowerCase());
+        if (monthIndex === -1) {
+            monthIndex = parseInt(monthStr) - 1;
+        }
+        if (isNaN(monthIndex) || monthIndex < 0 || monthIndex > 11) {
+            monthIndex = new Date().getMonth();
+        }
+        const monthNumStr = String(monthIndex + 1).padStart(2, '0');
+        const prefix = `${year}-${monthNumStr}`;
+        
+        const records = attendanceData.filter(r => 
+            (r.employeeId === empId || r.employeeName === empId) && 
+            r.date.startsWith(prefix)
+        );
+
+        let sundays = 0;
+        const date = new Date(year, monthIndex, 1);
+        while (date.getMonth() === monthIndex) {
+            if (date.getDay() === 0) sundays++;
+            date.setDate(date.getDate() + 1);
+        }
+
+        const present = records.filter(r => r.status === 'Present').length;
+        const halfDay = records.filter(r => r.status === 'Half Day').length;
+        const absents = records.filter(r => r.status === 'Absent');
+        
+        let penalties = 0;
+        absents.forEach(abs => {
+            const hasApprovedLeave = leavesData.find(l => 
+                l.employeeId === empId && 
+                l.status === 'Approved' &&
+                abs.date >= l.startDate && 
+                abs.date <= l.endDate
+            );
+            if (!hasApprovedLeave) penalties++;
+        });
+
+        const totalDaysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+        const totalWorkingDays = totalDaysInMonth - sundays;
+        const paidDays = Math.max(0, present + (halfDay * 0.5) + sundays - penalties);
+        const leaveDays = leavesData.filter(l => 
+            l.employeeId === empId && 
+            l.status === 'Approved' &&
+            new Date(l.startDate).getMonth() === monthIndex
+        ).length;
+        
+        const lossOfPayDays = penalties;
+
+        return {
+            totalWorkingDays,
+            presentDays: present,
+            leaveDays,
+            lossOfPayDays,
+            paidDays
+        };
+    };
+
     const handleDownloadPDF = (data: any) => {
         if (!data || !employeeInfo) return;
-        generatePayslipPDF(employeeInfo, data);
+        
+        let monthVal = data.month || '';
+        let yearVal = data.year || new Date().getFullYear();
+        
+        if (typeof monthVal === 'string') {
+            monthVal = monthVal.replace(/\s+/g, ' ').trim();
+            if (monthVal.includes(' ')) {
+                const parts = monthVal.split(' ');
+                monthVal = parts[0];
+                yearVal = parseInt(parts[1]) || yearVal;
+            }
+        }
+        
+        const attStats = getAttendanceStats(employeeInfo.id, monthVal, yearVal);
+        generatePayslipPDF(employeeInfo, data, attStats);
     };
 
     if (loading) return (
@@ -148,6 +240,8 @@ const EmployeePayroll = () => {
             <p className="text-brand-muted text-xs italic">We couldn't locate any active payroll structures for your profile.</p>
         </div>
     );
+
+    const financials = employeeInfo && salaryDetails ? computeFinancials(employeeInfo, salaryDetails) : null;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -181,24 +275,34 @@ const EmployeePayroll = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-6 border-t border-brand-border">
-                                <div className="space-y-1">
-                                    <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">Base</span>
-                                    <p className="text-brand-text text-sm font-bold">₹{salaryDetails.basic.toLocaleString()}</p>
+                            {financials && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-6 border-t border-brand-border">
+                                    <div className="space-y-1">
+                                        <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">Basic Salary</span>
+                                        <p className="text-brand-text text-sm font-bold">₹{financials.basic.toLocaleString()}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">House Rent Allowance (HRA)</span>
+                                        <p className="text-brand-text text-sm font-bold">₹{financials.hra.toLocaleString()}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">Conveyance Allowance</span>
+                                        <p className="text-brand-text text-sm font-bold">₹{financials.conveyance.toLocaleString()}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">Medical Allowance</span>
+                                        <p className="text-brand-text text-sm font-bold">₹{financials.medical.toLocaleString()}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">Special Allowance</span>
+                                        <p className="text-brand-text text-sm font-bold">₹{financials.special.toLocaleString()}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">Other Allowance</span>
+                                        <p className="text-brand-text text-sm font-bold">₹{financials.otherAllowance.toLocaleString()}</p>
+                                    </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">HRA</span>
-                                    <p className="text-brand-text text-sm font-bold">₹{salaryDetails.hra.toLocaleString()}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-brand-muted text-[9px] font-black uppercase tracking-widest">Allowances</span>
-                                    <p className="text-brand-text text-sm font-bold">₹{salaryDetails.allowances.toLocaleString()}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <span className="text-status-rejected/60 text-[9px] font-black uppercase tracking-widest">Deductions</span>
-                                    <p className="text-status-rejected text-sm font-bold">₹{salaryDetails.deductions.toLocaleString()}</p>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -285,32 +389,37 @@ const EmployeePayroll = () => {
                                 <div className="grid grid-cols-3 gap-y-3 text-xs">
                                     <span className="text-brand-muted font-bold col-span-1">PAN Number</span>
                                     <span className="text-brand-text font-black col-span-2">
-                                        : {employeeInfo.pan || generatePAN(employeeInfo.name, employeeInfo.employeeId || employeeInfo.id)}
+                                        : {employeeInfo.pan || '-'}
                                     </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">UAN Number</span>
                                     <span className="text-brand-text font-black col-span-2">
-                                        : {employeeInfo.uan || ('101' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(9, '2'))}
+                                        : {employeeInfo.uan || '-'}
                                     </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">PF Number</span>
                                     <span className="text-brand-text font-black col-span-2">
-                                        : {employeeInfo.pfNo || ('TNKRK' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(10, '3'))}
+                                        : {employeeInfo.pfNo || '-'}
+                                    </span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">ESI Number</span>
+                                    <span className="text-brand-text font-black col-span-2">
+                                        : {employeeInfo.esiNo || '-'}
                                     </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">Bank Name</span>
                                     <span className="text-brand-text font-black col-span-2">
-                                        : {employeeInfo.bankName || 'State Bank of India'}
+                                        : {employeeInfo.bankName || '-'}
                                     </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">Account No.</span>
                                     <span className="text-brand-text font-black col-span-2">
-                                        : {employeeInfo.bankAccount || ('388' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(8, '5'))}
+                                        : {employeeInfo.bankAccount || '-'}
                                     </span>
 
                                     <span className="text-brand-muted font-bold col-span-1">IFSC Code</span>
                                     <span className="text-brand-text font-black col-span-2">
-                                        : {employeeInfo.ifsc || 'SBIN0001234'}
+                                        : {employeeInfo.ifsc || '-'}
                                     </span>
                                 </div>
                             </div>

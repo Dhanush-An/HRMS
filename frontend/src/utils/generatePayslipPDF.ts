@@ -79,92 +79,57 @@ const numberToWords = (num: number): string => {
     return word.trim() + ' Rupees Only';
 };
 
-const computeFinancials = (employee: any, payroll: any): PayslipFinancials => {
+export const computeFinancials = (employee: any, payroll: any): PayslipFinancials => {
+    // 1. Get deductions from payroll or employee structure
+    const pf = payroll.pf !== undefined && payroll.pf !== null ? payroll.pf : (employee?.salary?.pf || 0);
+    const profTax = payroll.tax !== undefined && payroll.tax !== null ? payroll.tax : (employee?.salary?.tax || 0);
+    const esi = payroll.esi !== undefined && payroll.esi !== null ? payroll.esi : (employee?.salary?.esi || 0);
+    const loanDeduction = payroll.loanDeduction !== undefined && payroll.loanDeduction !== null ? payroll.loanDeduction : 0;
+    const otherDeductions = payroll.otherDeductions !== undefined && payroll.otherDeductions !== null ? payroll.otherDeductions : 0;
+    const totalDeductions = pf + profTax + esi + loanDeduction + otherDeductions;
+
+    // 2. Get Net Pay
     const netPay = payroll.netSalary || 0;
-    const scale = netPay / 39000;
-    
-    // Earnings (Default scaled values)
-    let basic = Math.round(25000 * scale);
-    let hra = Math.round(10000 * scale);
-    let conveyance = Math.round(2000 * scale);
-    let medical = Math.round(1250 * scale);
-    let special = Math.round(4750 * scale);
-    let otherAllowance = Math.round(1000 * scale);
-    
-    // Deductions (Default scaled values)
-    let pf = Math.round(3000 * scale);
-    let profTax = Math.round(200 * scale);
-    let esi = Math.round(150 * scale);
-    let loanDeduction = Math.round(1000 * scale);
-    let otherDeductions = Math.round(650 * scale);
 
-    // Override with actual values from database/history if available
-    const dbBase = payroll.base || payroll.basic || employee?.salary?.base || 0;
-    const dbHra = employee?.salary?.hra || 0;
-    const dbBonus = payroll.bonus || 0;
-    const dbPf = payroll.pf || 0;
-    const dbTax = payroll.tax || 0;
-    const dbDeductions = payroll.deductions || 0;
-    
-    if (dbBase > 0) {
-        basic = dbBase;
-        if (dbHra > 0) {
-            hra = dbHra;
-        } else {
-            hra = Math.round(basic * 0.4); // 40% HRA
-        }
-        
-        conveyance = employee?.salary?.transport || 0;
-        special = employee?.salary?.other || 0;
-        otherAllowance = dbBonus;
-        
-        // Scale other values to keep things looking balanced
-        medical = 1250;
-        if (conveyance === 0) conveyance = 2000;
-        if (special === 0) special = 4750;
-        if (otherAllowance === 0) otherAllowance = 1000;
-    }
+    // 3. Compute Gross Earnings based on Net Pay + Deductions
+    const grossEarnings = netPay + totalDeductions;
 
-    if (dbPf > 0) pf = dbPf;
-    if (dbTax > 0) otherDeductions = dbTax;
+    // 4. Split Gross Earnings into components (excluding bonus)
+    const bonus = payroll.bonus || 0;
+    const grossBase = Math.max(0, grossEarnings - bonus);
+
+    // Split base: Basic (50%), HRA (40% of Basic = 20% of base)
+    const basic = Math.round(grossBase * 0.5);
+    const hra = Math.round(basic * 0.4);
     
-    let grossEarnings = basic + hra + conveyance + medical + special + otherAllowance;
-    let totalDeductions = pf + profTax + esi + loanDeduction + otherDeductions;
+    // Conveyance, Medical, Special, Other
+    const conveyance = employee?.salary?.transport || 0;
+    const medical = 0; // Show actual only
+    const otherAllowance = bonus;
     
-    if (dbDeductions > 0 && dbDeductions !== totalDeductions) {
-        const diff = dbDeductions - totalDeductions;
-        pf += Math.round(diff * 0.6);
-        otherDeductions += Math.round(diff * 0.4);
-        totalDeductions = pf + profTax + esi + loanDeduction + otherDeductions;
-    }
-    
-    let currentNet = grossEarnings - totalDeductions;
-    let diff = netPay - currentNet;
-    
-    if (diff !== 0) {
-        special += diff;
-        if (special < 0) {
-            basic += special;
-            special = 0;
-            if (basic < 0) {
-                basic = 0;
-            }
-        }
-    }
-    
-    // Recompute grossEarnings as the actual sum of all earnings components
-    grossEarnings = basic + hra + conveyance + medical + special + otherAllowance;
-    
+    // Special is the remaining balance to ensure sum matches grossBase
+    const special = Math.max(0, grossBase - basic - hra - conveyance - medical);
+
     return {
-        basic, hra, conveyance, medical, special, otherAllowance,
+        basic,
+        hra,
+        conveyance,
+        medical,
+        special,
+        otherAllowance,
         grossEarnings,
-        pf, profTax, esi, loanDeduction, otherDeductions,
+        pf,
+        profTax,
+        esi,
+        loanDeduction,
+        otherDeductions,
         totalDeductions,
         netPay
     };
 };
 
-export const generatePayslipPDF = async (employee: any, payroll: any) => {
+
+export const generatePayslipPDF = async (employee: any, payroll: any, attendanceStats?: any) => {
     if (!employee || !payroll) return;
 
     const doc = new jsPDF('p', 'mm', 'a4');
@@ -216,13 +181,13 @@ export const generatePayslipPDF = async (employee: any, payroll: any) => {
         doc.text('FiC', 12, 22);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7.5);
-        doc.text('FORGE INDIA CONNECT', 12, 26);
+        doc.text('FORGE INDIA CONNECT PVT. LTD.', 12, 26);
     }
 
     // Center Company details
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(15);
-    doc.text('FORGE INDIA CONNECT', 105, 16, { align: 'center' });
+    doc.text('FORGE INDIA CONNECT PVT. LTD.', 105, 16, { align: 'center' });
     
     doc.setTextColor(80, 80, 80);
     doc.setFont('helvetica', 'normal');
@@ -233,7 +198,7 @@ export const generatePayslipPDF = async (employee: any, payroll: any) => {
     doc.setTextColor(110, 110, 110);
     doc.setFontSize(6.5);
     doc.text('CIN: U29309PN2021PTC198162   |   Email: hr@forgeindiaconnect.com', 105, 27.5, { align: 'center' });
-    doc.text('Website: www.forgeindiaconnect.com   |   Phone: +91 20 XXXX XXXX', 105, 31, { align: 'center' });
+    doc.text('Website: www.forgeindiaconnect.com   |   Phone: +91 6369406416', 105, 31, { align: 'center' });
 
     // PAYSLIP Capsule Box
     doc.setFillColor(15, 36, 62); // Dark Blue #0F243E
@@ -304,18 +269,18 @@ export const generatePayslipPDF = async (employee: any, payroll: any) => {
     };
     const designation = roleMap[employee.role?.toLowerCase()] || employee.role || 'Full Stack Developer';
 
-    const empMaskedAcc = employee.bankAccount ? `********${employee.bankAccount.slice(-4)}` : '********5678';
+    const empMaskedAcc = employee.bankAccount ? `********${employee.bankAccount.slice(-4)}` : '-';
 
     const empDetails = [
         ['Employee Name', employee.name],
         ['Employee ID', empId],
         ['Designation', designation],
         ['Department', employee.department || 'IT Development'],
-        ['Date of Joining', employee.joiningDate || '21-Jan-2026'],
-        ['Bank Name', employee.bankName || 'State Bank of India'],
+        ['Date of Joining', employee.joiningDate || '-'],
+        ['Bank Name', employee.bankName || '-'],
         ['Account No.', empMaskedAcc],
-        ['PAN No.', employee.pan || 'ABCDE1234F'],
-        ['UAN / PF No.', employee.uan || '101234567890']
+        ['PAN No.', employee.pan || '-'],
+        ['UAN / PF No.', `${employee.uan || '-'} / ${employee.pfNo || '-'}`]
     ];
 
     doc.setFontSize(7.5);
@@ -358,11 +323,11 @@ export const generatePayslipPDF = async (employee: any, payroll: any) => {
     doc.text('Details', rightX + boxW - 2, grid1Y + 9.5, { align: 'right' });
 
     const attendanceData = [
-        ['Total Working Days', 26],
-        ['Present Days', 24],
-        ['Leave Days', 1],
-        ['Loss of Pay Days', 1],
-        ['Paid Days', 25]
+        ['Total Working Days', attendanceStats?.totalWorkingDays !== undefined ? attendanceStats.totalWorkingDays : 26],
+        ['Present Days', attendanceStats?.presentDays !== undefined ? attendanceStats.presentDays : 24],
+        ['Leave Days', attendanceStats?.leaveDays !== undefined ? attendanceStats.leaveDays : 1],
+        ['Loss of Pay Days', attendanceStats?.lossOfPayDays !== undefined ? attendanceStats.lossOfPayDays : 1],
+        ['Paid Days', attendanceStats?.paidDays !== undefined ? attendanceStats.paidDays : 25]
     ];
 
     doc.setTextColor(50, 50, 50);

@@ -26,4 +26,7 @@ const LeaveSchema: Schema = new Schema({
     toObject: { virtuals: true }
 });
 
+LeaveSchema.index({ employeeId: 1 });
+
 export default mongoose.model<ILeave>('Leave', LeaveSchema);
+

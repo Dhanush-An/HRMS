@@ -389,6 +389,32 @@ app.get('/api/employees', async (req, res) => {
     }
 });
 
+// GET single employee profile
+app.get('/api/employees/:id', async (req, res) => {
+    try {
+        const user = (req as any).user;
+        const employee = await Employee.findOne({ employeeId: req.params.id });
+        if (!employee) {
+            return res.status(404).json({ success: false, message: 'Employee not found' });
+        }
+        
+        // Authorization check: admin, subadmin, hr, or matching employee user
+        if (user.role !== 'admin' && user.role !== 'subadmin' && user.role !== 'hr' && user.id !== req.params.id) {
+            return res.status(403).json({ success: false, message: 'Access denied' });
+        }
+        
+        // HR/SubAdmin check: only allow if in the same branch
+        if ((user.role === 'hr' || user.role === 'subadmin') && employee.branchId !== user.branchId) {
+            return res.status(403).json({ success: false, message: 'Access denied' });
+        }
+
+        res.json(employee);
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+
 // POST new employee
 app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
     try {
@@ -1062,7 +1088,17 @@ app.post('/api/payroll/generate', authorizeRoles('admin', 'subadmin'), async (re
 app.get('/api/payroll', async (req, res) => {
     try {
         const user = (req as any).user;
-        let payrolls: any[] = await Payroll.find();
+        let query: any = {};
+        
+        if (user.role === 'employee' || user.role === 'staff') {
+            query = { 'records.employeeId': user.id };
+        } else if (user.role !== 'admin' && user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
+            const branchEmpIds = branchEmps.map(e => e.employeeId);
+            query = { 'records.employeeId': { $in: branchEmpIds } };
+        }
+
+        let payrolls: any[] = await Payroll.find(query);
         
         if (user.role === 'employee' || user.role === 'staff') {
             payrolls = payrolls.map(p => {
@@ -1072,11 +1108,10 @@ app.get('/api/payroll', async (req, res) => {
             }).filter(p => p.records.length > 0);
         } else if (user.role !== 'admin' && user.branchId) {
             const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
-            const branchEmpIds = new Set(branchEmps.map(e => e.employeeId));
-            
+            const branchEmpIdsSet = new Set(branchEmps.map(e => e.employeeId));
             payrolls = payrolls.map(p => {
                 const po = p.toObject ? p.toObject() : p;
-                po.records = po.records.filter((r: any) => branchEmpIds.has(r.employeeId));
+                po.records = po.records.filter((r: any) => branchEmpIdsSet.has(r.employeeId));
                 return po;
             }).filter(p => p.records.length > 0);
         }

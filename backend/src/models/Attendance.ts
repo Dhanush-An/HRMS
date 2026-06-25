@@ -56,4 +56,7 @@ const AttendanceSchema: Schema = new Schema({
     toObject: { virtuals: true }
 });
 
+AttendanceSchema.index({ employeeId: 1, date: 1 });
+
 export default mongoose.model<IAttendance>('Attendance', AttendanceSchema);
+
