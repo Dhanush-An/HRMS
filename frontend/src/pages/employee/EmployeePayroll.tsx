@@ -202,7 +202,22 @@ const EmployeePayroll = () => {
             new Date(l.startDate).getMonth() === monthIndex
         ).length;
         
-        const lossOfPayDays = Math.max(0, totalWorkingDays - present - halfDay - leaveDays);
+        const today = new Date();
+        let passedWorkingDays = totalWorkingDays;
+        const isCurrentMonth = today.getFullYear() === year && today.getMonth() === monthIndex;
+        if (isCurrentMonth) {
+            let passedDays = 0;
+            const limitDay = today.getDate();
+            for (let d = 1; d <= limitDay; d++) {
+                const tempDate = new Date(year, monthIndex, d);
+                if (tempDate.getDay() !== 0) { // Not Sunday
+                    passedDays++;
+                }
+            }
+            passedWorkingDays = passedDays;
+        }
+
+        const lossOfPayDays = Math.max(0, passedWorkingDays - effectivePresent - leaveDays);
 
         return {
             totalWorkingDays,

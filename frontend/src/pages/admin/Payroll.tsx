@@ -291,6 +291,23 @@ const Payroll = () => {
         const effectivePresent = present + (halfDay * 0.5);
         const remainingHalfDay = 0;
 
+        const monthNum = parseInt(selectedMonth);
+        const today = new Date();
+        let passedWorkingDays = totalWorkingDays;
+        
+        const isCurrentMonth = today.getFullYear() === selectedYear && (today.getMonth() + 1) === monthNum;
+        if (isCurrentMonth) {
+            let passedDays = 0;
+            const limitDay = today.getDate();
+            for (let d = 1; d <= limitDay; d++) {
+                const tempDate = new Date(selectedYear, monthNum - 1, d);
+                if (tempDate.getDay() !== 0) { // Not Sunday
+                    passedDays++;
+                }
+            }
+            passedWorkingDays = passedDays;
+        }
+
         let penalties = 0;
         let absentDays = 0;
 
@@ -311,7 +328,7 @@ const Payroll = () => {
                 }
             });
             const approvedLeaveCount = absents.length - penalties;
-            absentDays = Math.max(0, totalWorkingDays - present - halfDay - approvedLeaveCount);
+            absentDays = Math.max(0, passedWorkingDays - effectivePresent - approvedLeaveCount);
         }
 
         // Sundays are counted as Present (Paid Off)
