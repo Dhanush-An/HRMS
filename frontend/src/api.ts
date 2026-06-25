@@ -49,29 +49,47 @@ const handleResponse = async (response: Response): Promise<Response> => {
 const apiCache = new Map<string, { promise: Promise<Response>, timestamp: number }>();
 const CACHE_DURATION = 30000; // 30 seconds
 
+const encodePathParams = (path: string): string => {
+    if (path.startsWith('/api/employees/')) {
+        const rest = path.slice('/api/employees/'.length);
+        const parts = rest.split('/');
+        const knownSubPaths = ['status', 'salary', 'location', 'avatar'];
+        const lastPart = parts[parts.length - 1];
+        if (knownSubPaths.includes(lastPart)) {
+            const id = parts.slice(0, -1).join('/');
+            return `/api/employees/${encodeURIComponent(id)}/${lastPart}`;
+        } else {
+            return `/api/employees/${encodeURIComponent(rest)}`;
+        }
+    }
+    return path;
+};
+
 /** Wrapper around fetch that automatically attaches the JWT Bearer token and provides simple caching */
 const api = {
     get: (path: string) => {
         const now = Date.now();
-        if (apiCache.has(path)) {
-            const cached = apiCache.get(path)!;
+        const encodedPath = encodePathParams(path);
+        if (apiCache.has(encodedPath)) {
+            const cached = apiCache.get(encodedPath)!;
             if (now - cached.timestamp < CACHE_DURATION) {
                 return cached.promise.then(res => res.clone());
             }
         }
         
-        const promise = fetch(`${API_URL}${path}`, {
+        const promise = fetch(`${API_URL}${encodedPath}`, {
             method: 'GET',
             headers: getAuthHeaders(),
         }).then(handleResponse);
 
-        apiCache.set(path, { promise, timestamp: now });
+        apiCache.set(encodedPath, { promise, timestamp: now });
         return promise.then(res => res.clone());
     },
 
     post: (path: string, body?: unknown) => {
         apiCache.clear();
-        return fetch(`${API_URL}${path}`, {
+        const encodedPath = encodePathParams(path);
+        return fetch(`${API_URL}${encodedPath}`, {
             method: 'POST',
             headers: getAuthHeaders(),
             body: body ? JSON.stringify(body) : undefined,
@@ -80,9 +98,10 @@ const api = {
 
     postForm: (path: string, body: FormData) => {
         apiCache.clear();
+        const encodedPath = encodePathParams(path);
         const headers = getAuthHeaders() as any;
         delete headers['Content-Type']; // Let browser set Content-Type with boundary
-        return fetch(`${API_URL}${path}`, {
+        return fetch(`${API_URL}${encodedPath}`, {
             method: 'POST',
             headers,
             body,
@@ -91,7 +110,8 @@ const api = {
 
     put: (path: string, body?: unknown) => {
         apiCache.clear();
-        return fetch(`${API_URL}${path}`, {
+        const encodedPath = encodePathParams(path);
+        return fetch(`${API_URL}${encodedPath}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: body ? JSON.stringify(body) : undefined,
@@ -100,7 +120,8 @@ const api = {
 
     delete: (path: string) => {
         apiCache.clear();
-        return fetch(`${API_URL}${path}`, {
+        const encodedPath = encodePathParams(path);
+        return fetch(`${API_URL}${encodedPath}`, {
             method: 'DELETE',
             headers: getAuthHeaders(),
         }).then(handleResponse);
