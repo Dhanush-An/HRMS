@@ -287,9 +287,9 @@ const Payroll = () => {
         const present = override !== undefined ? override.present : records.filter(r => r.status === 'Present').length;
         const halfDay = override !== undefined ? override.halfDay : records.filter(r => r.status === 'Half Day').length;
         
-        // 2 half days = 1 full present day
-        const effectivePresent = present + Math.floor(halfDay / 2);
-        const remainingHalfDay = halfDay % 2; // leftover half day (0 or 1)
+        // 1 half day = 0.5 present day
+        const effectivePresent = present + (halfDay * 0.5);
+        const remainingHalfDay = 0;
 
         let penalties = 0;
         let absentDays = 0;
@@ -311,7 +311,7 @@ const Payroll = () => {
                 }
             });
             const approvedLeaveCount = absents.length - penalties;
-            absentDays = Math.max(0, totalWorkingDays - effectivePresent - (remainingHalfDay * 0.5) - approvedLeaveCount);
+            absentDays = Math.max(0, totalWorkingDays - effectivePresent - approvedLeaveCount);
         }
 
         // Sundays are counted as Present (Paid Off)
@@ -455,13 +455,13 @@ const Payroll = () => {
 
             const attendanceStats = {
                 totalWorkingDays: presentData.totalWorkingDays,
-                presentDays: presentData.present,
+                presentDays: presentData.effectivePresent,
                 leaveDays: leavesData.filter(l => 
                     l.employeeId === emp.id && 
                     l.status === 'Approved' &&
                     new Date(l.startDate).getMonth() === (parseInt(selectedMonth) - 1)
                 ).length,
-                lossOfPayDays: presentData.penalties,
+                lossOfPayDays: presentData.absentDays,
                 paidDays: presentData.totalPayableDays
             };
 
@@ -831,8 +831,8 @@ const Payroll = () => {
                                                         <div className="flex items-start gap-2 group/cell">
                                                             <div className="flex flex-col gap-0.5">
                                                                 <span className="text-[9px] font-black text-brand-muted uppercase tracking-tighter">Total: {presentData.totalWorkingDays} working days</span>
-                                                                <span className="text-[10px] font-black text-status-approved uppercase">P: {presentData.effectivePresent}{presentData.remainingHalfDay ? '.5' : ''}</span>
-                                                                <span className="text-[10px] font-black text-status-pending uppercase">H: {presentData.halfDay} {presentData.halfDay >= 2 ? `(=${Math.floor(presentData.halfDay / 2)}d)` : ''}</span>
+                                                                <span className="text-[10px] font-black text-status-approved uppercase">P: {presentData.effectivePresent}</span>
+                                                                <span className="text-[10px] font-black text-status-pending uppercase">H: {presentData.halfDay} {presentData.halfDay > 0 ? `(=${presentData.halfDay * 0.5}d)` : ''}</span>
                                                                 <span className="text-[10px] font-black text-status-rejected uppercase">Abs: {presentData.absentDays}</span>
                                                                 <span className="text-[10px] font-black text-brand-primary uppercase">Sun: {presentData.sundays}</span>
                                                                 {presentData.penalties > 0 && (

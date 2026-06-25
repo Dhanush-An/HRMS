@@ -194,6 +194,7 @@ const EmployeePayroll = () => {
 
         const totalDaysInMonth = new Date(year, monthIndex + 1, 0).getDate();
         const totalWorkingDays = totalDaysInMonth - sundays;
+        const effectivePresent = present + (halfDay * 0.5);
         const paidDays = Math.max(0, present + (halfDay * 0.5) + sundays - penalties);
         const leaveDays = leavesData.filter(l => 
             l.employeeId === empId && 
@@ -201,11 +202,11 @@ const EmployeePayroll = () => {
             new Date(l.startDate).getMonth() === monthIndex
         ).length;
         
-        const lossOfPayDays = penalties;
+        const lossOfPayDays = Math.max(0, totalWorkingDays - effectivePresent - leaveDays);
 
         return {
             totalWorkingDays,
-            presentDays: present,
+            presentDays: effectivePresent,
             leaveDays,
             lossOfPayDays,
             paidDays

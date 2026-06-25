@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
-import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Sparkles, Inbox } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, CheckCircle, XCircle, Sparkles, Inbox, Download } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { generateAttendancePDF } from '../../utils/generateAttendancePDF';
 
 interface AttendanceRecord {
     id: string;
@@ -54,6 +55,7 @@ const EmployeeAttendance = () => {
     const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedDayStats, setSelectedDayStats] = useState<AttendanceRecord | null>(null);
+    const [employeeInfo, setEmployeeInfo] = useState<any>(null);
 
     // Get number of days in month
     const getDaysInMonth = (date: Date) => {
@@ -77,17 +79,32 @@ const EmployeeAttendance = () => {
         if (!user) return; // Should handle redirect if no user
 
         try {
-            const response = await api.get(`/api/attendance?employeeId=${user.id}`);
-            const data = await response.json();
+            const [attRes, empRes] = await Promise.all([
+                api.get(`/api/attendance?employeeId=${user.id}`),
+                employeeInfo ? Promise.resolve(null) : api.get(`/api/employees/${user.id}`)
+            ]);
 
+            const data = await attRes.json();
             // Filter client-side if API doesn't support filtering
             const userAttendance = Array.isArray(data) ? data.filter((r: any) => (r.employeeId === user.id || r.employeeName === user.name)) : [];
             setAttendance(userAttendance);
+
+            if (empRes) {
+                const empData = await empRes.json();
+                if (empData) {
+                    setEmployeeInfo(empData);
+                }
+            }
         } catch (error) {
             console.error("Error fetching attendance:", error);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleDownloadLedger = () => {
+        if (!employeeInfo) return;
+        generateAttendancePDF(employeeInfo, currentDate, attendance);
     };
 
     const handlePrevMonth = () => {
@@ -271,20 +288,32 @@ const EmployeeAttendance = () => {
                     <p className="text-brand-muted font-medium italic">Tracking your professional commitment daily.</p>
                 </div>
 
-                <div className="flex items-center gap-4 p-1.5 bg-brand-surface rounded-xl border border-brand-border shadow-sm">
-                    <button onClick={handlePrevMonth} className="p-2 hover:bg-brand-bg rounded-lg text-brand-muted hover:text-brand-primary transition-all active:scale-95">
-                        <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <div className="flex flex-col items-center min-w-[140px]">
-                        <span className="text-brand-text font-black text-xs uppercase tracking-widest">
-                            {currentDate.toLocaleString('default', { month: 'long' })}
-                        </span>
-                        <span className="text-brand-muted text-[9px] font-bold">
-                            {currentDate.getFullYear()}
-                        </span>
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex items-center gap-4 p-1.5 bg-brand-surface rounded-xl border border-brand-border shadow-sm">
+                        <button onClick={handlePrevMonth} className="p-2 hover:bg-brand-bg rounded-lg text-brand-muted hover:text-brand-primary transition-all active:scale-95">
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <div className="flex flex-col items-center min-w-[140px]">
+                            <span className="text-brand-text font-black text-xs uppercase tracking-widest">
+                                {currentDate.toLocaleString('default', { month: 'long' })}
+                            </span>
+                            <span className="text-brand-muted text-[9px] font-bold">
+                                {currentDate.getFullYear()}
+                            </span>
+                        </div>
+                        <button onClick={handleNextMonth} className="p-2 hover:bg-brand-bg rounded-lg text-brand-muted hover:text-brand-primary transition-all active:scale-95">
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
                     </div>
-                    <button onClick={handleNextMonth} className="p-2 hover:bg-brand-bg rounded-lg text-brand-muted hover:text-brand-primary transition-all active:scale-95">
-                        <ChevronRight className="w-5 h-5" />
+
+                    <button
+                        onClick={handleDownloadLedger}
+                        disabled={!employeeInfo}
+                        className="flex items-center gap-2 px-4 py-3 bg-brand-primary hover:bg-brand-primary/95 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-md shadow-brand-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Download Attendance Ledger PDF"
+                    >
+                        <Download className="w-4 h-4" />
+                        <span>Download Ledger</span>
                     </button>
                 </div>
             </div>
