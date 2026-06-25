@@ -31,6 +31,7 @@ interface Employee {
     department: string;
     role: string;
     branchName?: string;
+    joiningDate?: string;
     salary?: SalaryStructure;
 }
 
@@ -442,8 +443,15 @@ const Payroll = () => {
     };
 
     const handleGeneratePayroll = async () => {
-        const records = employees.map(emp => {
-            const { netSalary, tax, pf, actualBase, presentData } = calculateNetSalary(emp);
+        const records = employees
+            .filter(emp => {
+                if (!emp.joiningDate) return true;
+                const joinDate = new Date(emp.joiningDate);
+                const limitDate = new Date(selectedYear, parseInt(selectedMonth), 0);
+                return joinDate <= limitDate;
+            })
+            .map(emp => {
+                const { netSalary, tax, pf, actualBase, presentData } = calculateNetSalary(emp);
 
             const attendanceStats = {
                 totalWorkingDays: presentData.totalWorkingDays,
@@ -731,7 +739,14 @@ const Payroll = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-brand-border">
-                                    {Array.isArray(filteredEmployees) && filteredEmployees.map((emp) => {
+                                    {Array.isArray(filteredEmployees) && filteredEmployees
+                                        .filter(emp => {
+                                            if (!emp.joiningDate) return true;
+                                            const joinDate = new Date(emp.joiningDate);
+                                            const limitDate = new Date(selectedYear, parseInt(selectedMonth), 0);
+                                            return joinDate <= limitDate;
+                                        })
+                                        .map((emp) => {
                                         const { netSalary, actualBase, presentData } = calculateNetSalary(emp);
                                         return (
                                             <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
