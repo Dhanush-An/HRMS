@@ -92,11 +92,12 @@ const Branches = () => {
 
     const loadData = async () => {
         try {
+            const todayStr = new Date().toISOString().split('T')[0];
             const [branchRes, empRes, leavesRes, attRes] = await Promise.all([
                 api.get('/api/branches'),
                 api.get('/api/employees'),
                 api.get('/api/leaves'),
-                api.get('/api/attendance')
+                api.get(`/api/attendance?date=${todayStr}`)
             ]);
 
             const branchData = await branchRes.json();

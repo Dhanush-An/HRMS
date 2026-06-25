@@ -1673,10 +1673,11 @@ const HRPortal: React.FC = () => {
 
     const fetchAll = useCallback(async () => {
         try {
+            const todayStr = new Date().toISOString().split('T')[0];
             const [empRes, leavesRes, attRes] = await Promise.all([
                 api.get('/api/employees'),
                 api.get('/api/leaves'),
-                api.get('/api/attendance'),
+                api.get(`/api/attendance?date=${todayStr}`),
             ]);
             const allEmps = await empRes.json();
             const filteredEmps = Array.isArray(allEmps) ? allEmps.filter((e: any) => e.role !== 'admin' && e.role !== 'subadmin') : [];

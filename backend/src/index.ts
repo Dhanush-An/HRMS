@@ -957,7 +957,13 @@ app.get('/api/attendance', async (req, res) => {
     try {
         const user = (req as any).user;
         const query: any = {};
-        if (date) query.date = date;
+        if (date) {
+            if (typeof date === 'string' && date.length === 7) {
+                query.date = { $regex: `^${date}` };
+            } else {
+                query.date = date;
+            }
+        }
 
         if (user.role === 'employee' || user.role === 'staff') {
             query.employeeId = user.id;

@@ -132,7 +132,7 @@ const Attendance = () => {
         try {
             const url = viewPeriod === 'daily'
                 ? `/api/attendance?date=${selectedDate}`
-                : `/api/attendance`;
+                : `/api/attendance?date=${reportMonth}`;
             const [empRes, attRes] = await Promise.all([
                 api.get('/api/employees'),
                 api.get(url)
