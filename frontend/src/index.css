@@ -131,3 +131,14 @@ body {
   pointer-events: none;
   color: var(--brand-muted);
 }
+
+/* Hide number input spinner arrows globally */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+input[type=number] {
+  -moz-appearance: textfield !important;
+  appearance: textfield !important;
+}
