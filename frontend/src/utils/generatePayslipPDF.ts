@@ -1,4 +1,15 @@
 import jsPDF from 'jspdf';
+import logo from '../assets/forge india logo.jpg';
+
+const loadImage = (url: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+        img.src = url;
+    });
+};
 
 export interface PayslipFinancials {
     basic: number;
@@ -153,7 +164,7 @@ const computeFinancials = (employee: any, payroll: any): PayslipFinancials => {
     };
 };
 
-export const generatePayslipPDF = (employee: any, payroll: any) => {
+export const generatePayslipPDF = async (employee: any, payroll: any) => {
     if (!employee || !payroll) return;
 
     const doc = new jsPDF('p', 'mm', 'a4');
@@ -163,10 +174,13 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     let rawYear = payroll.year || new Date().getFullYear();
     
     // Clean rawMonth if it has year (e.g. "June 2026")
-    if (typeof rawMonth === 'string' && rawMonth.includes(' ')) {
-        const parts = rawMonth.split(' ');
-        rawMonth = parts[0];
-        rawYear = parseInt(parts[1]) || rawYear;
+    if (typeof rawMonth === 'string') {
+        rawMonth = rawMonth.replace(/\s+/g, ' ').trim();
+        if (rawMonth.includes(' ')) {
+            const parts = rawMonth.split(' ');
+            rawMonth = parts[0];
+            rawYear = parseInt(parts[1]) || rawYear;
+        }
     }
     
     const formattedMonth = rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1).toLowerCase();
@@ -189,14 +203,21 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     const financials = computeFinancials(employee, payroll);
 
     // --- 1. HEADER SECTION ---
-    // Stylized "FiC" Logo
-    doc.setTextColor(11, 59, 96); // Deep blue #0B3B60
-    doc.setFont('helvetica', 'bolditalic');
-    doc.setFontSize(28);
-    doc.text('FiC', 12, 23);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7.5);
-    doc.text('FORGE INDIA CONNECT', 12, 27);
+    // Company Logo
+    try {
+        const img = await loadImage(logo);
+        doc.addImage(img, 'JPEG', 12, 11, 16, 16);
+    } catch (e) {
+        console.error('Failed to load company logo', e);
+        // Fallback text logo
+        doc.setTextColor(11, 59, 96);
+        doc.setFont('helvetica', 'bolditalic');
+        doc.setFontSize(24);
+        doc.text('FiC', 12, 22);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.text('FORGE INDIA CONNECT', 12, 26);
+    }
 
     // Center Company details
     doc.setFont('helvetica', 'bold');
@@ -206,8 +227,8 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     doc.setTextColor(80, 80, 80);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7.5);
-    doc.text('PLOT NO. A-18, PHASE II, INDUSTRIAL AREA,', 105, 20.5, { align: 'center' });
-    doc.text('CHAKAN, PUNE - 410501, MAHARASHTRA, INDIA', 105, 24, { align: 'center' });
+    doc.text('1st & 2nd Floor, No 62, 11th Block, Marilingappa Extension,', 105, 20.5, { align: 'center' });
+    doc.text('Nagarbhavi, Bengaluru, Karnataka - 560072', 105, 24, { align: 'center' });
     
     doc.setTextColor(110, 110, 110);
     doc.setFontSize(6.5);
@@ -381,7 +402,7 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     doc.rect(10, tableY + 6, boxW, 5, 'F');
     doc.setTextColor(31, 78, 120);
     doc.text('Particulars', 12, tableY + 9.5);
-    doc.text('Amount (Rs.)', 100, tableY + 9.5, { align: 'right' });
+    doc.text('Amount (Rs)', 100, tableY + 9.5, { align: 'right' });
 
     const earnings = [
         ['Basic Salary', financials.basic],
@@ -437,7 +458,7 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     doc.rect(rightX, tableY + 6, boxW, 5, 'F');
     doc.setTextColor(31, 78, 120);
     doc.text('Particulars', rightX + 2, tableY + 9.5);
-    doc.text('Amount (Rs.)', rightX + boxW - 2, tableY + 9.5, { align: 'right' });
+    doc.text('Amount (Rs)', rightX + boxW - 2, tableY + 9.5, { align: 'right' });
 
     const deductions = [
         ['Provident Fund (PF)', financials.pf],
