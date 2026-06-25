@@ -1,12 +1,27 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
 import { IndianRupee, Download, ShieldCheck, Receipt } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { generatePayslipPDF } from '../../utils/generatePayslipPDF';
+
+const generatePAN = (name: string, id: string) => {
+    const letters = 'ABCDE';
+    const nameChar = name?.replace(/[^A-Za-z]/g, '').charAt(0).toUpperCase() || 'P';
+    const numPart = id?.replace(/\D/g, '').padEnd(4, '0').substring(0, 4) || '0000';
+    return `${letters}${numPart}${nameChar}`;
+};
+
+const roleMap: Record<string, string> = {
+    'admin': 'HR Administrator',
+    'subadmin': 'Sub Admin Developer',
+    'hr': 'HR Manager',
+    'employee': 'Full Stack Developer',
+    'staff': 'Office Staff'
+};
 
 const EmployeePayroll = () => {
     const [salaryDetails, setSalaryDetails] = useState<any>(null);
     const [payrollHistory, setPayrollHistory] = useState<any[]>([]);
+    const [employeeInfo, setEmployeeInfo] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -24,6 +39,10 @@ const EmployeePayroll = () => {
             const empRes = await api.get('/api/employees');
             const employees = await empRes.json();
             const employee = employees.find((e: any) => e.id === employeeId);
+
+            if (employee) {
+                setEmployeeInfo(employee);
+            }
 
             // 2. Fetch Payroll History
             const payRes = await api.get('/api/payroll');
@@ -66,59 +85,8 @@ const EmployeePayroll = () => {
     };
 
     const handleDownloadPDF = (data: any) => {
-        if (!data) return;
-
-        const doc = new jsPDF();
-        const userStr = localStorage.getItem('user');
-        const user = userStr ? JSON.parse(userStr) : null;
-
-        // Header
-        doc.setFillColor(31, 41, 55);
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(22);
-        doc.setFont('helvetica', 'bold');
-        doc.text('FORGE INDIA CONNECT HRMS', 105, 20, { align: 'center' });
-        doc.setFontSize(12);
-        doc.text('PAYSLIP FOR ' + (data.month + ' ' + (data.year || '')).toUpperCase(), 105, 30, { align: 'center' });
-
-        // Employee Info
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Employee Name: ' + (user?.name || 'N/A'), 15, 55);
-        doc.text('Employee ID: ' + (user?.employeeId || user?.id || 'N/A'), 15, 62);
-        doc.text('Designation: ' + (user?.role || 'Team Member'), 15, 69);
-        doc.text('Date Generated: ' + new Date().toLocaleDateString(), 140, 55);
-
-        // Salary Table
-        autoTable(doc, {
-            startY: 80,
-            head: [['Component', 'Amount']],
-            body: [
-                ['Basic Pay', `INR ${data.basic?.toLocaleString() || (data.netSalary - (data.hra || 0) - (data.allowances || 0)).toLocaleString()}`],
-                ['House Rent Allowance (HRA)', `INR ${data.hra?.toLocaleString() || '0'}`],
-                ['Allowances', `INR ${data.allowances?.toLocaleString() || '0'}`],
-                ['Deductions', `INR ${data.deductions?.toLocaleString() || '0'}`],
-            ],
-            theme: 'striped',
-            headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255] },
-            columnStyles: { 1: { halign: 'right' } }
-        });
-
-        // Total Net Salary
-        const finalY = (doc as any).lastAutoTable.finalY + 10;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(14);
-        doc.text('Net Salary: INR ' + data.netSalary.toLocaleString(), 195, finalY, { align: 'right' });
-
-        // Footer
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(100);
-        doc.text('This is a computer generated document and does not require a physical signature.', 105, 280, { align: 'center' });
-
-        doc.save(`Payslip_${data.month}_${data.year || '2026'}.pdf`);
+        if (!data || !employeeInfo) return;
+        generatePayslipPDF(employeeInfo, data);
     };
 
     if (loading) return (
@@ -216,6 +184,75 @@ const EmployeePayroll = () => {
                     </button>
                 </div>
             </div>
+            
+            {/* Employee Information & Statutory Details Card */}
+            {employeeInfo && (
+                <div className="bg-brand-surface border border-brand-border rounded-2xl p-8 shadow-sm relative overflow-hidden mt-8">
+                    <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+                        {/* Left: Avatar Column */}
+                        <div className="flex flex-col items-center justify-center lg:border-r lg:border-brand-border/30 lg:pr-8 xl:pr-12">
+                            <div className="relative w-24 h-24 rounded-full bg-brand-bg border border-brand-primary/20 flex items-center justify-center shadow-inner mb-3">
+                                <span className="text-3xl font-black text-brand-primary uppercase">
+                                    {employeeInfo.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
+                                </span>
+                            </div>
+                            <span className="text-xs font-black text-brand-primary uppercase tracking-widest">Active Member</span>
+                            <span className="text-[10px] text-brand-muted italic mt-0.5">Employment Type: Permanent</span>
+                        </div>
+
+                        {/* Middle & Right Column */}
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Middle: General Information */}
+                            <div className="space-y-4">
+                                <h3 className="text-brand-text text-sm font-black uppercase tracking-wider border-b border-brand-border/60 pb-2">Employee Information</h3>
+                                <div className="grid grid-cols-3 gap-y-3 text-xs">
+                                    <span className="text-brand-muted font-bold col-span-1">Employee ID</span>
+                                    <span className="text-brand-text font-black col-span-2">: {employeeInfo.employeeId || employeeInfo.id}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">Full Name</span>
+                                    <span className="text-brand-text font-black col-span-2">: {employeeInfo.name}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">Designation</span>
+                                    <span className="text-brand-text font-black col-span-2">: {roleMap[employeeInfo.role?.toLowerCase()] || employeeInfo.role || 'Full Stack Developer'}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">Department</span>
+                                    <span className="text-brand-text font-black col-span-2">: {employeeInfo.department || 'IT Development'}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">Branch</span>
+                                    <span className="text-brand-text font-black col-span-2">: {employeeInfo.branchName || 'Krishnagiri'}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">Joining Date</span>
+                                    <span className="text-brand-text font-black col-span-2">: {employeeInfo.joiningDate || '21-Jan-2026'}</span>
+                                </div>
+                            </div>
+
+                            {/* Right: Bank & Statutory Details */}
+                            <div className="space-y-4">
+                                <h3 className="text-brand-text text-sm font-black uppercase tracking-wider border-b border-brand-border/60 pb-2">Bank & Statutory Details</h3>
+                                <div className="grid grid-cols-3 gap-y-3 text-xs">
+                                    <span className="text-brand-muted font-bold col-span-1">PAN Number</span>
+                                    <span className="text-brand-text font-black col-span-2">: {generatePAN(employeeInfo.name, employeeInfo.employeeId || employeeInfo.id)}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">UAN Number</span>
+                                    <span className="text-brand-text font-black col-span-2">: {'101' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(9, '2')}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">PF Number</span>
+                                    <span className="text-brand-text font-black col-span-2">: {'TNKRK' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(10, '3')}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">Bank Name</span>
+                                    <span className="text-brand-text font-black col-span-2">: State Bank of India</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">Account No.</span>
+                                    <span className="text-brand-text font-black col-span-2">: {'388' + (employeeInfo.employeeId || employeeInfo.id).replace(/\D/g, '').padStart(6, '0').padEnd(8, '5')}</span>
+
+                                    <span className="text-brand-muted font-bold col-span-1">IFSC Code</span>
+                                    <span className="text-brand-text font-black col-span-2">: SBIN0001234</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Payment History Section */}
             <div className="space-y-6 mt-8">

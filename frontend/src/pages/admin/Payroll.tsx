@@ -7,8 +7,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { generatePayslipPDF } from '../../utils/generatePayslipPDF';
 
 interface SalaryStructure {
     base: number;
@@ -192,46 +191,22 @@ const Payroll = () => {
     };
     
     const handleDownloadPayslip = (payroll: PayrollRecord, record: any) => {
-        const doc = new jsPDF();
-        
-        // Header
-        doc.setFontSize(22);
-        doc.setFont("helvetica", "bold");
-        doc.text("PAYSLIP", 105, 30, { align: 'center' });
-        
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-        doc.text(`${payroll.month} ${payroll.year}`, 105, 40, { align: 'center' });
-        
-        // Employee Info
-        doc.setLineWidth(0.1);
-        doc.line(14, 45, 196, 45);
-        
-        doc.setFontSize(10);
-        doc.text(`Employee Name: ${record.name}`, 14, 55);
-        doc.text(`Employee ID: ${record.employeeId}`, 14, 62);
-        doc.text(`Date Generated: ${new Date(payroll.dateGenerated).toLocaleDateString()}`, 14, 69);
-        
-        // Table
-        autoTable(doc, {
-            theme: 'striped',
-            head: [['Description', 'Amount (INR)']],
-            body: [
-                ['Earned Gross Salary', `${record.base.toLocaleString()}`],
-                ['Performance Bonus', `+ ${record.bonus.toLocaleString()}`],
-                ['PF / ESI', `- ${(record.pf || 0).toLocaleString()}`],
-                ['Tax', `- ${(record.tax || 0).toLocaleString()}`],
-            ],
-            startY: 80,
-            headStyles: { fillColor: [79, 70, 229] }
-        });
-        
-        const finalY = (doc as any).lastAutoTable.finalY || 120;
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.text(`NET PAYABLE: ${record.netSalary.toLocaleString()}`, 196, finalY + 20, { align: 'right' });
-        
-        doc.save(`payslip_${record.name.replace(/\s+/g, '_')}_${payroll.month}_${payroll.year}.pdf`);
+        const employee = employees.find(e => e.id === record.employeeId);
+        if (!employee) return;
+
+        const mergedPayroll = {
+            month: payroll.month,
+            year: payroll.year,
+            dateGenerated: payroll.dateGenerated,
+            base: record.base,
+            bonus: record.bonus,
+            deductions: record.deductions,
+            tax: record.tax,
+            pf: record.pf,
+            netSalary: record.netSalary
+        };
+
+        generatePayslipPDF(employee, mergedPayroll);
     };
 
     const handleGeneratePayroll = async () => {
