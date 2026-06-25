@@ -291,7 +291,6 @@ const Payroll = () => {
         const effectivePresent = present + (halfDay * 0.5);
         const remainingHalfDay = 0;
 
-        const monthNum = parseInt(selectedMonth);
         const today = new Date();
         let passedWorkingDays = totalWorkingDays;
         
