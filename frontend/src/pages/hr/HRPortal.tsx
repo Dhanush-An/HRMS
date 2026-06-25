@@ -806,7 +806,7 @@ const EmployeesSection = ({ employees, onRefresh: _onRefresh }: { employees: any
         if (!employees || employees.length === 0) return `FIC/${branchPrefix}/${year}/EMP001`;
         let maxId = 0;
         employees.forEach(emp => {
-            const match = (emp.employeeId || '').match(/EMP(\d+)$/i);
+            const match = (emp.employeeId || '').match(/(?:EMP|HR)(\d+)$/i);
             if (match) {
                 const num = parseInt(match[1], 10);
                 if (num > maxId) maxId = num;

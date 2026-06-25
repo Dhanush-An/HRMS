@@ -29,7 +29,7 @@ import dns from 'dns';
 
 dns.setServers(["1.1.1.1","8.8.8.8"]);
 
-const generateEmpId = async (branchId?: string, joiningDate?: string) => {
+const generateEmpId = async (branchId?: string, joiningDate?: string, role?: string) => {
     let branchPrefix = 'BLR';
     if (branchId) {
         const branch = await Branch.findOne({ branchId });
@@ -48,12 +48,14 @@ const generateEmpId = async (branchId?: string, joiningDate?: string) => {
         year = new Date().getFullYear();
     }
 
+    const rolePrefix = (role && role.toLowerCase() === 'hr') ? 'HR' : 'EMP';
+
     let count = await Employee.countDocuments();
     let empNumber = count + 1;
-    let empId = `FIC/${branchPrefix}/${year}/EMP${String(empNumber).padStart(3, '0')}`;
+    let empId = `FIC/${branchPrefix}/${year}/${rolePrefix}${String(empNumber).padStart(3, '0')}`;
     while (await Employee.findOne({ employeeId: empId })) {
         empNumber++;
-        empId = `FIC/${branchPrefix}/${year}/EMP${String(empNumber).padStart(3, '0')}`;
+        empId = `FIC/${branchPrefix}/${year}/${rolePrefix}${String(empNumber).padStart(3, '0')}`;
     }
     return empId;
 };
@@ -452,7 +454,7 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
 
         let finalId = id;
         if (!finalId) {
-            finalId = await generateEmpId(finalBranchId, joiningDate);
+            finalId = await generateEmpId(finalBranchId, joiningDate, role);
         }
 
         const salt = await bcrypt.genSalt(10);
