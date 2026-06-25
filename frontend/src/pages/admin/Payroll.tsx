@@ -202,8 +202,7 @@ const Payroll = () => {
             r.date.startsWith(prefix)
         );
 
-        // Calculate total days in month and Sundays
-        const totalDaysInMonth = new Date(parseInt(selectedYear.toString()), monthNum, 0).getDate();
+        // Calculate Sundays
         let sundays = 0;
         const date = new Date(selectedYear, monthNum - 1, 1);
         while (date.getMonth() === monthNum - 1) {
@@ -331,7 +330,6 @@ const Payroll = () => {
             if (!hasApprovedLeave) penalties++;
         });
 
-        const totalDaysInMonth = new Date(year, monthIndex + 1, 0).getDate();
         const totalWorkingDays = effectiveTotalWorkingDays;
         const paidDays = Math.max(0, present + (halfDay * 0.5) + sundays - penalties);
         const leaveDays = leavesData.filter(l => 
