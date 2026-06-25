@@ -19,10 +19,9 @@ const EmployeeProfile = () => {
 
     const fetchLiveProfile = async (employeeId: string) => {
         try {
-            const res = await api.get(`/api/employees`);
+            const res = await api.get(`/api/employees/${encodeURIComponent(employeeId)}`);
             if (res.ok) {
-                const employees = await res.json();
-                const current = employees.find((e: any) => e.employeeId === employeeId || e.id === employeeId);
+                const current = await res.json();
                 if (current) {
                     setUser((prev: any) => ({ ...prev, ...current }));
                     setEditData({

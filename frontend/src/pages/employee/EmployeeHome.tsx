@@ -98,23 +98,23 @@ const EmployeeHome = () => {
 
     const fetchLatestUser = async (userId: string) => {
         try {
-            const res = await api.get(`/api/employees`);
+            const res = await api.get(`/api/employees/${encodeURIComponent(userId)}`);
             if (res.ok) {
-                const employees = await res.json();
-                const updatedUser = employees.find((e: any) => e.id === userId || e.employeeId === userId);
+                const updatedUser = await res.json();
                 if (updatedUser) {
                     console.log("[EMPLOYEE HOME] Found live user data for stats calculation");
                     fetchStats(userId, updatedUser.leaveBalance);
                 } else {
-                    console.warn(`[EMPLOYEE HOME] User ${userId} not found in employee list for live data sync`);
-                    // Fallback to local user data for stats if possible
+                    console.warn(`[EMPLOYEE HOME] User ${userId} not found or mismatch`);
                     fetchStats(userId, currentUser?.leaveBalance);
                 }
             } else {
-                console.warn("[EMPLOYEE HOME] Failed to fetch employee list for live data sync");
+                console.warn("[EMPLOYEE HOME] Failed to fetch employee profile for live data sync");
+                fetchStats(userId, currentUser?.leaveBalance);
             }
         } catch (error) {
             console.error("Error fetching live user data:", error);
+            fetchStats(userId, currentUser?.leaveBalance);
         }
     };
 

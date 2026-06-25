@@ -1192,6 +1192,7 @@ app.post('/api/payroll/generate', authorizeRoles('admin', 'subadmin'), async (re
 app.get('/api/payroll', async (req, res) => {
     try {
         const user = (req as any).user;
+        const { employeeId } = req.query;
         let query: any = {};
         
         if (user.role === 'employee' || user.role === 'staff') {
@@ -1199,15 +1200,24 @@ app.get('/api/payroll', async (req, res) => {
         } else if (user.role !== 'admin' && user.branchId) {
             const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
             const branchEmpIds = branchEmps.map(e => e.employeeId);
-            query = { 'records.employeeId': { $in: branchEmpIds } };
+            if (employeeId && branchEmpIds.includes(employeeId as string)) {
+                query = { 'records.employeeId': employeeId };
+            } else {
+                query = { 'records.employeeId': { $in: branchEmpIds } };
+            }
+        } else {
+            if (employeeId) {
+                query = { 'records.employeeId': employeeId };
+            }
         }
 
         let payrolls: any[] = await Payroll.find(query);
         
-        if (user.role === 'employee' || user.role === 'staff') {
+        const targetEmpId = (user.role === 'employee' || user.role === 'staff') ? user.id : (employeeId as string);
+        if (targetEmpId) {
             payrolls = payrolls.map(p => {
                 const po = p.toObject ? p.toObject() : p;
-                po.records = po.records.filter((r: any) => r.employeeId === user.id);
+                po.records = po.records.filter((r: any) => r.employeeId === targetEmpId);
                 return po;
             }).filter(p => p.records.length > 0);
         } else if (user.role !== 'admin' && user.branchId) {
@@ -1231,16 +1241,23 @@ app.get('/api/payroll', async (req, res) => {
 app.get('/api/leaves', async (req, res) => {
     try {
         const user = (req as any).user;
-        let leaves;
+        const { employeeId } = req.query;
+        const query: any = {};
+        
         if (user.role === 'employee' || user.role === 'staff') {
-            leaves = await Leave.find({ employeeId: user.id });
+            query.employeeId = user.id;
         } else if (user.role !== 'admin' && user.branchId) {
             const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
             const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
-            leaves = await Leave.find({ employeeId: { $in: branchEmpIds } });
+            if (employeeId && branchEmpIds.includes(employeeId as string)) {
+                query.employeeId = employeeId;
+            } else {
+                query.employeeId = { $in: branchEmpIds };
+            }
         } else {
-            leaves = await Leave.find();
+            if (employeeId) query.employeeId = employeeId;
         }
+        const leaves = await Leave.find(query);
         res.json(leaves);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });

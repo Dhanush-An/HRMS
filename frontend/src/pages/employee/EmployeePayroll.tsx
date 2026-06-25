@@ -75,12 +75,12 @@ const EmployeePayroll = () => {
     const fetchPayrollData = async (employeeId: string) => {
         setLoading(true);
         try {
-            // 1. Fetch all required resources
+            // 1. Fetch all required resources (filtered by employeeId)
             const [empRes, payRes, attRes, leavesRes] = await Promise.all([
                 api.get(`/api/employees/${employeeId}`),
-                api.get('/api/payroll'),
-                api.get('/api/attendance'),
-                api.get('/api/leaves')
+                api.get(`/api/payroll?employeeId=${encodeURIComponent(employeeId)}`),
+                api.get(`/api/attendance?employeeId=${encodeURIComponent(employeeId)}`),
+                api.get(`/api/leaves?employeeId=${encodeURIComponent(employeeId)}`)
             ]);
             const employee = await empRes.json();
             const payrolls = await payRes.json();
