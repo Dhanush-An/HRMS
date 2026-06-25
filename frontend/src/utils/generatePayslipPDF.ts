@@ -132,13 +132,17 @@ const computeFinancials = (employee: any, payroll: any): PayslipFinancials => {
     
     if (diff !== 0) {
         special += diff;
-        grossEarnings += diff;
         if (special < 0) {
             basic += special;
-            grossEarnings += special;
             special = 0;
+            if (basic < 0) {
+                basic = 0;
+            }
         }
     }
+    
+    // Recompute grossEarnings as the actual sum of all earnings components
+    grossEarnings = basic + hra + conveyance + medical + special + otherAllowance;
     
     return {
         basic, hra, conveyance, medical, special, otherAllowance,
@@ -155,8 +159,16 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     const doc = new jsPDF('p', 'mm', 'a4');
     
     // Fetch month details
-    const rawMonth = payroll.month || '';
-    const rawYear = payroll.year || new Date().getFullYear();
+    let rawMonth = payroll.month || '';
+    let rawYear = payroll.year || new Date().getFullYear();
+    
+    // Clean rawMonth if it has year (e.g. "June 2026")
+    if (typeof rawMonth === 'string' && rawMonth.includes(' ')) {
+        const parts = rawMonth.split(' ');
+        rawMonth = parts[0];
+        rawYear = parseInt(parts[1]) || rawYear;
+    }
+    
     const formattedMonth = rawMonth.charAt(0).toUpperCase() + rawMonth.slice(1).toLowerCase();
     
     // Get last day of the month for Pay Date
@@ -369,7 +381,7 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     doc.rect(10, tableY + 6, boxW, 5, 'F');
     doc.setTextColor(31, 78, 120);
     doc.text('Particulars', 12, tableY + 9.5);
-    doc.text('Amount (₹)', 100, tableY + 9.5, { align: 'right' });
+    doc.text('Amount (Rs.)', 100, tableY + 9.5, { align: 'right' });
 
     const earnings = [
         ['Basic Salary', financials.basic],
@@ -401,7 +413,8 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     doc.setTextColor(31, 78, 120);
     doc.setFont('helvetica', 'bold');
     doc.text('GROSS EARNINGS', 12, tableY + 11 + (6 * rHeight) + 4);
-    doc.text(`₹ ${financials.grossEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 100, tableY + 11 + (6 * rHeight) + 4, { align: 'right' });
+    doc.text('Rs.', 80, tableY + 11 + (6 * rHeight) + 4);
+    doc.text(financials.grossEarnings.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 100, tableY + 11 + (6 * rHeight) + 4, { align: 'right' });
 
     // Vertical line in Earnings table
     doc.setDrawColor(220, 224, 230);
@@ -424,7 +437,7 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     doc.rect(rightX, tableY + 6, boxW, 5, 'F');
     doc.setTextColor(31, 78, 120);
     doc.text('Particulars', rightX + 2, tableY + 9.5);
-    doc.text('Amount (₹)', rightX + boxW - 2, tableY + 9.5, { align: 'right' });
+    doc.text('Amount (Rs.)', rightX + boxW - 2, tableY + 9.5, { align: 'right' });
 
     const deductions = [
         ['Provident Fund (PF)', financials.pf],
@@ -458,7 +471,8 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     doc.setTextColor(31, 78, 120);
     doc.setFont('helvetica', 'bold');
     doc.text('TOTAL DEDUCTIONS', rightX + 2, tableY + 11 + (6 * rHeight) + 4);
-    doc.text(`₹ ${financials.totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, rightX + boxW - 2, tableY + 11 + (6 * rHeight) + 4, { align: 'right' });
+    doc.text('Rs.', rightX + 68 + 2, tableY + 11 + (6 * rHeight) + 4);
+    doc.text(financials.totalDeductions.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), rightX + boxW - 2, tableY + 11 + (6 * rHeight) + 4, { align: 'right' });
 
     // Vertical line in Deductions table
     doc.setDrawColor(220, 224, 230);
@@ -481,7 +495,7 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
     // Amount
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(14);
-    doc.text(`₹ ${financials.netPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 105, netY + 11.5, { align: 'center' });
+    doc.text(`Rs. ${financials.netPay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 105, netY + 11.5, { align: 'center' });
 
     // Divider line inside
     doc.setDrawColor(220, 224, 230);
