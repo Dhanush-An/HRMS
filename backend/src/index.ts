@@ -960,22 +960,7 @@ app.get('/api/attendance', async (req, res) => {
             if (employeeId) query.employeeId = employeeId;
         }
         const attendance = await Attendance.find(query).sort({ createdAt: -1 }).limit(Number(limit) || 0);
-        
-        // Auto-correct 'Half Day' to 'Present' if it meets the new 10:00 AM rule
-        const correctedAttendance = attendance.map(record => {
-            const r = record.toObject ? record.toObject() : record;
-            if (r.status === 'Half Day' && r.checkIn && r.shiftType === 'Day Shift') {
-                const [h, m] = r.checkIn.split(':').map(Number);
-                const totalMins = h * 60 + m;
-                // If checked in at or before 10:00 AM, it should be Present
-                if (totalMins <= 10 * 60 + 0) {
-                    return { ...r, status: 'Present' };
-                }
-            }
-            return r;
-        });
-
-        res.json(correctedAttendance);
+        res.json(attendance);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -984,7 +969,7 @@ app.get('/api/attendance', async (req, res) => {
 // POST attendance (Check-in / Manual)
 app.post('/api/attendance', async (req, res) => {
     try {
-        const { employeeId, date } = req.body;
+        const { employeeId, date, checkIn, checkOut } = req.body;
 
         // Check for existing record for this employee and date
         const existingRecord = await Attendance.findOne({ employeeId, date });
@@ -995,8 +980,36 @@ app.post('/api/attendance', async (req, res) => {
             });
         }
 
+        let status = req.body.status || 'Present';
+        let workHours = req.body.workHours || 0;
+
+        if (checkIn) {
+            if (checkOut) {
+                // Both checkIn and checkOut are provided (e.g. manual admin entry)
+                const [inH, inM] = checkIn.split(':').map(Number);
+                const [outH, outM] = checkOut.split(':').map(Number);
+                let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+                if (diffMins < 0) diffMins += 24 * 60;
+                workHours = Number((diffMins / 60).toFixed(2));
+                
+                if (diffMins >= 530) { // 8h 50m
+                    status = 'Present';
+                } else if (diffMins >= 270) { // 4h 30m
+                    status = 'Half Day';
+                } else {
+                    status = 'Absent';
+                }
+            } else {
+                // Only checkIn is provided (employee checking in)
+                // Rule 1 & 2: Mark as Present (whether between 9:30-9:45 or after 9:45, do not immediately mark Half Day)
+                status = 'Present';
+            }
+        }
+
         const newRecord = new Attendance({
             ...req.body,
+            status,
+            workHours
         });
         await newRecord.save();
         res.status(201).json(newRecord);
@@ -1008,9 +1021,53 @@ app.post('/api/attendance', async (req, res) => {
 // PUT attendance (Update / Checkout / Approve)
 app.put('/api/attendance/:id', async (req, res) => {
     try {
+        const existingRecord = await Attendance.findById(req.params.id);
+        if (!existingRecord) {
+            return res.status(404).json({ message: 'Record not found' });
+        }
+
+        // Merge incoming updates with existing record
+        const checkIn = req.body.checkIn !== undefined ? req.body.checkIn : existingRecord.checkIn;
+        const checkOut = req.body.checkOut !== undefined ? req.body.checkOut : existingRecord.checkOut;
+        
+        let status = req.body.status !== undefined ? req.body.status : existingRecord.status;
+        let workHours = req.body.workHours !== undefined ? req.body.workHours : existingRecord.workHours;
+
+        if (checkIn) {
+            if (checkOut) {
+                const [inH, inM] = checkIn.split(':').map(Number);
+                const [outH, outM] = checkOut.split(':').map(Number);
+                let diffMins = (outH * 60 + outM) - (inH * 60 + inM);
+                if (diffMins < 0) diffMins += 24 * 60;
+                workHours = Number((diffMins / 60).toFixed(2));
+                
+                // Recalculate status if checkIn/checkOut is modified OR if status is not explicitly sent
+                if (req.body.checkIn !== undefined || req.body.checkOut !== undefined || req.body.status === undefined) {
+                    if (diffMins >= 530) { // 8h 50m
+                        status = 'Present';
+                    } else if (diffMins >= 270) { // 4h 30m
+                        status = 'Half Day';
+                    } else {
+                        status = 'Absent';
+                    }
+                }
+            } else {
+                // Only checkIn is present
+                if (req.body.checkIn !== undefined || req.body.status === undefined) {
+                    status = 'Present';
+                }
+            }
+        }
+
+        const updateData = {
+            ...req.body,
+            status,
+            workHours
+        };
+
         const updatedRecord = await Attendance.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             { new: true }
         );
 

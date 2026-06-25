@@ -379,22 +379,6 @@ const EmployeeDashboard = () => {
         const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
         let status = 'Present';
-        if (loginOptions.shiftType === 'Day Shift') {
-            const ten = new Date();
-            ten.setHours(10, 0, 0, 0);
-            
-            if (now > ten) {
-                status = 'Half Day';
-            }
-        } else {
-            // Threshold for Night Shift (leaving as is unless specified, typically 15-45 mins after start)
-            const eightFortyFivePM = new Date();
-            eightFortyFivePM.setHours(20, 45, 0, 0);
-
-            if (now > eightFortyFivePM) {
-                status = 'Half Day';
-            }
-        }
 
         try {
             // Use the already validated location

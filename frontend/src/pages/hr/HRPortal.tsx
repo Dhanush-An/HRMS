@@ -330,21 +330,6 @@ const Overview = ({ employees, leaves, attendance, onRefresh }: any) => {
         const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
         let status = 'Present';
-        if (loginOptions.shiftType === 'Day Shift') {
-            const ten = new Date();
-            ten.setHours(10, 0, 0, 0);
-            
-            if (now > ten) {
-                status = 'Half Day';
-            }
-        } else {
-            const eightFortyFivePM = new Date();
-            eightFortyFivePM.setHours(20, 45, 0, 0);
-
-            if (now > eightFortyFivePM) {
-                status = 'Half Day';
-            }
-        }
 
         try {
             const lat = lastValidatedLocation?.lat;

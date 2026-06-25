@@ -396,19 +396,6 @@ const SubAdminDashboard: React.FC = () => {
         const today = new Date(now.getTime() - tzOffset).toISOString().split('T')[0];
 
         let status = 'Present';
-        if (loginOptions.shiftType === 'Day Shift') {
-            const ten = new Date();
-            ten.setHours(10, 0, 0, 0);
-            if (now > ten) {
-                status = 'Half Day';
-            }
-        } else {
-            const eightFortyFivePM = new Date();
-            eightFortyFivePM.setHours(20, 45, 0, 0);
-            if (now > eightFortyFivePM) {
-                status = 'Half Day';
-            }
-        }
 
         try {
             const lat = lastValidatedLocation?.lat;
