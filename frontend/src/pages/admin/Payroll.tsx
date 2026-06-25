@@ -311,7 +311,7 @@ const Payroll = () => {
                 }
             });
             const approvedLeaveCount = absents.length - penalties;
-            absentDays = Math.max(0, totalWorkingDays - effectivePresent - approvedLeaveCount);
+            absentDays = Math.max(0, totalWorkingDays - present - halfDay - approvedLeaveCount);
         }
 
         // Sundays are counted as Present (Paid Off)

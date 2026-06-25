@@ -202,7 +202,7 @@ const EmployeePayroll = () => {
             new Date(l.startDate).getMonth() === monthIndex
         ).length;
         
-        const lossOfPayDays = Math.max(0, totalWorkingDays - effectivePresent - leaveDays);
+        const lossOfPayDays = Math.max(0, totalWorkingDays - present - halfDay - leaveDays);
 
         return {
             totalWorkingDays,
