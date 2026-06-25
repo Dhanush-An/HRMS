@@ -147,7 +147,7 @@ const seedBranchHRManagers = async () => {
                     phone: branch.phone || '',
                     branchId: branch.branchId,
                     branchName: branch.name,
-                    salary: { base: 0, hra: 0, transport: 0, other: 0 },
+                    salary: { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 },
                     leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
                 });
                 await newEmp.save();
@@ -449,7 +449,7 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
             phone: phone || '',
             branchId: finalBranchId || 'BR001',
             branchName: finalBranchName || 'Chennai',
-            salary: req.body.salary || { base: 0, hra: 0, transport: 0, other: 0 },
+            salary: req.body.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 },
             leaveBalance: req.body.leaveBalance || { sick: 10, casual: 12, earned: 15, wfh: 10 },
             responsibilities: req.body.responsibilities || ''
         });
@@ -657,7 +657,7 @@ app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
                     phone: phone || '',
                     branchId: finalBranchId,
                     branchName: name,
-                    salary: { base: 0, hra: 0, transport: 0, other: 0 },
+                    salary: { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 },
                     leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
                 });
                 await newEmp.save();
@@ -690,7 +690,7 @@ app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
                     phone: phone || '',
                     branchId: finalBranchId,
                     branchName: name,
-                    salary: { base: 0, hra: 0, transport: 0, other: 0 },
+                    salary: { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 },
                     leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
                 });
                 await subEmp.save();
@@ -762,7 +762,7 @@ app.put('/api/branches/:id', authorizeRoles('admin'), async (req, res) => {
                         phone: updatedBranch.phone || '',
                         branchId: updatedBranch.branchId,
                         branchName: updatedBranch.name,
-                        salary: { base: 0, hra: 0, transport: 0, other: 0 },
+                        salary: { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 },
                         leaveBalance: { sick: 10, casual: 12, earned: 15, wfh: 10 }
                     }).save();
                 }

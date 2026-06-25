@@ -113,20 +113,25 @@ const EmployeePayroll = () => {
 
             // Set current month/basic from employee structure
             if (employee && employee.salary) {
-                const baseVal = employee.salary.base || 0;
+                const basicVal = employee.salary.basic || 0;
                 const hraVal = employee.salary.hra || 0;
-                const transportVal = employee.salary.transport || 0;
+                const conveyanceVal = employee.salary.conveyance || 0;
+                const medicalVal = employee.salary.medical || 0;
+                const specialVal = employee.salary.special || 0;
                 const otherVal = employee.salary.other || 0;
                 const pfVal = employee.salary.pf || 0;
                 const taxVal = employee.salary.tax || 0;
                 const deds = pfVal + taxVal;
-                const net = baseVal + hraVal + transportVal + otherVal - deds;
+                const net = basicVal + hraVal + conveyanceVal + medicalVal + specialVal + otherVal - deds;
 
                 setSalaryDetails({
                     month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
-                    basic: baseVal,
+                    basic: basicVal,
                     hra: hraVal,
-                    allowances: transportVal + otherVal,
+                    conveyance: conveyanceVal,
+                    medical: medicalVal,
+                    special: specialVal,
+                    allowances: otherVal,
                     pf: pfVal,
                     tax: taxVal,
                     deductions: deds,

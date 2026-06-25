@@ -10,7 +10,11 @@ import api from '../../api';
 import { generatePayslipPDF } from '../../utils/generatePayslipPDF';
 
 interface SalaryStructure {
-    base: number;
+    basic: number;
+    hra: number;
+    conveyance: number;
+    medical: number;
+    special: number;
     other: number;
     pf: number;
     tax: number;
@@ -145,7 +149,7 @@ const Payroll = () => {
         const emp = employees.find(e => e.id === empId);
         if (!emp) return;
 
-        const currentSalary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
+        const currentSalary = emp.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 };
         const updatedSalary = { ...currentSalary, [field]: Number(value) };
 
         // Optimistic update
@@ -205,11 +209,13 @@ const Payroll = () => {
     };
 
     const calculateNetSalary = (emp: Employee) => {
-        const salary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
+        const salary = emp.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 };
         const { present, halfDay, sundays, penalties, totalPayableDays } = calculateAttendanceStats(emp.id);
         
         // Calculate Total Gross (Earnings minus Deductions)
-        const totalGross = (salary.base || 0) + (salary.other || 0) - (salary.pf || 0) - (salary.tax || 0);
+        const grossEarnings = (salary.basic || 0) + (salary.hra || 0) + (salary.conveyance || 0) + (salary.medical || 0) + (salary.special || 0) + (salary.other || 0);
+        const deductions = (salary.pf || 0) + (salary.tax || 0);
+        const totalGross = grossEarnings - deductions;
         
         // Pro-rate the Total Gross (assuming 30 days month)
         const dailyRate = totalGross / 30;
@@ -402,35 +408,41 @@ const Payroll = () => {
                         <div className="overflow-x-auto no-scrollbar">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-[0.2em]">
+                                    <tr className="bg-table-header border-b border-brand-border text-[10px] font-black uppercase text-brand-muted tracking-[0.1em]">
                                         <th className="px-2 py-4">Employee</th>
-                                        <th className="px-2 py-4">Base</th>
+                                        <th className="px-2 py-4">Basic</th>
+                                        <th className="px-2 py-4">HRA</th>
+                                        <th className="px-2 py-4">Conveyance</th>
+                                        <th className="px-2 py-4">Medical</th>
+                                        <th className="px-2 py-4">Special</th>
+                                        <th className="px-2 py-4">Other</th>
                                         <th className="px-2 py-4">PF/ESI (-)</th>
                                         <th className="px-2 py-4">Tax (-)</th>
-                                        <th className="px-2 py-4">Other</th>
                                         <th className="px-2 py-4 text-right whitespace-nowrap">Total Gross</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-brand-border">
                                     {Array.isArray(employees) && employees.map((emp) => {
-                                        const salary = emp.salary || { base: 0, other: 0, pf: 0, tax: 0 };
-                                        const gross = (salary.base || 0) + (salary.other || 0) - (salary.pf || 0) - (salary.tax || 0);
+                                        const salary = emp.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 };
+                                        const grossEarnings = (salary.basic || 0) + (salary.hra || 0) + (salary.conveyance || 0) + (salary.medical || 0) + (salary.special || 0) + (salary.other || 0);
+                                        const deductions = (salary.pf || 0) + (salary.tax || 0);
+                                        const gross = grossEarnings - deductions;
                                         return (
                                             <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
                                                 <td className="px-2 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-bold text-brand-text truncate max-w-[120px]">{emp.name}</div>
-                                                    <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider truncate max-w-[120px]">{emp.role}</div>
+                                                    <div className="text-sm font-bold text-brand-text truncate max-w-[100px]">{emp.name}</div>
+                                                    <div className="text-[10px] font-bold text-brand-muted uppercase tracking-wider truncate max-w-[100px]">{emp.role}</div>
                                                 </td>
-                                                {['base', 'pf', 'tax', 'other'].map((field) => (
+                                                {['basic', 'hra', 'conveyance', 'medical', 'special', 'other', 'pf', 'tax'].map((field) => (
                                                     <td key={field} className="px-2 py-4 whitespace-nowrap">
                                                         <div className="relative group/input">
                                                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-brand-muted group-focus-within/input:text-brand-primary text-[10px] font-bold">₹</span>
                                                             <input
                                                                 type="number"
-                                                                value={salary[field as keyof SalaryStructure] || ''}
+                                                                value={salary[field as keyof SalaryStructure] !== undefined ? salary[field as keyof SalaryStructure] : ''}
                                                                 onChange={(e) => handleSalaryUpdate(emp.id, field as keyof SalaryStructure, e.target.value)}
                                                                 className={cn(
-                                                                    "w-24 bg-brand-bg border border-brand-border rounded-lg py-2 pl-5 pr-1 font-bold text-xs focus:ring-2 focus:border-transparent transition-all outline-none",
+                                                                    "w-20 bg-brand-bg border border-brand-border rounded-lg py-2 pl-5 pr-1 font-bold text-xs focus:ring-2 focus:border-transparent transition-all outline-none",
                                                                     (field === 'pf' || field === 'tax') ? "text-status-rejected focus:ring-status-rejected/50" : "text-brand-text focus:ring-brand-primary/50"
                                                                 )}
                                                                 placeholder="0"
@@ -540,7 +552,7 @@ const Payroll = () => {
                                                 </td>
                                                 <td className="px-2 py-4 whitespace-nowrap text-brand-muted font-medium text-sm">
                                                     <div className="flex flex-col">
-                                                        <span className="line-through opacity-40 text-[10px]">₹{((emp.salary?.base || 0) + (emp.salary?.other || 0) - (emp.salary?.pf || 0) - (emp.salary?.tax || 0)).toLocaleString()}</span>
+                                                        <span className="line-through opacity-40 text-[10px]">₹{((emp.salary?.basic || 0) + (emp.salary?.hra || 0) + (emp.salary?.conveyance || 0) + (emp.salary?.medical || 0) + (emp.salary?.special || 0) + (emp.salary?.other || 0) - (emp.salary?.pf || 0) - (emp.salary?.tax || 0)).toLocaleString()}</span>
                                                         <span className="text-brand-text font-black">₹{Math.round(actualBase).toLocaleString()}</span>
                                                     </div>
                                                 </td>

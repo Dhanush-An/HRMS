@@ -98,17 +98,28 @@ export const computeFinancials = (employee: any, payroll: any): PayslipFinancial
     const bonus = payroll.bonus || 0;
     const grossBase = Math.max(0, grossEarnings - bonus);
 
-    // Split base: Basic (50%), HRA (40% of Basic = 20% of base)
-    const basic = Math.round(grossBase * 0.5);
-    const hra = Math.round(basic * 0.4);
-    
-    // Conveyance, Medical, Special, Other
-    const conveyance = employee?.salary?.transport || 0;
-    const medical = 0; // Show actual only
-    const otherAllowance = bonus;
-    
-    // Special is the remaining balance to ensure sum matches grossBase
-    const special = Math.max(0, grossBase - basic - hra - conveyance - medical);
+    // Get configured salary structure from employee
+    const struct = employee?.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0 };
+    const configuredBasic = struct.basic || 0;
+    const configuredHra = struct.hra || 0;
+    const configuredConveyance = struct.conveyance || struct.transport || 0;
+    const configuredMedical = struct.medical || 0;
+    const configuredSpecial = struct.special || 0;
+    const configuredOther = struct.other || 0;
+
+    const totalConfiguredEarnings = configuredBasic + configuredHra + configuredConveyance + configuredMedical + configuredSpecial + configuredOther;
+
+    let scale = 1;
+    if (totalConfiguredEarnings > 0) {
+        scale = grossBase / totalConfiguredEarnings;
+    }
+
+    const basic = Math.round(configuredBasic * scale);
+    const hra = Math.round(configuredHra * scale);
+    const conveyance = Math.round(configuredConveyance * scale);
+    const medical = Math.round(configuredMedical * scale);
+    const special = Math.round(configuredSpecial * scale);
+    const otherAllowance = Math.round(configuredOther * scale) + bonus;
 
     return {
         basic,

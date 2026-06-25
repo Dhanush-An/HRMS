@@ -16,10 +16,14 @@ export interface IEmployee extends Document {
     branchName: string;
     responsibilities?: string;
     salary: {
-        base: number;
+        basic: number;
         hra: number;
-        transport: number;
+        conveyance: number;
+        medical: number;
+        special: number;
         other: number;
+        pf: number;
+        tax: number;
     };
     leaveBalance: {
         sick: number;
@@ -53,7 +57,11 @@ const EmployeeSchema: Schema = new Schema({
     branchName: { type: String, default: 'Chennai' },
     responsibilities: { type: String, default: '' },
     salary: {
-        base: { type: Number, default: 0 },
+        basic: { type: Number, default: 0 },
+        hra: { type: Number, default: 0 },
+        conveyance: { type: Number, default: 0 },
+        medical: { type: Number, default: 0 },
+        special: { type: Number, default: 0 },
         other: { type: Number, default: 0 },
         pf: { type: Number, default: 0 },
         tax: { type: Number, default: 0 },
