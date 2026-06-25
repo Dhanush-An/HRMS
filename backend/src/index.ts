@@ -1037,22 +1037,19 @@ app.post('/api/attendance', async (req, res) => {
                 if (diffMins < 0) diffMins += 24 * 60;
                 workHours = Number((diffMins / 60).toFixed(2));
                 
-                if (checkInMinutes > 585) { // after 9:45 AM
+                const isLate = checkInMinutes > 585; // after 9:45 AM
+                const presentThreshold = isLate ? 530 : 360; // 8h 50m if late, 6h if on time
+                
+                if (diffMins >= presentThreshold) {
+                    status = 'Present';
+                } else if (diffMins >= 180) { // 3h
                     status = 'Half Day';
                 } else {
-                    if (diffMins >= 530) { // 8h 50m
-                        status = 'Present';
-                    } else {
-                        status = 'Half Day';
-                    }
+                    status = 'Absent';
                 }
             } else {
                 // Only checkIn is provided (employee checking in)
-                if (checkInMinutes > 585) { // after 9:45 AM
-                    status = 'Half Day';
-                } else {
-                    status = 'Present';
-                }
+                status = 'Present';
             }
         }
 
@@ -1095,24 +1092,21 @@ app.put('/api/attendance/:id', async (req, res) => {
                 
                 // Recalculate status if checkIn/checkOut is modified OR if status is not explicitly sent
                 if (req.body.checkIn !== undefined || req.body.checkOut !== undefined || req.body.status === undefined) {
-                    if (checkInMinutes > 585) { // after 9:45 AM
+                    const isLate = checkInMinutes > 585; // after 9:45 AM
+                    const presentThreshold = isLate ? 530 : 360; // 8h 50m if late, 6h if on time
+                    
+                    if (diffMins >= presentThreshold) {
+                        status = 'Present';
+                    } else if (diffMins >= 180) { // 3h
                         status = 'Half Day';
                     } else {
-                        if (diffMins >= 530) { // 8h 50m
-                            status = 'Present';
-                        } else {
-                            status = 'Half Day';
-                        }
+                        status = 'Absent';
                     }
                 }
             } else {
                 // Only checkIn is present
                 if (req.body.checkIn !== undefined || req.body.status === undefined) {
-                    if (checkInMinutes > 585) { // after 9:45 AM
-                        status = 'Half Day';
-                    } else {
-                        status = 'Present';
-                    }
+                    status = 'Present';
                 }
             }
         }
