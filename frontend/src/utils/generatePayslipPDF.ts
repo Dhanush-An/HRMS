@@ -351,7 +351,6 @@ export const generatePayslipPDF = (employee: any, payroll: any) => {
 
     // --- 4. EARNINGS & DEDUCTIONS TABLES ---
     const tableY = 99;
-    const tableH = 40.8; // 6 (header) + 5 (subheader) + 6 * 4.8 (rows) + 5.8 (total) = 45.6
     const totalRowH = 5.8;
 
     // LEFT: EARNINGS

@@ -269,7 +269,9 @@ const EmployeePayroll = () => {
                                     <span className="text-brand-muted font-bold col-span-1">Joining Date</span>
                                     <span className="text-brand-text font-black col-span-2">: {employeeInfo.joiningDate || '21-Jan-2026'}</span>
                                 </div>
-                                                        {/* Right: Bank & Statutory Details */}
+                            </div>
+
+                            {/* Right: Bank & Statutory Details */}
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center border-b border-brand-border/60 pb-2">
                                     <h3 className="text-brand-text text-sm font-black uppercase tracking-wider">Bank & Statutory Details</h3>
