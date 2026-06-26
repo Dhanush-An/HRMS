@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api';
-import { IndianRupee, Download, ShieldCheck, Receipt, Pencil } from 'lucide-react';
+import { IndianRupee, Download, ShieldCheck, Pencil } from 'lucide-react';
 import { generatePayslipPDF, computeFinancials } from '../../utils/generatePayslipPDF';
 
 

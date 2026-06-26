@@ -245,7 +245,7 @@ const EmployeeHome = () => {
                         <div className="bg-brand-bg p-6 rounded-2xl border border-brand-border text-center group hover:border-brand-primary transition-all">
                             <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest block mb-1">Office Hours</span>
                             <span className="text-lg font-black text-brand-text block tracking-tight">09:30 AM - 06:30 PM</span>
-                            <span className="text-[8px] font-bold text-emerald-500 uppercase mt-2 block tracking-widest">Threshold: 10:00 AM</span>
+                            <span className="text-[8px] font-bold text-emerald-500 uppercase mt-2 block tracking-widest">Threshold: 9:45 AM</span>
                         </div>
                         <div className="bg-brand-bg p-6 rounded-2xl border border-brand-border text-center group hover:border-brand-primary transition-all">
                             <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest block mb-1">Lunch Interval</span>
@@ -254,7 +254,7 @@ const EmployeeHome = () => {
                         </div>
                         <div className="bg-brand-primary/10 p-6 rounded-2xl border border-brand-primary/20 text-center group hover:bg-brand-primary/20 transition-all">
                             <span className="text-[10px] font-black text-brand-primary uppercase tracking-widest block mb-1 font-bold">Attendance Rule</span>
-                            <span className="text-sm font-black text-brand-text block leading-tight mt-1">Login after 10:00 AM</span>
+                            <span className="text-sm font-black text-brand-text block leading-tight mt-1">Login after 9:45 AM</span>
                             <span className="text-[10px] font-black text-rose-500 uppercase mt-2 block tracking-widest">Marks Half Day</span>
                         </div>
                     </div>
