@@ -272,10 +272,11 @@ const EmployeePayroll = () => {
                 <p className="text-brand-muted font-medium italic">Comprehensive oversight of your professional earnings and disbursements.</p>
             </div>
 
+
             {/* Main Overview Grid */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-8">
                 {/* Net Salary Card */}
-                <div className="xl:col-span-2 relative group">
+                <div className="relative group">
                     <div className="relative bg-brand-surface border border-brand-border rounded-2xl p-8 shadow-sm overflow-hidden">
                         <div className="relative z-10 flex flex-col gap-8">
                             <div className="flex justify-between items-start">
@@ -326,32 +327,6 @@ const EmployeePayroll = () => {
                             )}
                         </div>
                     </div>
-                </div>
-
-                {/* Quick Actions / Download Card */}
-                <div className="bg-brand-surface border border-brand-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                    <div className="space-y-4">
-                        <div className="p-4 bg-brand-bg rounded-xl border border-brand-border shadow-inner">
-                            <Receipt className="w-6 h-6 text-brand-primary mb-3" />
-                            <h3 className="text-brand-text font-black uppercase text-xs mb-1">Authenticated Payslip</h3>
-                            <p className="text-brand-muted text-[10px] font-medium italic">Digital certification for the current cycle.</p>
-                        </div>
-
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-3 p-2.5 bg-brand-bg rounded-xl border border-brand-border">
-                                <ShieldCheck className="w-4 h-4 text-status-approved" />
-                                <span className="text-[10px] font-black text-brand-text uppercase tracking-widest">Bank Verified</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button 
-                        onClick={() => handleDownloadPDF(salaryDetails)}
-                        className="w-full mt-6 bg-brand-primary text-white py-3.5 rounded-xl font-black flex items-center justify-center gap-2 hover:bg-brand-primary/90 transition-all active:scale-95 shadow-md shadow-brand-primary/20 uppercase tracking-widest text-xs"
-                    >
-                        <Download className="w-4 h-4" />
-                        Download PDF
-                    </button>
                 </div>
             </div>
             
