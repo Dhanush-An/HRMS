@@ -8,7 +8,7 @@ interface AttendanceRecord {
     id: string;
     employeeId: string;
     date: string; // YYYY-MM-DD
-    status: 'Present' | 'Absent' | 'Late' | 'Half Day' | 'Leave';
+    status: 'Present' | 'Absent' | 'Late' | 'Half Day' | 'Leave' | 'Sunday';
     checkIn?: string;
     checkOut?: string;
     workHours?: number;
@@ -133,7 +133,7 @@ const EmployeeAttendance = () => {
                     id: `sunday-${dateStr}`,
                     employeeId: '',
                     date: dateStr,
-                    status: 'Leave' as const,
+                    status: 'Sunday' as any,
                     isWeeklyOff: true
                 } as any;
             }
@@ -183,8 +183,8 @@ const EmployeeAttendance = () => {
             if (record) {
                 if (record.status === 'Present') {
                     statusStyles = "bg-status-approved/10 border-status-approved/20 hover:bg-status-approved/20";
-                } else if (record.status === 'Absent' || record.status === 'Leave') {
-                    const isSunday = (record as any).isWeeklyOff;
+                } else if (record.status === 'Absent' || record.status === 'Leave' || record.status === 'Sunday') {
+                    const isSunday = (record as any).isWeeklyOff || record.status === 'Sunday';
                     const isSyntheticAbsent = (record as any).isSynthetic;
                     statusStyles = (isSunday)
                         ? "bg-brand-primary/5 border-brand-primary/10 hover:bg-brand-primary/10"
@@ -220,8 +220,8 @@ const EmployeeAttendance = () => {
                         {record && (
                             <div className="bg-brand-surface/50 p-0.5 md:p-1 rounded-lg">
                                 {record.status === 'Present' && <CheckCircle className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-status-approved" />}
-                                {record.status === 'Leave' && (
-                                    (record as any).isWeeklyOff
+                                {(record.status === 'Leave' || record.status === 'Sunday') && (
+                                    (record as any).isWeeklyOff || record.status === 'Sunday'
                                         ? <Clock className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-brand-primary opacity-60" />
                                         : <XCircle className="w-2.5 h-2.5 md:w-3.5 md:h-3.5 text-status-status-rejected" />
                                 )}
@@ -232,9 +232,9 @@ const EmployeeAttendance = () => {
                         )}
                     </div>
 
-                    {record && (record as any).isWeeklyOff && (
+                    {record && ((record as any).isWeeklyOff || record.status === 'Sunday') && (
                         <div className="mt-1 md:mt-2 text-center">
-                            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-tighter text-brand-primary opacity-60">Off</span>
+                            <span className="text-[7px] md:text-[10px] font-black uppercase tracking-tighter text-brand-primary opacity-60">Sunday</span>
                         </div>
                     )}
 
@@ -435,9 +435,9 @@ const EmployeeAttendance = () => {
                                             "text-[10px] font-black uppercase tracking-widest",
                                             selectedDayStats.status === 'Present' ? "text-status-approved" :
                                                 selectedDayStats.status === 'Absent' ? "text-status-rejected" :
-                                                    (selectedDayStats as any).isWeeklyOff ? "text-brand-primary" :
+                                                    (selectedDayStats as any).isWeeklyOff || selectedDayStats.status === 'Sunday' ? "text-brand-primary" :
                                                         "text-status-pending"
-                                        )}>{(selectedDayStats as any).isWeeklyOff ? 'Weekly Off' : selectedDayStats.status}</span>
+                                        )}>{selectedDayStats.status === 'Sunday' ? 'Sunday' : (selectedDayStats as any).isWeeklyOff ? 'Weekly Off' : selectedDayStats.status}</span>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">

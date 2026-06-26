@@ -211,7 +211,7 @@ export const generateAttendancePDF = async (employee: any, currentDate: Date, at
             if (isWeeklyOff) {
                 record = {
                     date: dateStr,
-                    status: 'Leave',
+                    status: 'Sunday',
                     isWeeklyOff: true
                 };
             } else if (dayDate < today) {
@@ -258,14 +258,14 @@ export const generateAttendancePDF = async (employee: any, currentDate: Date, at
         
         let status = 'Not Marked';
         if (record) {
-            if (record.isWeeklyOff) status = 'Weekly Off';
+            if (record.isWeeklyOff || record.status === 'Sunday') status = 'Sunday';
             else status = record.status;
         }
 
         // Color coding for status
         if (status === 'Present') doc.setTextColor(40, 167, 69);
         else if (status === 'Absent') doc.setTextColor(220, 53, 69);
-        else if (status === 'Weekly Off') doc.setTextColor(15, 36, 62);
+        else if (status === 'Sunday') doc.setTextColor(15, 36, 62);
         else if (status === 'Half Day') doc.setTextColor(255, 193, 7);
         else if (status === 'Late') doc.setTextColor(23, 162, 184);
         else doc.setTextColor(100, 100, 100);

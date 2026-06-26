@@ -34,7 +34,7 @@ interface AttendanceRecord {
     id: string;
     employeeId: string;
     date: string; // YYYY-MM-DD
-    status: 'Present' | 'Absent' | 'Late' | 'Half Day';
+    status: 'Present' | 'Absent' | 'Late' | 'Half Day' | 'Leave' | 'Sunday';
     checkIn?: string; // HH:mm
     checkOut?: string; // HH:mm
     workHours?: number;
@@ -167,6 +167,82 @@ const Attendance = () => {
             (e as any).username === identifier
         );
 
+    const getDatesOfMonth = (monthStr: string) => {
+        const [yearStr, monthStrPart] = monthStr.split('-');
+        const year = parseInt(yearStr, 10);
+        const month = parseInt(monthStrPart, 10) - 1;
+        
+        const date = new Date(year, month, 1);
+        const dates: string[] = [];
+        while (date.getMonth() === month) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            dates.push(`${yyyy}-${mm}-${dd}`);
+            date.setDate(date.getDate() + 1);
+        }
+        return dates;
+    };
+
+    const generateMonthlyRecords = (employeesList: Employee[], attendanceList: AttendanceRecord[], monthStr: string) => {
+        const dates = getDatesOfMonth(monthStr);
+        const records: any[] = [];
+        const todayStr = new Date().toISOString().split('T')[0];
+        
+        employeesList.forEach(emp => {
+            dates.forEach(dateStr => {
+                const record = attendanceList.find(r =>
+                    (
+                        r.employeeId === emp.id ||
+                        r.employeeId === (emp as any).employeeId ||
+                        r.employeeId === (emp as any).email ||
+                        r.employeeId === (emp as any).username
+                    ) &&
+                    r.date === dateStr
+                );
+                
+                const dateObj = new Date(dateStr);
+                const isSunday = dateObj.getDay() === 0;
+                const isFuture = dateStr > todayStr;
+                
+                let finalRecord = record;
+                if (!finalRecord) {
+                    if (isSunday) {
+                        finalRecord = {
+                            id: `sunday-${emp.id}-${dateStr}`,
+                            employeeId: emp.id,
+                            employeeName: emp.name,
+                            date: dateStr,
+                            status: 'Sunday' as any,
+                            isSunday: true
+                        } as any;
+                    } else if (isFuture) {
+                        finalRecord = {
+                            id: `future-${emp.id}-${dateStr}`,
+                            employeeId: emp.id,
+                            employeeName: emp.name,
+                            date: dateStr,
+                            status: 'Not Marked' as any,
+                            isFuture: true
+                        } as any;
+                    } else {
+                        finalRecord = {
+                            id: `absent-${emp.id}-${dateStr}`,
+                            employeeId: emp.id,
+                            employeeName: emp.name,
+                            date: dateStr,
+                            status: 'Absent' as any,
+                            isSyntheticAbsent: true
+                        } as any;
+                    }
+                }
+                records.push(finalRecord);
+            });
+        });
+        
+        return records;
+    };
+
     const getAttendanceStatus = (empId: string) => {
         const emp = employees.find(e => e.id === empId || (e as any).employeeId === empId);
         const record = attendance.find(r =>
@@ -184,8 +260,16 @@ const Attendance = () => {
                     id: `sunday-${empId}-${selectedDate}`,
                     employeeId: empId,
                     date: selectedDate,
-                    status: 'Leave' as any,
-                    isWeeklyOff: true
+                    status: 'Sunday' as any,
+                    isSunday: true
+                } as any;
+            } else {
+                return {
+                    id: `absent-${empId}-${selectedDate}`,
+                    employeeId: empId,
+                    date: selectedDate,
+                    status: 'Absent' as any,
+                    isSyntheticAbsent: true
                 } as any;
             }
         }
@@ -200,7 +284,7 @@ const Attendance = () => {
         const targetDate = date || selectedDate;
         setOpenMenuId(null);
         try {
-            if (targetRecord && targetRecord.id && !(targetRecord as any).isWeeklyOff) {
+            if (targetRecord && targetRecord.id && !(targetRecord as any).isWeeklyOff && !(targetRecord as any).isSunday && !(targetRecord as any).isSyntheticAbsent && !(targetRecord as any).isFuture) {
                 // Update existing record
                 await api.put(`/api/attendance/${targetRecord.id}`, { status: newStatus });
             } else {
@@ -258,7 +342,16 @@ const Attendance = () => {
             const response = await api.get('/api/attendance');
             const rawData = await response.json();
             const allData: AttendanceRecord[] = Array.isArray(rawData) ? rawData : [];
-            return allData.filter(r => r && r.date && r.date.startsWith(reportMonth));
+            const filteredAttendance = allData.filter(r => r && r.date && r.date.startsWith(reportMonth));
+            
+            // Filter employees based on search query if any
+            const filteredEmployees = employees.filter(emp =>
+                !searchQuery ||
+                emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                emp.department.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            
+            return generateMonthlyRecords(filteredEmployees, filteredAttendance, reportMonth);
         } catch (error) {
             console.error("Error fetching report data:", error);
             return [];
@@ -313,20 +406,44 @@ const Attendance = () => {
         XLSX.writeFile(wb, `attendance_report_${reportMonth}.xlsx`);
     };
 
+    const getMonthlyStats = () => {
+        if (!Array.isArray(employees) || !Array.isArray(attendance)) {
+            return { present: 0, absent: 0, late: 0, halfDay: 0 };
+        }
+        const allMonthlyRecords = generateMonthlyRecords(employees, attendance, reportMonth);
+        
+        let present = 0;
+        let absent = 0;
+        let late = 0;
+        let halfDay = 0;
+        
+        allMonthlyRecords.forEach(r => {
+            if (r.status === 'Present') present++;
+            else if (r.status === 'Absent') absent++;
+            else if (r.status === 'Late') late++;
+            else if (r.status === 'Half Day') halfDay++;
+        });
+        
+        return { present, absent, late, halfDay };
+    };
+
     // Stats Calculation
+    const monthlyStats = getMonthlyStats();
+    const isSelectedDateSunday = new Date(selectedDate).getDay() === 0;
+
     const stats = {
-        present: Array.isArray(attendance)
-            ? (viewPeriod === 'daily'
-                ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length
-                : attendance.filter(r => r.status === 'Present').length)
-            : 0,
-        absent: Array.isArray(attendance)
-            ? (viewPeriod === 'daily'
-                ? Math.max((employees?.length || 0) - attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length, 0)
-                : attendance.filter(r => r.status === 'Absent').length)
-            : 0,
-        late: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late').length : 0,
-        halfDay: Array.isArray(attendance) ? attendance.filter(r => r.status === 'Half Day').length : 0,
+        present: viewPeriod === 'daily'
+            ? (Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0)
+            : monthlyStats.present,
+        absent: viewPeriod === 'daily'
+            ? (isSelectedDateSunday ? 0 : Math.max((employees?.length || 0) - (Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0), 0))
+            : monthlyStats.absent,
+        late: viewPeriod === 'daily'
+            ? (Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late').length : 0)
+            : monthlyStats.late,
+        halfDay: viewPeriod === 'daily'
+            ? (Array.isArray(attendance) ? attendance.filter(r => r.status === 'Half Day').length : 0)
+            : monthlyStats.halfDay,
     };
 
     const tableRows = viewPeriod === 'daily'
@@ -344,28 +461,27 @@ const Attendance = () => {
                     date: selectedDate
                 };
             })
-        : attendance
-            .filter(record => {
-                const emp = findEmployee(record.employeeId);
-                return !searchQuery || (
-                    emp?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    emp?.department.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-            })
-            .map(record => {
+        : (() => {
+            const filteredEmployees = employees.filter(emp =>
+                !searchQuery ||
+                emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                emp.department.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            const monthlyRecs = generateMonthlyRecords(filteredEmployees, attendance, reportMonth);
+            return monthlyRecs.map(record => {
                 const emp = findEmployee(record.employeeId) || {
                     id: record.employeeId,
-                    name: (record as any).employeeName || record.employeeId,
+                    name: record.employeeName || record.employeeId,
                     department: 'Unknown'
                 };
                 return {
-                    id: record.id || (record as any)._id,
+                    id: record.id || `${record.employeeId}-${record.date}`,
                     emp,
                     record,
                     date: record.date
                 };
-            })
-            .sort((a, b) => b.date.localeCompare(a.date) || a.emp.name.localeCompare(b.emp.name));
+            }).sort((a, b) => b.date.localeCompare(a.date) || a.emp.name.localeCompare(b.emp.name));
+        })();
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -575,7 +691,7 @@ const Attendance = () => {
                                                         record?.status === 'Absent' ? "bg-status-rejected" :
                                                             record?.status === 'Late' ? "bg-status-pending" :
                                                                 record?.status === 'Half Day' ? "bg-status-info" :
-                                                                    (record as any)?.isWeeklyOff ? "bg-brand-primary" :
+                                                                    (record as any)?.isWeeklyOff || record?.status === 'Sunday' ? "bg-brand-primary" :
                                                                         "bg-brand-muted/30"
                                                 )} />
                                                 <span className={cn(
@@ -584,10 +700,12 @@ const Attendance = () => {
                                                         record?.status === 'Absent' ? "text-status-rejected" :
                                                             record?.status === 'Late' ? "text-status-pending" :
                                                                 record?.status === 'Half Day' ? "text-status-info" :
-                                                                    (record as any)?.isWeeklyOff ? "text-brand-primary" :
+                                                                    (record as any)?.isWeeklyOff || record?.status === 'Sunday' ? "text-brand-primary" :
                                                                         "text-brand-muted"
                                                 )}>
-                                                    {(record as any)?.isWeeklyOff ? 'Weekly Off' : (record?.status || 'Not Marked')}
+                                                    {record?.status === 'Sunday' ? 'Sunday' : 
+                                                     (record as any)?.isWeeklyOff ? 'Weekly Off' : 
+                                                     (record?.status || 'Not Marked')}
                                                 </span>
                                             </div>
                                         </td>
@@ -739,10 +857,12 @@ const Attendance = () => {
                                             record?.status === 'Absent' ? "bg-status-rejected/10 text-status-rejected border-status-rejected/20" :
                                                 record?.status === 'Late' ? "bg-status-pending/10 text-status-pending border-status-pending/20" :
                                                     record?.status === 'Half Day' ? "bg-status-info/10 text-status-info border-status-info/20" :
-                                                        (record as any)?.isWeeklyOff ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20" :
+                                                        (record as any)?.isWeeklyOff || record?.status === 'Sunday' ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20" :
                                                             "bg-brand-muted/10 text-brand-muted border-brand-muted/20"
                                     )}>
-                                        {(record as any)?.isWeeklyOff ? 'OFF' : (record?.status || 'N/A')}
+                                        {record?.status === 'Sunday' ? 'Sunday' : 
+                                         (record as any)?.isWeeklyOff ? 'OFF' : 
+                                         (record?.status || 'N/A')}
                                     </div>
                                 </div>
 
