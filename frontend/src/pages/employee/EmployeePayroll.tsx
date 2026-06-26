@@ -563,6 +563,19 @@ const EmployeePayroll = () => {
                         if (payrollYear < joinYear) return false;
                         if (payrollYear === joinYear && payrollMonthIndex < joinMonth) return false;
                         return true;
+                    }).sort((a: any, b: any) => {
+                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                        const getMonthIndex = (m: string) => {
+                            let ms = (m || '').replace(/\s+/g, ' ').trim();
+                            if (ms.includes(' ')) ms = ms.split(' ')[0];
+                            let idx = monthNames.findIndex(n => n.toLowerCase() === ms.toLowerCase());
+                            if (idx === -1) idx = parseInt(ms) - 1;
+                            return isNaN(idx) ? 0 : idx;
+                        };
+                        const yearA = a.year || 0;
+                        const yearB = b.year || 0;
+                        if (yearA !== yearB) return yearB - yearA;
+                        return getMonthIndex(b.month) - getMonthIndex(a.month);
                     }).map((item: any) => (
                         <div
                             key={item.id}
@@ -582,7 +595,14 @@ const EmployeePayroll = () => {
                                 </div>
 
                                 <div>
-                                    <h3 className="text-brand-text text-base font-black uppercase">{item.month}</h3>
+                                    <h3 className="text-brand-text text-base font-black uppercase">{(() => {
+                                        const mNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                                        const m = (item.month || '').replace(/\s+/g, ' ').trim();
+                                        const idx = mNames.findIndex(n => n.toLowerCase() === m.toLowerCase());
+                                        if (idx !== -1) return mNames[idx];
+                                        const num = parseInt(m) - 1;
+                                        return (num >= 0 && num < 12) ? mNames[num] : item.month;
+                                    })()}</h3>
                                     <span className="text-brand-muted text-[10px] font-black uppercase tracking-widest block">{item.year}</span>
                                     {employeeInfo?.name && (
                                         <span className="text-brand-primary text-[10px] font-bold uppercase tracking-wider block mb-4">{employeeInfo.name}</span>
