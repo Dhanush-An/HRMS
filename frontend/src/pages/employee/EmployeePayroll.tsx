@@ -576,6 +576,19 @@ const EmployeePayroll = () => {
                         const yearB = b.year || 0;
                         if (yearA !== yearB) return yearB - yearA;
                         return getMonthIndex(b.month) - getMonthIndex(a.month);
+                    }).filter((item: any, index: number, arr: any[]) => {
+                        // Deduplicate: keep only the latest (first in descending sort) entry per month/year
+                        const getMonthKey = (m: string) => {
+                            const mNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+                            let ms = (m || '').replace(/\s+/g, ' ').trim();
+                            if (ms.includes(' ')) ms = ms.split(' ')[0];
+                            const idx = mNames.indexOf(ms.toLowerCase());
+                            if (idx !== -1) return idx;
+                            const num = parseInt(ms) - 1;
+                            return (num >= 0 && num < 12) ? num : -1;
+                        };
+                        const key = `${item.year}-${getMonthKey(item.month)}`;
+                        return index === arr.findIndex((i: any) => `${i.year}-${getMonthKey(i.month)}` === key);
                     }).map((item: any) => (
                         <div
                             key={item.id}
