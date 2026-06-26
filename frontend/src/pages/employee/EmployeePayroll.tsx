@@ -559,7 +559,36 @@ const EmployeePayroll = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {payrollHistory.map((item: any) => (
+                    {payrollHistory.filter((item: any) => {
+                        // Filter out payroll records for months before the employee's joining date
+                        if (!employeeInfo?.joiningDate) return true;
+                        const joinDate = new Date(employeeInfo.joiningDate);
+                        const joinYear = joinDate.getFullYear();
+                        const joinMonth = joinDate.getMonth(); // 0-indexed
+
+                        // Parse the payroll month
+                        let payrollMonthStr = item.month || '';
+                        let payrollYear = item.year || new Date().getFullYear();
+                        if (typeof payrollMonthStr === 'string') {
+                            payrollMonthStr = payrollMonthStr.replace(/\s+/g, ' ').trim();
+                            if (payrollMonthStr.includes(' ')) {
+                                const parts = payrollMonthStr.split(' ');
+                                payrollMonthStr = parts[0];
+                                payrollYear = parseInt(parts[1]) || payrollYear;
+                            }
+                        }
+                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                        let payrollMonthIndex = monthNames.findIndex(m => m.toLowerCase() === payrollMonthStr.toLowerCase());
+                        if (payrollMonthIndex === -1) {
+                            payrollMonthIndex = parseInt(payrollMonthStr) - 1;
+                        }
+                        if (isNaN(payrollMonthIndex) || payrollMonthIndex < 0 || payrollMonthIndex > 11) return true;
+
+                        // Only show payroll records from the joining month onwards
+                        if (payrollYear < joinYear) return false;
+                        if (payrollYear === joinYear && payrollMonthIndex < joinMonth) return false;
+                        return true;
+                    }).map((item: any) => (
                         <div
                             key={item.id}
                             className="bg-brand-surface border border-brand-border rounded-2xl p-6 hover:border-brand-primary/30 transition-all group relative overflow-hidden shadow-sm"
@@ -579,7 +608,11 @@ const EmployeePayroll = () => {
 
                                 <div>
                                     <h3 className="text-brand-text text-base font-black uppercase">{item.month}</h3>
-                                    <span className="text-brand-muted text-[10px] font-black uppercase tracking-widest block mb-4">{item.year}</span>
+                                    <span className="text-brand-muted text-[10px] font-black uppercase tracking-widest block">{item.year}</span>
+                                    {employeeInfo?.name && (
+                                        <span className="text-brand-primary text-[10px] font-bold uppercase tracking-wider block mb-4">{employeeInfo.name}</span>
+                                    )}
+                                    {!employeeInfo?.name && <div className="mb-4" />}
 
                                     <div className="flex items-baseline justify-between pt-2">
                                         <span className="text-xl font-black text-brand-text tabular-nums">₹{item.netSalary?.toLocaleString()}</span>
