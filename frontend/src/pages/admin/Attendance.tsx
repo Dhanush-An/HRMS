@@ -98,6 +98,7 @@ const Attendance = () => {
     // Report State
     const [reportMonth, setReportMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'All' | 'Present' | 'Absent' | 'Sunday'>('All');
     const [activeTab, setActiveTab] = useState<'attendance' | 'breaks'>('attendance');
 
     // Kebab menu state
@@ -189,8 +190,11 @@ const Attendance = () => {
         const records: any[] = [];
         const todayStr = new Date().toISOString().split('T')[0];
         
+        // Filter out future dates
+        const pastAndTodayDates = dates.filter(dateStr => dateStr <= todayStr);
+        
         employeesList.forEach(emp => {
-            dates.forEach(dateStr => {
+            pastAndTodayDates.forEach(dateStr => {
                 const record = attendanceList.find(r =>
                     (
                         r.employeeId === emp.id ||
@@ -203,7 +207,6 @@ const Attendance = () => {
                 
                 const dateObj = new Date(dateStr);
                 const isSunday = dateObj.getDay() === 0;
-                const isFuture = dateStr > todayStr;
                 
                 let finalRecord = record;
                 if (!finalRecord) {
@@ -215,15 +218,6 @@ const Attendance = () => {
                             date: dateStr,
                             status: 'Sunday' as any,
                             isSunday: true
-                        } as any;
-                    } else if (isFuture) {
-                        finalRecord = {
-                            id: `future-${emp.id}-${dateStr}`,
-                            employeeId: emp.id,
-                            employeeName: emp.name,
-                            date: dateStr,
-                            status: 'Not Marked' as any,
-                            isFuture: true
                         } as any;
                     } else {
                         finalRecord = {
@@ -351,7 +345,16 @@ const Attendance = () => {
                 emp.department.toLowerCase().includes(searchQuery.toLowerCase())
             );
             
-            return generateMonthlyRecords(filteredEmployees, filteredAttendance, reportMonth);
+            const records = generateMonthlyRecords(filteredEmployees, filteredAttendance, reportMonth);
+            
+            // Filter by status if not All
+            return records.filter(r => {
+                if (statusFilter === 'All') return true;
+                if (statusFilter === 'Present') return ['Present', 'Late', 'Half Day'].includes(r.status);
+                if (statusFilter === 'Absent') return r.status === 'Absent';
+                if (statusFilter === 'Sunday') return r.status === 'Sunday';
+                return true;
+            });
         } catch (error) {
             console.error("Error fetching report data:", error);
             return [];
@@ -461,6 +464,14 @@ const Attendance = () => {
                     date: selectedDate
                 };
             })
+            .filter(row => {
+                if (statusFilter === 'All') return true;
+                if (!row.record) return false;
+                if (statusFilter === 'Present') return ['Present', 'Late', 'Half Day'].includes(row.record.status);
+                if (statusFilter === 'Absent') return row.record.status === 'Absent';
+                if (statusFilter === 'Sunday') return row.record.status === 'Sunday';
+                return true;
+            })
         : (() => {
             const filteredEmployees = employees.filter(emp =>
                 !searchQuery ||
@@ -480,7 +491,16 @@ const Attendance = () => {
                     record,
                     date: record.date
                 };
-            }).sort((a, b) => b.date.localeCompare(a.date) || a.emp.name.localeCompare(b.emp.name));
+            })
+            .filter(row => {
+                if (statusFilter === 'All') return true;
+                if (!row.record) return false;
+                if (statusFilter === 'Present') return ['Present', 'Late', 'Half Day'].includes(row.record.status);
+                if (statusFilter === 'Absent') return row.record.status === 'Absent';
+                if (statusFilter === 'Sunday') return row.record.status === 'Sunday';
+                return true;
+            })
+            .sort((a, b) => b.date.localeCompare(a.date) || a.emp.name.localeCompare(b.emp.name));
         })();
 
     return (
@@ -632,7 +652,17 @@ const Attendance = () => {
                     <h2 className="text-lg font-black text-brand-text">
                         {viewPeriod === 'daily' ? 'Daily Attendance List' : 'Monthly Attendance List'}
                     </h2>
-                    <div className="flex gap-4 w-full md:w-auto">
+                    <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value as any)}
+                            className="bg-brand-bg border border-brand-border text-brand-text rounded-xl py-2 px-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all cursor-pointer outline-none w-full sm:w-auto"
+                        >
+                            <option value="All">All</option>
+                            <option value="Present">Present</option>
+                            <option value="Absent">Absent</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
                         <div className="relative flex-1 md:w-64">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
                             <input
