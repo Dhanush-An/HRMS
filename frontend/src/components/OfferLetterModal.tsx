@@ -133,10 +133,21 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ? employee.responsibilities.split('\n').map(s => s.trim()).filter(Boolean)
         : defaultResponsibilities;
 
-    // Download PDF handler using html2canvas & jsPDF with bulletproof CORS & Canvas configuration
+    // Download PDF handler: renders full 3-page document off-screen without scroll clipping & downloads PDF file
     const handleDownloadPdf = async () => {
         if (!documentRef.current) return;
         setIsGeneratingPdf(true);
+
+        // Temporary off-screen container to capture full 3 pages cleanly without modal scroll clipping
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.top = '-10000px';
+        container.style.left = '0px';
+        container.style.width = '210mm';
+        container.style.backgroundColor = '#ffffff';
+        container.style.zIndex = '-99999';
+        document.body.appendChild(container);
+
         try {
             const pages = documentRef.current.querySelectorAll('.offer-page');
             const pdf = new jsPDF('p', 'mm', 'a4');
@@ -145,33 +156,57 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
             for (let i = 0; i < pages.length; i++) {
                 const pageEl = pages[i] as HTMLElement;
-                const canvas = await html2canvas(pageEl, {
+                const clonedNode = pageEl.cloneNode(true) as HTMLElement;
+                
+                // Ensure cloned node styles & fonts render cleanly
+                clonedNode.style.margin = '0';
+                clonedNode.style.boxShadow = 'none';
+                clonedNode.style.fontFamily = "Georgia, 'Times New Roman', Times, serif";
+
+                container.appendChild(clonedNode);
+
+                // Short delay for DOM layout & images to settle
+                await new Promise((r) => setTimeout(r, 150));
+
+                const canvas = await html2canvas(clonedNode, {
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
                     logging: false,
                     imageTimeout: 15000,
                     backgroundColor: '#ffffff',
-                    onclone: (clonedDoc) => {
-                        // Ensure all images in cloned document are CORS friendly
-                        const clonedImgs = clonedDoc.querySelectorAll('img');
-                        clonedImgs.forEach((img) => {
-                            img.setAttribute('crossOrigin', 'anonymous');
-                        });
-                    }
+                    scrollX: 0,
+                    scrollY: 0,
+                    windowWidth: 1200,
+                    windowHeight: 1600
                 });
+
+                container.removeChild(clonedNode);
+
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 if (i > 0) pdf.addPage();
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
             }
 
             const cleanFileName = `Offer_Letter_${empName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-            pdf.save(cleanFileName);
+
+            // Reliable Blob URL download trigger
+            const blob = pdf.output('blob');
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = cleanFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
         } catch (err) {
-            console.error('Error generating PDF with html2canvas:', err);
-            // Fallback to window.print() if canvas SecurityError or cross-origin policy blocks html2canvas
-            window.print();
+            console.error('Error generating PDF:', err);
+            alert('Could not process PDF canvas capture. You can use the Print button to save as PDF.');
         } finally {
+            if (document.body.contains(container)) {
+                document.body.removeChild(container);
+            }
             setIsGeneratingPdf(false);
         }
     };
