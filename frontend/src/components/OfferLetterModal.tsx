@@ -257,7 +257,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 min-height: auto !important;
                                 overflow: visible !important;
                             }
-                            body > *:not(.offer-modal-overlay) {
+                            header, nav, aside, .offer-modal-header, .offer-modal-statusbar {
                                 display: none !important;
                             }
                             .offer-modal-overlay {
