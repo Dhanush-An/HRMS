@@ -466,7 +466,11 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     <div ref={documentRef} className="printable-document flex flex-col gap-10 items-center w-full">
                         {/* ================= PAGE 1 ================= */}
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
-                            <div>
+                            {/* Background Watermark */}
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '450px', height: '450px', opacity: 0.07, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Watermark" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+                            </div>
+                            <div style={{ position: 'relative', zIndex: 1 }}>
                                  {/* Header */}
                                 <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '2px solid #0f172a', paddingBottom: '10px', marginBottom: '16px' }} className="border-b-2 border-slate-900 pb-2.5 mb-4">
                                     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }} className="flex justify-between items-start">
@@ -587,7 +591,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             </div>
 
                             {/* Footer Page 1 */}
-                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px' }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
                                 <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
                                 <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
                                 <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
@@ -597,7 +601,11 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
                         {/* ================= PAGE 2 ================= */}
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
-                            <div>
+                            {/* Background Watermark */}
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '450px', height: '450px', opacity: 0.07, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Watermark" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+                            </div>
+                            <div style={{ position: 'relative', zIndex: 1 }}>
                                 {/* Section 3 */}
                                 <div style={{ marginBottom: '24px' }} className="mb-6 space-y-3">
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '12px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
@@ -709,7 +717,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             </div>
 
                             {/* Footer Page 2 */}
-                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px' }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
                                 <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
                                 <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
                                 <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
@@ -719,7 +727,11 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
                         {/* ================= PAGE 3 ================= */}
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
-                            <div>
+                            {/* Background Watermark */}
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '450px', height: '450px', opacity: 0.07, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Watermark" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
+                            </div>
+                            <div style={{ position: 'relative', zIndex: 1 }}>
                                 {/* Section 7 */}
                                 <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
@@ -805,7 +817,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             </div>
 
                             {/* Footer Page 3 */}
-                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px' }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
                                 <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
                                 <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
                                 <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
