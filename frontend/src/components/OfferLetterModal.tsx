@@ -127,6 +127,24 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
             const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
 
+            // Pre-collect ALL CSS rules from the browser's CSSOM (covers both dev <style> tags
+            // and production <link> external stylesheets). This captures 100% of Tailwind's
+            // compiled utility classes regardless of how Vite bundles them.
+            let allCssText = '';
+            for (let s = 0; s < document.styleSheets.length; s++) {
+                try {
+                    const sheet = document.styleSheets[s];
+                    const rules = sheet.cssRules || sheet.rules;
+                    for (let r = 0; r < rules.length; r++) {
+                        allCssText += rules[r].cssText + '\n';
+                    }
+                } catch (_e) {
+                    // Cross-origin stylesheet - skip silently
+                }
+            }
+            // Sanitize oklch() color functions that html2canvas cannot parse
+            const sanitizedCss = allCssText.replace(/oklch\([^)]*\)/gi, '#000000');
+
             for (let i = 0; i < pages.length; i++) {
                 const pageEl = pages[i] as HTMLElement;
                 await new Promise((r) => setTimeout(r, 100));
@@ -140,22 +158,16 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     scrollX: 0,
                     scrollY: 0,
                     onclone: (clonedDoc) => {
-                        // Only remove external <link> stylesheets (which use oklch() and crash html2canvas).
-                        // KEEP all <style> tags so Tailwind's compiled CSS remains intact.
-                        const externalLinks = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
-                        externalLinks.forEach((el) => el.remove());
+                        // Remove ALL existing style/link tags from the clone
+                        const allStylesAndLinks = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
+                        allStylesAndLinks.forEach((el) => el.remove());
 
-                        // Sanitize any oklch() values inside remaining <style> tags
-                        const styleTags = clonedDoc.querySelectorAll('style');
-                        styleTags.forEach((styleTag) => {
-                            if (styleTag.textContent) {
-                                styleTag.textContent = styleTag.textContent.replace(
-                                    /oklch\([^)]*\)/gi, 'transparent'
-                                );
-                            }
-                        });
+                        // Inject the pre-collected, sanitized CSS (contains 100% of Tailwind utilities)
+                        const fullStyle = clonedDoc.createElement('style');
+                        fullStyle.textContent = sanitizedCss;
+                        clonedDoc.head.appendChild(fullStyle);
 
-                        // Add minimal overrides on top of the preserved Tailwind styles
+                        // Add overrides for font and page dimensions
                         const overrideStyle = clonedDoc.createElement('style');
                         overrideStyle.textContent = `
                             * {
