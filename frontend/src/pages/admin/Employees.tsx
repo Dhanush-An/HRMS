@@ -735,7 +735,8 @@ const Employees = () => {
                                         <input
                                             type="number"
                                             name="basicSalary"
-                                            value={formData.basicSalary}
+                                            value={formData.basicSalary || ''}
+                                            placeholder="0"
                                             onChange={(e) => setFormData({ ...formData, basicSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
                                         />
@@ -745,7 +746,8 @@ const Employees = () => {
                                         <input
                                             type="number"
                                             name="hraSalary"
-                                            value={formData.hraSalary}
+                                            value={formData.hraSalary || ''}
+                                            placeholder="0"
                                             onChange={(e) => setFormData({ ...formData, hraSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
                                         />
@@ -755,7 +757,8 @@ const Employees = () => {
                                         <input
                                             type="number"
                                             name="convSalary"
-                                            value={formData.convSalary}
+                                            value={formData.convSalary || ''}
+                                            placeholder="0"
                                             onChange={(e) => setFormData({ ...formData, convSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
                                         />
@@ -767,7 +770,8 @@ const Employees = () => {
                                         <input
                                             type="number"
                                             name="trainingSalary"
-                                            value={formData.trainingSalary}
+                                            value={formData.trainingSalary || ''}
+                                            placeholder="0"
                                             onChange={(e) => setFormData({ ...formData, trainingSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-amber-500/50 text-amber-400 rounded-xl p-3 font-black text-sm"
                                         />
