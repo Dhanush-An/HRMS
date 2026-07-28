@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { XCircle, Download, Printer, CheckCircle, FileText, Loader2 } from 'lucide-react';
+import { XCircle, Download, Printer, CheckCircle, FileText, Loader2, Cloud, ExternalLink } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { OFFICIAL_LOGO_BASE64 } from '../assets/logoBase64';
+import api from '../api';
 
 interface EmployeeOfferData {
     id?: string;
@@ -18,6 +19,7 @@ interface EmployeeOfferData {
     responsibilities?: string;
     offerId?: string;
     offerIssueDate?: string;
+    offerLetterUrl?: string;
     reportsTo?: string;
     workLocation?: string;
     shiftWindow?: string;
@@ -169,6 +171,84 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         }
     };
 
+    const [cloudinaryUrl, setCloudinaryUrl] = useState<string>(employee?.offerLetterUrl || '');
+    const [isUploadingCloudinary, setIsUploadingCloudinary] = useState<boolean>(false);
+
+    // Auto-upload offer letter PDF to Cloudinary when document is processed
+    const handleUploadToCloudinary = async () => {
+        if (!documentRef.current || isUploadingCloudinary) return;
+        setIsUploadingCloudinary(true);
+
+        const parentContainer = documentRef.current.parentElement;
+        const prevOverflow = parentContainer?.style.overflowY || '';
+        const prevMaxHeight = parentContainer?.style.maxHeight || '';
+
+        try {
+            if (parentContainer) {
+                parentContainer.style.overflowY = 'visible';
+                parentContainer.style.maxHeight = 'none';
+            }
+
+            const pages = documentRef.current.querySelectorAll('.offer-page');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            for (let i = 0; i < pages.length; i++) {
+                const pageEl = pages[i] as HTMLElement;
+                await new Promise((r) => setTimeout(r, 100));
+
+                const canvas = await html2canvas(pageEl, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: 0
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                if (i > 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            }
+
+            const pdfBase64 = pdf.output('datauristring');
+            const empId = employee.id || employee.employeeId;
+
+            const response = await api.post('/api/employees/upload-offer-letter', {
+                employeeId: empId,
+                pdfBase64
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.url || data.offerLetterUrl) {
+                    const finalUrl = data.url || data.offerLetterUrl;
+                    setCloudinaryUrl(finalUrl);
+                    console.log('[CLOUDINARY] Stored offer letter PDF:', finalUrl);
+                }
+            }
+        } catch (error) {
+            console.error('[CLOUDINARY] Upload error:', error);
+        } finally {
+            if (parentContainer) {
+                parentContainer.style.overflowY = prevOverflow;
+                parentContainer.style.maxHeight = prevMaxHeight;
+            }
+            setIsUploadingCloudinary(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen && processStep === 3 && !cloudinaryUrl && !isUploadingCloudinary) {
+            const timer = setTimeout(() => {
+                handleUploadToCloudinary();
+            }, 600);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, processStep]);
+
     const handlePrint = () => {
         window.print();
     };
@@ -201,7 +281,32 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     )}
 
                     {/* Action Controls */}
-                    <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+                    <div className="flex items-center gap-3 w-full md:w-auto justify-end flex-wrap">
+                        {/* Cloudinary Link Button */}
+                        {cloudinaryUrl ? (
+                            <a
+                                href={cloudinaryUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-black shadow-lg shadow-sky-600/20 transition-all active:scale-95 cursor-pointer"
+                                title="Open Cloudinary Stored PDF"
+                            >
+                                <Cloud className="w-4 h-4" /> Cloudinary PDF <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                        ) : isUploadingCloudinary ? (
+                            <div className="bg-slate-800 text-slate-300 px-4 py-2.5 rounded-xl flex items-center gap-2 text-xs font-bold border border-slate-700">
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" /> Storing in Cloudinary...
+                            </div>
+                        ) : (
+                            <button
+                                onClick={handleUploadToCloudinary}
+                                disabled={isNewProcess && processStep < 3}
+                                className="bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold border border-slate-700 transition-all cursor-pointer"
+                            >
+                                <Cloud className="w-4 h-4 text-sky-400" /> Save to Cloudinary
+                            </button>
+                        )}
+
                         <button
                             onClick={handleDownloadPdf}
                             disabled={isGeneratingPdf || (isNewProcess && processStep < 3)}
@@ -238,9 +343,14 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
                 {/* Status Bar */}
                 {processStep === 3 && (
-                    <div className="offer-modal-statusbar bg-emerald-500/10 border-b border-emerald-500/20 px-6 py-2.5 flex items-center justify-between">
+                    <div className="offer-modal-statusbar bg-emerald-500/10 border-b border-emerald-500/20 px-6 py-2.5 flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold">
                             <CheckCircle className="w-4 h-4" /> Offer Letter Ready & Processed
+                            {cloudinaryUrl && (
+                                <span className="ml-2 px-2 py-0.5 bg-sky-500/20 text-sky-300 rounded-full text-[10px] border border-sky-500/30 font-mono flex items-center gap-1">
+                                    <Cloud className="w-3 h-3" /> Cloudinary Stored
+                                </span>
+                            )}
                         </div>
                         <span className="text-[10px] text-slate-400 font-mono uppercase tracking-widest">
                             Ref ID: {offerId}

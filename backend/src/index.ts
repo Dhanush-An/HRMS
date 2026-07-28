@@ -508,6 +508,44 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
     }
 });
 
+// POST upload offer letter PDF to Cloudinary and attach URL to employee record
+app.post('/api/employees/upload-offer-letter', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
+    try {
+        const { employeeId, pdfBase64 } = req.body;
+        if (!pdfBase64) {
+            return res.status(400).json({ success: false, message: 'PDF base64 data required' });
+        }
+
+        console.log(`[CLOUDINARY] Uploading offer letter for employee ${employeeId || 'New'}...`);
+
+        // Upload to Cloudinary as raw/pdf resource
+        const uploadResult = await cloudinary.uploader.upload(pdfBase64, {
+            folder: 'offer_letters',
+            resource_type: 'raw',
+            format: 'pdf',
+            public_id: `Offer_Letter_${(employeeId || 'employee').replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`
+        });
+
+        console.log(`[CLOUDINARY] Upload success: ${uploadResult.secure_url}`);
+
+        if (employeeId) {
+            await Employee.findOneAndUpdate(
+                { $or: [{ employeeId: employeeId }, { id: employeeId }] },
+                { offerLetterUrl: uploadResult.secure_url }
+            );
+        }
+
+        res.json({
+            success: true,
+            url: uploadResult.secure_url,
+            offerLetterUrl: uploadResult.secure_url
+        });
+    } catch (error: any) {
+        console.error('[CLOUDINARY] Error uploading offer letter to Cloudinary:', error);
+        res.status(500).json({ success: false, message: error.message || 'Failed to upload to Cloudinary' });
+    }
+});
+
 app.put('/api/employees/:id', async (req, res) => {
     try {
         const user = (req as any).user;

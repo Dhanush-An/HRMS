@@ -40,6 +40,7 @@ export interface IEmployee extends Document {
     shiftWindow?: string;
     offerId?: string;
     offerIssueDate?: string;
+    offerLetterUrl?: string;
     pan?: string;
     uan?: string;
     pfNo?: string;
@@ -72,6 +73,7 @@ const EmployeeSchema: Schema = new Schema({
     shiftWindow: { type: String, default: '9:30 AM - 6:30 PM' },
     offerId: { type: String, default: '' },
     offerIssueDate: { type: String, default: '' },
+    offerLetterUrl: { type: String, default: '' },
     salary: {
         basic: { type: Number, default: 0 },
         hra: { type: Number, default: 0 },
