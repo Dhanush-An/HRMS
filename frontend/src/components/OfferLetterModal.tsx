@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { XCircle, Download, Printer, CheckCircle, FileText, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -49,6 +49,18 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const documentRef = useRef<HTMLDivElement>(null);
 
+    // Stable, deterministic offer ID per employee that never changes on re-renders
+    const offerId = useMemo(() => {
+        if (employee?.offerId) return employee.offerId;
+        const empIdentifier = String(employee?.id || employee?.employeeId || employee?.name || '1000');
+        let hash = 0;
+        for (let i = 0; i < empIdentifier.length; i++) {
+            hash = (hash * 31 + empIdentifier.charCodeAt(i)) % 9000;
+        }
+        const num = 1000 + Math.abs(hash);
+        return `FIC/HR/AP/${new Date().getFullYear()}/${num}`;
+    }, [employee]);
+
     useEffect(() => {
         if (isOpen && isNewProcess) {
             setProcessStep(0);
@@ -72,7 +84,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const empDept = employee.department || 'IT';
     const empAddress = employee.address || 'Address Not Provided';
     const empAadhar = employee.aadharNo || 'N/A';
-    const offerId = employee.offerId || `FIC/HR/AP/${new Date().getFullYear()}/${Math.floor(1000 + Math.random() * 9000)}`;
     const issueDate = employee.offerIssueDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
     const joiningDate = employee.joiningDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
     const reportsTo = employee.reportsTo || 'TL';
