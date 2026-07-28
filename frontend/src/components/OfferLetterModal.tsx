@@ -133,7 +133,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ? employee.responsibilities.split('\n').map(s => s.trim()).filter(Boolean)
         : defaultResponsibilities;
 
-    // Download PDF handler: captures full 3-page document directly from DOM without scroll clipping & saves PDF file
+    // Download PDF handler: sanitizes CSS inside cloned document and generates 3-page PDF file download
     const handleDownloadPdf = async () => {
         if (!documentRef.current) return;
         setIsGeneratingPdf(true);
@@ -157,7 +157,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             for (let i = 0; i < pages.length; i++) {
                 const pageEl = pages[i] as HTMLElement;
                 
-                // Small delay to ensure browser layout is stable
                 await new Promise((r) => setTimeout(r, 100));
 
                 const canvas = await html2canvas(pageEl, {
@@ -168,7 +167,24 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     imageTimeout: 15000,
                     backgroundColor: '#ffffff',
                     scrollX: 0,
-                    scrollY: 0
+                    scrollY: 0,
+                    onclone: (clonedDoc) => {
+                        // Remove external Vite/Tailwind stylesheets that contain unsupported CSS variables or selectors
+                        const styleElements = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
+                        styleElements.forEach((el) => {
+                            if (el.textContent?.includes('oklch') || el.textContent?.includes(':where')) {
+                                el.remove();
+                            }
+                        });
+
+                        // Inject clean base typography & layout styles for canvas rendering
+                        const cleanStyle = clonedDoc.createElement('style');
+                        cleanStyle.textContent = `
+                            * { box-sizing: border-box !important; font-family: Georgia, 'Times New Roman', Times, serif !important; }
+                            .offer-page { width: 210mm !important; min-height: 297mm !important; padding: 16mm !important; background: #ffffff !important; color: #0f172a !important; }
+                        `;
+                        clonedDoc.head.appendChild(cleanStyle);
+                    }
                 });
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -178,13 +194,12 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
             const cleanFileName = `Offer_Letter_${empName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
             
-            // Trigger PDF file download
+            // Trigger binary PDF file save directly in browser
             pdf.save(cleanFileName);
         } catch (err) {
-            console.error('Error generating PDF:', err);
-            window.print();
+            console.error('Error generating PDF file:', err);
+            alert('Failed to process PDF download. Please try using the Print button to Save as PDF.');
         } finally {
-            // Restore original scroll container styles
             if (parentContainer) {
                 parentContainer.style.overflowY = prevOverflow;
                 parentContainer.style.maxHeight = prevMaxHeight;
