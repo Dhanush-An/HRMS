@@ -288,6 +288,10 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const handlePrint = () => {
         if (!documentRef.current) return;
         const printContent = documentRef.current.innerHTML;
+        const styleTags = Array.from(document.querySelectorAll('style'))
+            .map((s) => s.outerHTML)
+            .join('\n');
+
         const printWindow = window.open('', '_blank', 'width=900,height=1000');
         if (!printWindow) {
             window.print();
@@ -299,6 +303,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             <html>
                 <head>
                     <title>Appointment Letter - FORGE INDIA CONNECT PVT LTD</title>
+                    ${styleTags}
                     <style>
                         @page {
                             size: A4 portrait;
@@ -333,6 +338,11 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             flex-direction: column !important;
                             justify-content: space-between !important;
                         }
+                        img {
+                            max-height: 64px !important;
+                            width: auto !important;
+                            object-fit: contain !important;
+                        }
                     </style>
                 </head>
                 <body>
@@ -346,7 +356,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         setTimeout(() => {
             printWindow.print();
             printWindow.close();
-        }, 400);
+        }, 500);
     };
 
     return (
