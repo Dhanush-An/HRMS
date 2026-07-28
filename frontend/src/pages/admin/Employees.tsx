@@ -177,11 +177,11 @@ const Employees = () => {
             address: employee.address || '',
             aadharNo: employee.aadharNo || '',
             engagementType: (employee.engagementType || 'Training') as 'Training' | 'Employment',
-            basicSalary: employee.salary?.basic || 7500,
-            hraSalary: employee.salary?.hra || 3750,
-            convSalary: employee.salary?.conveyance || 3750,
-            pfSalary: employee.salary?.pf || 0,
-            esiSalary: employee.salary?.esi || 0,
+            basicSalary: employee.salary?.basic ?? 0,
+            hraSalary: employee.salary?.hra ?? 0,
+            convSalary: employee.salary?.conveyance ?? 0,
+            pfSalary: employee.salary?.pf ?? 0,
+            esiSalary: employee.salary?.esi ?? 0,
             trainingSalary: employee.trainingSalary ?? 15000,
             reportsTo: employee.reportsTo || 'TL',
             workLocation: employee.workLocation || 'Bangalore (Onsite)',
@@ -820,7 +820,15 @@ const Employees = () => {
                                             name="basicSalary"
                                             value={formData.basicSalary || ''}
                                             placeholder="0"
-                                            onChange={(e) => setFormData({ ...formData, basicSalary: Number(e.target.value) })}
+                                            onChange={(e) => {
+                                                const basic = Number(e.target.value) || 0;
+                                                setFormData({
+                                                    ...formData,
+                                                    basicSalary: basic,
+                                                    hraSalary: Math.round(basic * 0.5),
+                                                    convSalary: Math.round(basic * 0.5)
+                                                });
+                                            }}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
                                         />
                                     </div>
