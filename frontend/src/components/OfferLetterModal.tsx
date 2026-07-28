@@ -198,10 +198,10 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-2 md:p-6 overflow-y-auto no-scrollbar">
-            <div className="bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden my-auto animate-in zoom-in duration-200">
+        <div className="offer-modal-overlay fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-2 md:p-6 overflow-y-auto no-scrollbar">
+            <div className="offer-modal-content bg-slate-900 border border-slate-700/80 rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden my-auto animate-in zoom-in duration-200">
                 {/* Top Action & Processing Bar */}
-                <div className="bg-slate-950 p-4 md:p-6 border-b border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="offer-modal-header bg-slate-950 p-4 md:p-6 border-b border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
                             <FileText className="w-5 h-5" />
@@ -262,7 +262,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
                 {/* Status Bar */}
                 {processStep === 3 && (
-                    <div className="bg-emerald-500/10 border-b border-emerald-500/20 px-6 py-2.5 flex items-center justify-between">
+                    <div className="offer-modal-statusbar bg-emerald-500/10 border-b border-emerald-500/20 px-6 py-2.5 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold">
                             <CheckCircle className="w-4 h-4" /> Offer Letter Ready & Processed
                         </div>
@@ -273,30 +273,84 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                 )}
 
                 {/* Printable Document View Container */}
-                <div className="p-4 md:p-8 max-h-[75vh] overflow-y-auto bg-slate-950 flex flex-col items-center gap-8 no-scrollbar">
+                <div className="offer-document-scroll p-4 md:p-8 max-h-[75vh] overflow-y-auto bg-slate-950 flex flex-col items-center gap-8 no-scrollbar">
                     <style>{`
                         .offer-page, .offer-page * {
                             font-family: Georgia, 'Times New Roman', Times, serif !important;
                         }
                         @media print {
+                            @page {
+                                size: A4 portrait;
+                                margin: 0;
+                            }
+                            html, body {
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                background: #ffffff !important;
+                                height: auto !important;
+                                overflow: visible !important;
+                            }
                             body * {
                                 visibility: hidden !important;
                             }
-                            .offer-page, .offer-page * {
+                            .offer-modal-overlay,
+                            .offer-modal-overlay * {
                                 visibility: visible !important;
                             }
-                            .offer-page {
-                                position: relative !important;
-                                left: 0 !important;
+                            .offer-modal-overlay {
+                                position: absolute !important;
                                 top: 0 !important;
+                                left: 0 !important;
+                                width: 100% !important;
+                                height: auto !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                                background: #ffffff !important;
+                                z-index: 999999 !important;
+                                padding: 0 !important;
+                                margin: 0 !important;
+                            }
+                            .offer-modal-content {
+                                position: relative !important;
+                                width: 100% !important;
+                                height: auto !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                                background: #ffffff !important;
+                                border: none !important;
+                                box-shadow: none !important;
+                                border-radius: 0 !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                            }
+                            .offer-modal-header,
+                            .offer-modal-statusbar {
+                                display: none !important;
+                            }
+                            .offer-document-scroll {
+                                position: relative !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                                background: #ffffff !important;
+                                padding: 0 !important;
+                                margin: 0 !important;
+                                gap: 0 !important;
+                            }
+                            .offer-page {
+                                visibility: visible !important;
+                                position: relative !important;
                                 width: 210mm !important;
                                 min-height: 297mm !important;
+                                height: 297mm !important;
+                                margin: 0 auto !important;
+                                padding: 16mm !important;
                                 box-shadow: none !important;
                                 border: none !important;
-                                margin: 0 !important;
-                                padding: 16mm !important;
                                 page-break-after: always !important;
                                 break-after: page !important;
+                                page-break-inside: avoid !important;
+                                break-inside: avoid !important;
+                                box-sizing: border-box !important;
                             }
                         }
                     `}</style>
