@@ -659,15 +659,22 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     </div>
 
                                     {/* Monthly Training or Employment Salary Highlight Box */}
-                                    <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: '16px', marginBottom: '16px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center my-4">
-                                        <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '16px', margin: 0 }} className="text-slate-800 font-black text-base">
-                                            {employee.engagementType === 'Employment' ? 'Net Monthly Take-Home Salary: ' : 'Monthly Training Period Stipend: '}
-                                            <span style={{ color: '#030712', fontWeight: 900, fontSize: '20px' }} className="text-slate-950 font-black text-xl">INR {(employee.engagementType === 'Employment' ? netMonthly : (trainingSalary || netMonthly)).toLocaleString('en-IN')}</span>
-                                        </p>
-                                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                                            (AFTER STATUTORY DEDUCTIONS - PF & ESI)
-                                        </p>
-                                    </div>
+                                    {(() => {
+                                        const isTrainingMode = employee.engagementType === 'Training';
+                                        return (
+                                            <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: '16px', marginBottom: '16px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center my-4">
+                                                <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '16px', margin: 0 }} className="text-slate-800 font-black text-base">
+                                                    {isTrainingMode ? 'Monthly Training Period Stipend: ' : 'Monthly Net Take-Home Salary: '}
+                                                    <span style={{ color: '#030712', fontWeight: 900, fontSize: '20px' }} className="text-slate-950 font-black text-xl">
+                                                        INR {(isTrainingMode ? (trainingSalary || netMonthly) : netMonthly).toLocaleString('en-IN')}
+                                                    </span>
+                                                </p>
+                                                <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                                                    {isTrainingMode ? '(STIPEND AMOUNT DURING TRAINING PERIOD)' : '(AFTER STATUTORY DEDUCTIONS - PF & ESI)'}
+                                                </p>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
 
                                 {/* Section 4 */}

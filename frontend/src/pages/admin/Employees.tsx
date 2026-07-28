@@ -182,7 +182,10 @@ const Employees = () => {
     };
 
     const openOfferLetter = (employee: Employee) => {
-        setSelectedEmployeeForOffer(employee);
+        setSelectedEmployeeForOffer({
+            ...employee,
+            engagementType: employee.engagementType || 'Employment'
+        });
         setIsNewOfferProcess(false);
         setIsOfferModalOpen(true);
         setIsProfileOpen(false);
@@ -244,7 +247,10 @@ const Employees = () => {
 
                 if (!isEditing) {
                     // Show offer letter processing & preview modal!
-                    setSelectedEmployeeForOffer(savedEmployee);
+                    setSelectedEmployeeForOffer({
+                        ...savedEmployee,
+                        engagementType: formData.engagementType
+                    });
                     setIsNewOfferProcess(true);
                     setIsOfferModalOpen(true);
                 }
