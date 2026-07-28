@@ -133,7 +133,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                         const styleAndLinks = clonedDoc.querySelectorAll('style, link');
                         styleAndLinks.forEach((el) => el.remove());
 
-                        // Inject clean, robust base typography & layout styles for html2canvas rendering
+                        // Inject clean, robust base typography & layout utility styles for html2canvas rendering
                         const cleanStyle = clonedDoc.createElement('style');
                         cleanStyle.textContent = `
                             * {
@@ -148,17 +148,97 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             .offer-page {
                                 width: 210mm !important;
                                 min-height: 297mm !important;
+                                height: 297mm !important;
                                 padding: 16mm !important;
                                 background: #ffffff !important;
                                 color: #0f172a !important;
-                                border: 1px solid #e2e8f0 !important;
-                                box-shadow: none !important;
                                 display: flex !important;
                                 flex-direction: column !important;
                                 justify-content: space-between !important;
                                 position: relative !important;
                                 box-sizing: border-box !important;
                             }
+                            img {
+                                max-height: 64px !important;
+                                width: auto !important;
+                                object-fit: contain !important;
+                            }
+                            .flex { display: flex !important; }
+                            .flex-row { flex-direction: row !important; }
+                            .flex-col { flex-direction: column !important; }
+                            .justify-between { justify-content: space-between !important; }
+                            .justify-center { justify-content: center !important; }
+                            .justify-end { justify-content: flex-end !important; }
+                            .items-center { align-items: center !important; }
+                            .items-start { align-items: flex-start !important; }
+                            .items-end { align-items: flex-end !important; }
+                            .grid { display: grid !important; }
+                            .grid-cols-2 { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+                            .grid-cols-3 { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; }
+                            .gap-1 { gap: 0.25rem !important; }
+                            .gap-2 { gap: 0.5rem !important; }
+                            .gap-3 { gap: 0.75rem !important; }
+                            .gap-4 { gap: 1rem !important; }
+                            .gap-6 { gap: 1.5rem !important; }
+                            .gap-8 { gap: 2rem !important; }
+                            .text-left { text-align: left !important; }
+                            .text-right { text-align: right !important; }
+                            .text-center { text-align: center !important; }
+                            .w-full { width: 100% !important; }
+                            .w-auto { width: auto !important; }
+                            .h-16 { height: 4rem !important; }
+                            .font-black { font-weight: 900 !important; }
+                            .font-bold { font-weight: 700 !important; }
+                            .font-semibold { font-weight: 600 !important; }
+                            .font-medium { font-weight: 500 !important; }
+                            .font-normal { font-weight: 400 !important; }
+                            .uppercase { text-transform: uppercase !important; }
+                            .tracking-tight { letter-spacing: -0.025em !important; }
+                            .tracking-wider { letter-spacing: 0.05em !important; }
+                            .tracking-widest { letter-spacing: 0.1em !important; }
+                            .text-2xl { font-size: 1.5rem !important; line-height: 2rem !important; }
+                            .text-xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+                            .text-lg { font-size: 1.125rem !important; line-height: 1.75rem !important; }
+                            .text-base { font-size: 1rem !important; line-height: 1.5rem !important; }
+                            .text-sm { font-size: 0.875rem !important; line-height: 1.25rem !important; }
+                            .text-xs { font-size: 0.75rem !important; line-height: 1rem !important; }
+                            .text-slate-900 { color: #0f172a !important; }
+                            .text-slate-800 { color: #1e293b !important; }
+                            .text-slate-700 { color: #334155 !important; }
+                            .text-slate-600 { color: #475569 !important; }
+                            .text-slate-500 { color: #64748b !important; }
+                            .text-amber-600 { color: #d97706 !important; }
+                            .bg-white { background-color: #ffffff !important; }
+                            .bg-slate-50 { background-color: #f8fafc !important; }
+                            .bg-slate-100 { background-color: #f1f5f9 !important; }
+                            .border { border: 1px solid #cbd5e1 !important; }
+                            .border-b { border-bottom: 1px solid #cbd5e1 !important; }
+                            .border-b-2 { border-bottom: 2px solid #0f172a !important; }
+                            .border-t { border-top: 1px solid #cbd5e1 !important; }
+                            .border-t-2 { border-top: 2px solid #0f172a !important; }
+                            .border-y-2 { border-top: 2px solid #0f172a !important; border-bottom: 2px solid #0f172a !important; }
+                            .rounded-xl { border-radius: 0.75rem !important; }
+                            .rounded-2xl { border-radius: 1rem !important; }
+                            .p-2 { padding: 0.5rem !important; }
+                            .p-3 { padding: 0.75rem !important; }
+                            .p-4 { padding: 1rem !important; }
+                            .p-6 { padding: 1.5rem !important; }
+                            .pb-2 { padding-bottom: 0.5rem !important; }
+                            .pb-3 { padding-bottom: 0.75rem !important; }
+                            .pb-4 { padding-bottom: 1rem !important; }
+                            .pt-4 { padding-top: 1rem !important; }
+                            .mb-1 { margin-bottom: 0.25rem !important; }
+                            .mb-2 { margin-bottom: 0.5rem !important; }
+                            .mb-3 { margin-bottom: 0.75rem !important; }
+                            .mb-4 { margin-bottom: 1rem !important; }
+                            .mb-6 { margin-bottom: 1.5rem !important; }
+                            .mt-1 { margin-top: 0.25rem !important; }
+                            .mt-2 { margin-top: 0.5rem !important; }
+                            .mt-4 { margin-top: 1rem !important; }
+                            .mt-6 { margin-top: 1.5rem !important; }
+                            table { width: 100% !important; border-collapse: collapse !important; }
+                            th, td { border: 1px solid #cbd5e1 !important; padding: 0.5rem 0.75rem !important; }
+                            th { background-color: #f8fafc !important; font-weight: 700 !important; }
                         `;
                         clonedDoc.head.appendChild(cleanStyle);
                     }
@@ -439,9 +519,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif" }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             <div>
                                 {/* Header */}
-                                <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-4">
-                                    <div className="flex items-center gap-4">
-                                        <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Logo" className="h-16 w-auto object-contain" />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }} className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-4">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }} className="flex items-center gap-4">
+                                        <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Logo" style={{ height: '64px', width: 'auto', maxHeight: '64px', objectFit: 'contain' }} className="h-16 w-auto object-contain" />
                                         <div>
                                             <h1 className="text-2xl font-black tracking-tight text-slate-900">
                                                 FORGE INDIA
@@ -454,14 +534,14 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="text-right text-[9px] text-slate-600 space-y-0.5">
+                                    <div style={{ textAlign: 'right' }} className="text-right text-[9px] text-slate-600 space-y-0.5">
                                         <p className="font-bold text-slate-800">CORPORATE HEADQUARTERS:</p>
                                         <p>RK Towers, Rayakottai road, Opposite to HP Petrol Bunk,</p>
                                         <p>Wahab Nager, Krishnagiri-635002</p>
                                     </div>
                                 </div>
 
-                                <div className="flex justify-between items-center text-[9px] text-slate-600 mb-6 font-semibold">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="flex justify-between items-center text-[9px] text-slate-600 mb-6 font-semibold">
                                     <span>CIN: U47G12TZ2025PTC035121</span>
                                     <span>GST: 33AAGCF4763Q1Z3</span>
                                     <span>MOB: +91 6369406416</span>
@@ -480,7 +560,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 </div>
 
                                 {/* Info Box Grid */}
-                                <div className="grid grid-cols-2 gap-4 text-xs mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }} className="grid grid-cols-2 gap-4 text-xs mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
                                     <div>
                                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Employee Information:</p>
                                         <h3 className="font-black text-base text-slate-900 uppercase">{empName}</h3>
