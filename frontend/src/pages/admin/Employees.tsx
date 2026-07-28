@@ -175,6 +175,7 @@ const Employees = () => {
         setSelectedEmployeeForOffer(employee);
         setIsNewOfferProcess(false);
         setIsOfferModalOpen(true);
+        setIsProfileOpen(false);
         setActiveDropdown(null);
     };
 

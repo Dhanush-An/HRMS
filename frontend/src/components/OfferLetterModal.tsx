@@ -112,16 +112,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         if (!documentRef.current) return;
         setIsGeneratingPdf(true);
 
-        const parentContainer = documentRef.current.parentElement;
-        const prevOverflow = parentContainer?.style.overflowY || '';
-        const prevMaxHeight = parentContainer?.style.maxHeight || '';
-
         try {
-            if (parentContainer) {
-                parentContainer.style.overflowY = 'visible';
-                parentContainer.style.maxHeight = 'none';
-            }
-
             const pages = documentRef.current.querySelectorAll('.offer-page');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
@@ -129,7 +120,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
             for (let i = 0; i < pages.length; i++) {
                 const pageEl = pages[i] as HTMLElement;
-                
                 await new Promise((r) => setTimeout(r, 100));
 
                 const canvas = await html2canvas(pageEl, {
@@ -155,10 +145,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             console.error('Error generating PDF file:', err);
             alert('Failed to process PDF download. Please try using the Print button to Save as PDF.');
         } finally {
-            if (parentContainer) {
-                parentContainer.style.overflowY = prevOverflow;
-                parentContainer.style.maxHeight = prevMaxHeight;
-            }
             setIsGeneratingPdf(false);
         }
     };
@@ -179,16 +165,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         if (!documentRef.current || isUploadingCloudinary) return;
         setIsUploadingCloudinary(true);
 
-        const parentContainer = documentRef.current.parentElement;
-        const prevOverflow = parentContainer?.style.overflowY || '';
-        const prevMaxHeight = parentContainer?.style.maxHeight || '';
-
         try {
-            if (parentContainer) {
-                parentContainer.style.overflowY = 'visible';
-                parentContainer.style.maxHeight = 'none';
-            }
-
             const pages = documentRef.current.querySelectorAll('.offer-page');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -232,10 +209,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         } catch (error) {
             console.error('[CLOUDINARY] Upload error:', error);
         } finally {
-            if (parentContainer) {
-                parentContainer.style.overflowY = prevOverflow;
-                parentContainer.style.maxHeight = prevMaxHeight;
-            }
             setIsUploadingCloudinary(false);
         }
     };
