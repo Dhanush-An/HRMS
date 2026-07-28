@@ -133,22 +133,22 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ? employee.responsibilities.split('\n').map(s => s.trim()).filter(Boolean)
         : defaultResponsibilities;
 
-    // Download PDF handler: renders full 3-page document off-screen without scroll clipping & downloads PDF file
+    // Download PDF handler: captures full 3-page document directly from DOM without scroll clipping & saves PDF file
     const handleDownloadPdf = async () => {
         if (!documentRef.current) return;
         setIsGeneratingPdf(true);
 
-        // Temporary off-screen container to capture full 3 pages cleanly without modal scroll clipping
-        const container = document.createElement('div');
-        container.style.position = 'fixed';
-        container.style.top = '-10000px';
-        container.style.left = '0px';
-        container.style.width = '210mm';
-        container.style.backgroundColor = '#ffffff';
-        container.style.zIndex = '-99999';
-        document.body.appendChild(container);
+        const parentContainer = documentRef.current.parentElement;
+        const prevOverflow = parentContainer?.style.overflowY || '';
+        const prevMaxHeight = parentContainer?.style.maxHeight || '';
 
         try {
+            // Temporarily unconstrain scroll container so html2canvas captures full heights of all 3 pages
+            if (parentContainer) {
+                parentContainer.style.overflowY = 'visible';
+                parentContainer.style.maxHeight = 'none';
+            }
+
             const pages = documentRef.current.querySelectorAll('.offer-page');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
@@ -156,19 +156,11 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
             for (let i = 0; i < pages.length; i++) {
                 const pageEl = pages[i] as HTMLElement;
-                const clonedNode = pageEl.cloneNode(true) as HTMLElement;
                 
-                // Ensure cloned node styles & fonts render cleanly
-                clonedNode.style.margin = '0';
-                clonedNode.style.boxShadow = 'none';
-                clonedNode.style.fontFamily = "Georgia, 'Times New Roman', Times, serif";
+                // Small delay to ensure browser layout is stable
+                await new Promise((r) => setTimeout(r, 100));
 
-                container.appendChild(clonedNode);
-
-                // Short delay for DOM layout & images to settle
-                await new Promise((r) => setTimeout(r, 150));
-
-                const canvas = await html2canvas(clonedNode, {
+                const canvas = await html2canvas(pageEl, {
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
@@ -176,12 +168,8 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     imageTimeout: 15000,
                     backgroundColor: '#ffffff',
                     scrollX: 0,
-                    scrollY: 0,
-                    windowWidth: 1200,
-                    windowHeight: 1600
+                    scrollY: 0
                 });
-
-                container.removeChild(clonedNode);
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 if (i > 0) pdf.addPage();
@@ -189,23 +177,17 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             }
 
             const cleanFileName = `Offer_Letter_${empName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-
-            // Reliable Blob URL download trigger
-            const blob = pdf.output('blob');
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = cleanFileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 10000);
+            
+            // Trigger PDF file download
+            pdf.save(cleanFileName);
         } catch (err) {
             console.error('Error generating PDF:', err);
-            alert('Could not process PDF canvas capture. You can use the Print button to save as PDF.');
+            window.print();
         } finally {
-            if (document.body.contains(container)) {
-                document.body.removeChild(container);
+            // Restore original scroll container styles
+            if (parentContainer) {
+                parentContainer.style.overflowY = prevOverflow;
+                parentContainer.style.maxHeight = prevMaxHeight;
             }
             setIsGeneratingPdf(false);
         }
