@@ -78,6 +78,8 @@ const Employees = () => {
         basicSalary: 0,
         hraSalary: 0,
         convSalary: 0,
+        pfSalary: 0,
+        esiSalary: 0,
         trainingSalary: 0,
         reportsTo: '',
         workLocation: 'Bangalore (Onsite)',
@@ -132,6 +134,8 @@ const Employees = () => {
             basicSalary: 0,
             hraSalary: 0,
             convSalary: 0,
+            pfSalary: 0,
+            esiSalary: 0,
             trainingSalary: 0,
             reportsTo: '',
             workLocation: 'Bangalore (Onsite)',
@@ -161,6 +165,8 @@ const Employees = () => {
             basicSalary: employee.salary?.basic || 7500,
             hraSalary: employee.salary?.hra || 3750,
             convSalary: employee.salary?.conveyance || 3750,
+            pfSalary: employee.salary?.pf || 0,
+            esiSalary: employee.salary?.esi || 0,
             trainingSalary: employee.trainingSalary ?? 15000,
             reportsTo: employee.reportsTo || 'TL',
             workLocation: employee.workLocation || 'Bangalore (Onsite)',
@@ -215,13 +221,14 @@ const Employees = () => {
             const payload = {
                 ...formData,
                 salary: {
-                    basic: Number(formData.basicSalary) || 7500,
-                    hra: Number(formData.hraSalary) || 3750,
-                    conveyance: Number(formData.convSalary) || 3750,
+                    basic: Number(formData.basicSalary) || 0,
+                    hra: Number(formData.hraSalary) || 0,
+                    conveyance: Number(formData.convSalary) || 0,
+                    pf: Number(formData.pfSalary) || 0,
+                    esi: Number(formData.esiSalary) || 0,
                     medical: 0,
                     special: 0,
                     other: 0,
-                    pf: 0,
                     tax: 0
                 }
             };
@@ -729,7 +736,7 @@ const Employees = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Basic (Monthly)</label>
                                         <input
@@ -761,6 +768,28 @@ const Employees = () => {
                                             placeholder="0"
                                             onChange={(e) => setFormData({ ...formData, convSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-sky-400 mb-1">PF (Provident Fund)</label>
+                                        <input
+                                            type="number"
+                                            name="pfSalary"
+                                            value={formData.pfSalary || ''}
+                                            placeholder="0"
+                                            onChange={(e) => setFormData({ ...formData, pfSalary: Number(e.target.value) })}
+                                            className="w-full bg-brand-surface border border-sky-500/50 text-sky-400 rounded-xl p-3 font-bold text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-emerald-400 mb-1">ESI Contribution</label>
+                                        <input
+                                            type="number"
+                                            name="esiSalary"
+                                            value={formData.esiSalary || ''}
+                                            placeholder="0"
+                                            onChange={(e) => setFormData({ ...formData, esiSalary: Number(e.target.value) })}
+                                            className="w-full bg-brand-surface border border-emerald-500/50 text-emerald-400 rounded-xl p-3 font-bold text-sm"
                                         />
                                     </div>
                                     <div>
