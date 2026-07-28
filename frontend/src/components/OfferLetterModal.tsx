@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { XCircle, Download, Printer, CheckCircle, FileText, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import logo from '../assets/forge india logo.jpg';
+
+const OFFICIAL_LOGO_BASE64 = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/7QCEUGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAGgcAigAYkZCTUQwYTAwMGFiNzAxMDAwMGQwMDMwMDAwOWEwNTAwMDBlYTA2MDAwMDRlMDkwMDAwNzcwYjAwMDBlNDBlMDAwMDcyMGYwMDAwZDExMDAwMDA5ZjEyMDAwMDYxMTYwMDAwAP/bAIQABQYGCwgLCwsLCw0LCwsNDg4NDQ4ODw0ODg4NDxAQEBEREBAQEA8TEhMPEBETFBQTERMWFhYTFhUVFhkWGRYWEgEFBQUKBwoICQkICwgKCAsKCgkJCgoMCQoJCgkMDQsKCwsKCw0MCwsICwsMDAwNDQwMDQoLCg0MDQ0MExQTExOc/8IAEQgAyADIAwEiAAIRAQMRAf/EAIIAAQACAwEBAAAAAAAAAAAAAAAFBgIDBAEHEAABAgMDBwgIBQMFAAAAAAABAhEAAyEEEjEFICIwQVFhEBMUMnGBkaEzQEJScrHB0SNiguHwFVCSBmCy0vERAQABAwIFBAIDAQEBAAAAAAERACExQVEgYXGBoRAwkcGx8EDR8eFQYP/aAAw0AAreserved...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";
 
 interface EmployeeOfferData {
     id?: string;
@@ -48,34 +49,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const [processStep, setProcessStep] = useState<number>(isNewProcess ? 0 : 3);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const documentRef = useRef<HTMLDivElement>(null);
-    const [logoBase64, setLogoBase64] = useState<string>(logo);
-
-    useEffect(() => {
-        const convertLogo = () => {
-            try {
-                const img = new Image();
-                img.crossOrigin = 'Anonymous';
-                img.onload = () => {
-                    try {
-                        const cvs = document.createElement('canvas');
-                        cvs.width = img.naturalWidth || img.width;
-                        cvs.height = img.naturalHeight || img.height;
-                        const ctx = cvs.getContext('2d');
-                        if (ctx) {
-                            ctx.drawImage(img, 0, 0);
-                            setLogoBase64(cvs.toDataURL('image/jpeg', 0.95));
-                        }
-                    } catch (e) {
-                        console.error('Base64 logo conversion failed:', e);
-                    }
-                };
-                img.src = logo;
-            } catch (e) {
-                console.error('Error setting logo image:', e);
-            }
-        };
-        convertLogo();
-    }, []);
 
     useEffect(() => {
         if (isOpen && isNewProcess) {
@@ -133,7 +106,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ? employee.responsibilities.split('\n').map(s => s.trim()).filter(Boolean)
         : defaultResponsibilities;
 
-    // Download PDF handler: sanitizes CSS inside cloned document and generates 3-page PDF file download
+    // Download PDF handler: captures 3-page document cleanly and saves PDF file
     const handleDownloadPdf = async () => {
         if (!documentRef.current) return;
         setIsGeneratingPdf(true);
@@ -143,7 +116,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         const prevMaxHeight = parentContainer?.style.maxHeight || '';
 
         try {
-            // Temporarily unconstrain scroll container so html2canvas captures full heights of all 3 pages
             if (parentContainer) {
                 parentContainer.style.overflowY = 'visible';
                 parentContainer.style.maxHeight = 'none';
@@ -164,27 +136,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     useCORS: true,
                     allowTaint: true,
                     logging: false,
-                    imageTimeout: 15000,
                     backgroundColor: '#ffffff',
                     scrollX: 0,
-                    scrollY: 0,
-                    onclone: (clonedDoc) => {
-                        // Remove external Vite/Tailwind stylesheets that contain unsupported CSS variables or selectors
-                        const styleElements = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-                        styleElements.forEach((el) => {
-                            if (el.textContent?.includes('oklch') || el.textContent?.includes(':where')) {
-                                el.remove();
-                            }
-                        });
-
-                        // Inject clean base typography & layout styles for canvas rendering
-                        const cleanStyle = clonedDoc.createElement('style');
-                        cleanStyle.textContent = `
-                            * { box-sizing: border-box !important; font-family: Georgia, 'Times New Roman', Times, serif !important; }
-                            .offer-page { width: 210mm !important; min-height: 297mm !important; padding: 16mm !important; background: #ffffff !important; color: #0f172a !important; }
-                        `;
-                        clonedDoc.head.appendChild(cleanStyle);
-                    }
+                    scrollY: 0
                 });
 
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -194,8 +148,16 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
             const cleanFileName = `Offer_Letter_${empName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
             
-            // Trigger binary PDF file save directly in browser
-            pdf.save(cleanFileName);
+            // Binary Blob URL download trigger
+            const pdfBlob = pdf.output('blob');
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = cleanFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
         } catch (err) {
             console.error('Error generating PDF file:', err);
             alert('Failed to process PDF download. Please try using the Print button to Save as PDF.');
@@ -376,7 +338,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 {/* Header */}
                                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-4">
                                     <div className="flex items-center gap-4">
-                                        <img src={logoBase64 || logo} alt="Forge India Logo" className="h-16 w-auto object-contain" />
+                                        <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Logo" className="h-16 w-auto object-contain" />
                                         <div>
                                             <h1 className="text-2xl font-black tracking-tight text-slate-900">
                                                 FORGE INDIA
