@@ -49,6 +49,8 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 }) => {
     const [processStep, setProcessStep] = useState<number>(isNewProcess ? 0 : 3);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+    const [cloudinaryUrl, setCloudinaryUrl] = useState<string>('');
+    const [isUploadingCloudinary, setIsUploadingCloudinary] = useState<boolean>(false);
     const documentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -66,6 +68,76 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             setProcessStep(3);
         }
     }, [isOpen, isNewProcess]);
+
+    useEffect(() => {
+        if (employee?.offerLetterUrl) {
+            setCloudinaryUrl(employee.offerLetterUrl);
+        } else {
+            setCloudinaryUrl('');
+        }
+    }, [employee, isOpen]);
+
+    // Auto-upload offer letter PDF to Cloudinary when document is processed
+    const handleUploadToCloudinary = async () => {
+        if (!documentRef.current || isUploadingCloudinary || !employee) return;
+        setIsUploadingCloudinary(true);
+
+        try {
+            const pages = documentRef.current.querySelectorAll('.offer-page');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            for (let i = 0; i < pages.length; i++) {
+                const pageEl = pages[i] as HTMLElement;
+                await new Promise((r) => setTimeout(r, 100));
+
+                const canvas = await html2canvas(pageEl, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    scrollX: 0,
+                    scrollY: 0
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                if (i > 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            }
+
+            const pdfBase64 = pdf.output('datauristring');
+            const empId = employee.id || employee.employeeId;
+
+            const response = await api.post('/api/employees/upload-offer-letter', {
+                employeeId: empId,
+                pdfBase64
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.url || data.offerLetterUrl) {
+                    const finalUrl = data.url || data.offerLetterUrl;
+                    setCloudinaryUrl(finalUrl);
+                    console.log('[CLOUDINARY] Stored offer letter PDF:', finalUrl);
+                }
+            }
+        } catch (error) {
+            console.error('[CLOUDINARY] Upload error:', error);
+        } finally {
+            setIsUploadingCloudinary(false);
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen && processStep === 3 && !cloudinaryUrl && !isUploadingCloudinary && employee) {
+            const timer = setTimeout(() => {
+                handleUploadToCloudinary();
+            }, 600);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, processStep, cloudinaryUrl, isUploadingCloudinary, employee]);
 
     if (!isOpen || !employee) return null;
 
@@ -148,79 +220,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             setIsGeneratingPdf(false);
         }
     };
-
-    const [cloudinaryUrl, setCloudinaryUrl] = useState<string>(employee?.offerLetterUrl || '');
-    const [isUploadingCloudinary, setIsUploadingCloudinary] = useState<boolean>(false);
-
-    useEffect(() => {
-        if (employee?.offerLetterUrl) {
-            setCloudinaryUrl(employee.offerLetterUrl);
-        } else {
-            setCloudinaryUrl('');
-        }
-    }, [employee, isOpen]);
-
-    // Auto-upload offer letter PDF to Cloudinary when document is processed
-    const handleUploadToCloudinary = async () => {
-        if (!documentRef.current || isUploadingCloudinary) return;
-        setIsUploadingCloudinary(true);
-
-        try {
-            const pages = documentRef.current.querySelectorAll('.offer-page');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-
-            for (let i = 0; i < pages.length; i++) {
-                const pageEl = pages[i] as HTMLElement;
-                await new Promise((r) => setTimeout(r, 100));
-
-                const canvas = await html2canvas(pageEl, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    logging: false,
-                    backgroundColor: '#ffffff',
-                    scrollX: 0,
-                    scrollY: 0
-                });
-
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                if (i > 0) pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            }
-
-            const pdfBase64 = pdf.output('datauristring');
-            const empId = employee.id || employee.employeeId;
-
-            const response = await api.post('/api/employees/upload-offer-letter', {
-                employeeId: empId,
-                pdfBase64
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.url || data.offerLetterUrl) {
-                    const finalUrl = data.url || data.offerLetterUrl;
-                    setCloudinaryUrl(finalUrl);
-                    console.log('[CLOUDINARY] Stored offer letter PDF:', finalUrl);
-                }
-            }
-        } catch (error) {
-            console.error('[CLOUDINARY] Upload error:', error);
-        } finally {
-            setIsUploadingCloudinary(false);
-        }
-    };
-
-    useEffect(() => {
-        if (isOpen && processStep === 3 && !cloudinaryUrl && !isUploadingCloudinary) {
-            const timer = setTimeout(() => {
-                handleUploadToCloudinary();
-            }, 600);
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen, processStep]);
 
     const handlePrint = () => {
         window.print();
