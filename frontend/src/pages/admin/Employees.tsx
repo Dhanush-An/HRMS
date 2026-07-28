@@ -41,6 +41,7 @@ interface Employee {
     shiftWindow?: string;
     offerId?: string;
     offerIssueDate?: string;
+    offerLetterUrl?: string;
     salary?: any;
 }
 

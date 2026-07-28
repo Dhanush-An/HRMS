@@ -149,16 +149,8 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
             const cleanFileName = `Offer_Letter_${empName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
             
-            // Binary Blob URL download trigger
-            const pdfBlob = pdf.output('blob');
-            const blobUrl = URL.createObjectURL(pdfBlob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = cleanFileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+            // Native jsPDF browser file download
+            pdf.save(cleanFileName);
         } catch (err) {
             console.error('Error generating PDF file:', err);
             alert('Failed to process PDF download. Please try using the Print button to Save as PDF.');
@@ -173,6 +165,14 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
     const [cloudinaryUrl, setCloudinaryUrl] = useState<string>(employee?.offerLetterUrl || '');
     const [isUploadingCloudinary, setIsUploadingCloudinary] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (employee?.offerLetterUrl) {
+            setCloudinaryUrl(employee.offerLetterUrl);
+        } else {
+            setCloudinaryUrl('');
+        }
+    }, [employee, isOpen]);
 
     // Auto-upload offer letter PDF to Cloudinary when document is processed
     const handleUploadToCloudinary = async () => {
