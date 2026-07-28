@@ -88,6 +88,14 @@ const Employees = () => {
     });
     const [searchQuery, setSearchQuery] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [isCustomRole, setIsCustomRole] = useState(false);
+
+    const PREDEFINED_ROLES = [
+        'Employee', 'Human Resource', 'HR Recruiter', 'HR Recruiter (HR Access)',
+        'Junior AI Associate Developer', 'Software Developer', 'Frontend Developer',
+        'Backend Developer', 'Full Stack Developer', 'UI/UX Designer',
+        'QA / Test Engineer', 'HR Executive', 'HR Manager', 'Project Manager', 'Team Lead'
+    ];
 
     const fetchEmployees = async () => {
         try {
@@ -117,6 +125,7 @@ const Employees = () => {
 
     const openAddModal = () => {
         setIsEditing(false);
+        setIsCustomRole(false);
         setFormData({
             id: '',
             name: '',
@@ -138,16 +147,22 @@ const Employees = () => {
             esiSalary: 0,
             trainingSalary: 0,
             reportsTo: '',
-            workLocation: 'Bangalore (Onsite)',
-            shiftWindow: '9:30 AM - 6:30 PM',
+            workLocation: '',
+            shiftWindow: '',
             responsibilities: ''
         });
+        setShowPassword(false);
         setIsModalOpen(true);
     };
 
     const openEditModal = (employee: Employee) => {
         setIsEditing(true);
         setSelectedEmployee(employee);
+        if (employee.role && !PREDEFINED_ROLES.includes(employee.role)) {
+            setIsCustomRole(true);
+        } else {
+            setIsCustomRole(false);
+        }
         setFormData({
             id: employee.id,
             name: employee.name,
@@ -653,30 +668,62 @@ const Employees = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Role / System Dashboard Access</label>
-                                    <select
-                                        name="role"
-                                        value={formData.role}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-bold text-sm cursor-pointer"
-                                        required
-                                    >
-                                        <option value="Employee">Employee (Employee Dashboard Access)</option>
-                                        <option value="Human Resource">Human Resource (HR Dashboard Access)</option>
-                                        <option value="HR Recruiter">HR Recruiter (Employee Dashboard Access)</option>
-                                        <option value="HR Recruiter (HR Access)">HR Recruiter (HR Dashboard Access)</option>
-                                        <option value="Junior AI Associate Developer">Junior AI Associate Developer (Employee Access)</option>
-                                        <option value="Software Developer">Software Developer (Employee Access)</option>
-                                        <option value="Frontend Developer">Frontend Developer (Employee Access)</option>
-                                        <option value="Backend Developer">Backend Developer (Employee Access)</option>
-                                        <option value="Full Stack Developer">Full Stack Developer (Employee Access)</option>
-                                        <option value="UI/UX Designer">UI/UX Designer (Employee Access)</option>
-                                        <option value="QA / Test Engineer">QA / Test Engineer (Employee Access)</option>
-                                        <option value="HR Executive">HR Executive (HR Access)</option>
-                                        <option value="HR Manager">HR Manager (HR Access)</option>
-                                        <option value="Project Manager">Project Manager (Employee Access)</option>
-                                        <option value="Team Lead">Team Lead (Employee Access)</option>
-                                    </select>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest">Role / System Access</label>
+                                        {isCustomRole && (
+                                            <button
+                                                type="button"
+                                                onClick={() => { setIsCustomRole(false); setFormData({ ...formData, role: 'Employee' }); }}
+                                                className="text-[10px] font-bold text-brand-primary hover:underline cursor-pointer"
+                                            >
+                                                ← Back to List
+                                            </button>
+                                        )}
+                                    </div>
+                                    {isCustomRole ? (
+                                        <input
+                                            type="text"
+                                            name="role"
+                                            value={formData.role === 'Other' ? '' : formData.role}
+                                            onChange={handleInputChange}
+                                            placeholder="Type custom role title..."
+                                            className="w-full bg-brand-bg border border-brand-primary rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm"
+                                            required
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <select
+                                            name="role"
+                                            value={formData.role}
+                                            onChange={(e) => {
+                                                if (e.target.value === 'Other') {
+                                                    setIsCustomRole(true);
+                                                    setFormData({ ...formData, role: '' });
+                                                } else {
+                                                    handleInputChange(e);
+                                                }
+                                            }}
+                                            className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-bold text-sm cursor-pointer"
+                                            required
+                                        >
+                                            <option value="Employee">Employee (Employee Dashboard Access)</option>
+                                            <option value="Human Resource">Human Resource (HR Dashboard Access)</option>
+                                            <option value="HR Recruiter">HR Recruiter (Employee Dashboard Access)</option>
+                                            <option value="HR Recruiter (HR Access)">HR Recruiter (HR Dashboard Access)</option>
+                                            <option value="Junior AI Associate Developer">Junior AI Associate Developer (Employee Access)</option>
+                                            <option value="Software Developer">Software Developer (Employee Access)</option>
+                                            <option value="Frontend Developer">Frontend Developer (Employee Access)</option>
+                                            <option value="Backend Developer">Backend Developer (Employee Access)</option>
+                                            <option value="Full Stack Developer">Full Stack Developer (Employee Access)</option>
+                                            <option value="UI/UX Designer">UI/UX Designer (Employee Access)</option>
+                                            <option value="QA / Test Engineer">QA / Test Engineer (Employee Access)</option>
+                                            <option value="HR Executive">HR Executive (HR Access)</option>
+                                            <option value="HR Manager">HR Manager (HR Access)</option>
+                                            <option value="Project Manager">Project Manager (Employee Access)</option>
+                                            <option value="Team Lead">Team Lead (Employee Access)</option>
+                                            <option value="Other">Other (Specify Custom Role...)</option>
+                                        </select>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Department</label>
