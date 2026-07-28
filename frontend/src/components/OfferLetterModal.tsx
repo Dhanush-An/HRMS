@@ -48,6 +48,34 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const [processStep, setProcessStep] = useState<number>(isNewProcess ? 0 : 3);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
     const documentRef = useRef<HTMLDivElement>(null);
+    const [logoBase64, setLogoBase64] = useState<string>(logo);
+
+    useEffect(() => {
+        const convertLogo = () => {
+            try {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                img.onload = () => {
+                    try {
+                        const cvs = document.createElement('canvas');
+                        cvs.width = img.naturalWidth || img.width;
+                        cvs.height = img.naturalHeight || img.height;
+                        const ctx = cvs.getContext('2d');
+                        if (ctx) {
+                            ctx.drawImage(img, 0, 0);
+                            setLogoBase64(cvs.toDataURL('image/jpeg', 0.95));
+                        }
+                    } catch (e) {
+                        console.error('Base64 logo conversion failed:', e);
+                    }
+                };
+                img.src = logo;
+            } catch (e) {
+                console.error('Error setting logo image:', e);
+            }
+        };
+        convertLogo();
+    }, []);
 
     useEffect(() => {
         if (isOpen && isNewProcess) {
@@ -105,7 +133,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ? employee.responsibilities.split('\n').map(s => s.trim()).filter(Boolean)
         : defaultResponsibilities;
 
-    // Download PDF handler using html2canvas & jsPDF
+    // Download PDF handler using html2canvas & jsPDF with bulletproof CORS & Canvas configuration
     const handleDownloadPdf = async () => {
         if (!documentRef.current) return;
         setIsGeneratingPdf(true);
@@ -120,8 +148,17 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                 const canvas = await html2canvas(pageEl, {
                     scale: 2,
                     useCORS: true,
+                    allowTaint: true,
                     logging: false,
-                    backgroundColor: '#ffffff'
+                    imageTimeout: 15000,
+                    backgroundColor: '#ffffff',
+                    onclone: (clonedDoc) => {
+                        // Ensure all images in cloned document are CORS friendly
+                        const clonedImgs = clonedDoc.querySelectorAll('img');
+                        clonedImgs.forEach((img) => {
+                            img.setAttribute('crossOrigin', 'anonymous');
+                        });
+                    }
                 });
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 if (i > 0) pdf.addPage();
@@ -131,8 +168,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             const cleanFileName = `Offer_Letter_${empName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
             pdf.save(cleanFileName);
         } catch (err) {
-            console.error('Error generating PDF:', err);
-            alert('Failed to generate PDF. You can also use the Print button to save as PDF.');
+            console.error('Error generating PDF with html2canvas:', err);
+            // Fallback to window.print() if canvas SecurityError or cross-origin policy blocks html2canvas
+            window.print();
         } finally {
             setIsGeneratingPdf(false);
         }
@@ -226,7 +264,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 {/* Header */}
                                 <div className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-4">
                                     <div className="flex items-center gap-4">
-                                        <img src={logo} alt="Forge India Logo" className="h-16 w-auto object-contain" />
+                                        <img src={logoBase64 || logo} alt="Forge India Logo" className="h-16 w-auto object-contain" />
                                         <div>
                                             <h1 className="text-2xl font-black font-sans tracking-tight text-slate-900">
                                                 FORGE INDIA
