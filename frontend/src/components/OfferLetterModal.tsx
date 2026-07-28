@@ -251,68 +251,28 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 margin: 0 !important;
                                 padding: 0 !important;
                                 background: #ffffff !important;
+                                color: #0f172a !important;
+                                width: 100% !important;
                                 height: auto !important;
-                                min-height: 100% !important;
                                 overflow: visible !important;
                             }
                             body * {
                                 visibility: hidden !important;
                             }
-                            .offer-modal-overlay,
-                            .offer-modal-overlay *,
-                            .offer-modal-content,
-                            .offer-modal-content *,
-                            .offer-document-scroll,
-                            .offer-document-scroll *,
-                            .offer-page,
-                            .offer-page * {
+                            .printable-document,
+                            .printable-document * {
                                 visibility: visible !important;
                             }
-                            .offer-modal-overlay {
+                            .printable-document {
                                 position: absolute !important;
-                                top: 0 !important;
                                 left: 0 !important;
+                                top: 0 !important;
                                 width: 100% !important;
-                                height: auto !important;
-                                max-height: none !important;
-                                overflow: visible !important;
-                                background: #ffffff !important;
-                                z-index: 999999 !important;
-                                padding: 0 !important;
-                                margin: 0 !important;
-                                display: block !important;
-                            }
-                            .offer-modal-content {
-                                position: static !important;
-                                width: 100% !important;
-                                height: auto !important;
-                                max-height: none !important;
-                                overflow: visible !important;
-                                background: #ffffff !important;
-                                border: none !important;
-                                box-shadow: none !important;
-                                border-radius: 0 !important;
                                 margin: 0 !important;
                                 padding: 0 !important;
-                                display: block !important;
-                            }
-                            .offer-modal-header,
-                            .offer-modal-statusbar {
-                                display: none !important;
-                                height: 0 !important;
-                                overflow: hidden !important;
-                            }
-                            .offer-document-scroll {
-                                position: static !important;
-                                width: 100% !important;
-                                height: auto !important;
-                                max-height: none !important;
-                                overflow: visible !important;
-                                background: #ffffff !important;
-                                padding: 0 !important;
-                                margin: 0 !important;
-                                gap: 0 !important;
-                                display: block !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                                items-center: center !important;
                             }
                             .offer-page {
                                 position: relative !important;
@@ -338,7 +298,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             }
                         }
                     `}</style>
-                    <div ref={documentRef} className="flex flex-col gap-10 items-center w-full">
+                    <div ref={documentRef} className="printable-document flex flex-col gap-10 items-center w-full">
                         {/* ================= PAGE 1 ================= */}
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             <div>
