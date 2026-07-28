@@ -407,34 +407,41 @@ const HR: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Role</label>
-                                    <div className="w-full bg-brand-bg border border-brand-primary/30 rounded-2xl p-4 flex items-center gap-3 cursor-not-allowed">
-                                        <span className="px-2.5 py-0.5 bg-brand-primary/10 text-brand-primary text-xs font-black rounded-full uppercase tracking-widest border border-brand-primary/20">HR</span>
-                                        <span className="text-brand-muted text-sm font-medium">Human Resource</span>
-                                    <input type="hidden" name="role" value="hr" />
-                                </div>
-                            </div>
-                            
-                            {!isSubadmin && (
-                                <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Branch</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Role / System Access</label>
                                     <select
-                                        name="branchName"
-                                        value={formData.branchName}
+                                        name="role"
+                                        value={formData.role || 'hr'}
                                         onChange={handleInputChange}
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium appearance-none"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-bold text-sm cursor-pointer"
                                         required
                                     >
-                                        <option value="">Select Branch</option>
-                                        {branches.map(b => (
-                                            <option key={b._id} value={b.name}>{b.name}</option>
-                                        ))}
+                                        <option value="hr">HR (Human Resource)</option>
+                                        <option value="hr_manager">HR Manager</option>
+                                        <option value="hr_executive">HR Executive</option>
+                                        <option value="employee">Employee</option>
                                     </select>
                                 </div>
-                            )}
-                        </div>
+                                
+                                {!isSubadmin && (
+                                    <div>
+                                        <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Branch</label>
+                                        <select
+                                            name="branchName"
+                                            value={formData.branchName}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium appearance-none"
+                                            required
+                                        >
+                                            <option value="">Select Branch</option>
+                                            {branches.map(b => (
+                                                <option key={b._id} value={b.name}>{b.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Department</label>
                                     <input
