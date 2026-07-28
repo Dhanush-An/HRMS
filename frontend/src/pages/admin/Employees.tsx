@@ -36,6 +36,7 @@ interface Employee {
     address?: string;
     aadharNo?: string;
     trainingSalary?: number;
+    engagementType?: 'Training' | 'Employment';
     reportsTo?: string;
     workLocation?: string;
     shiftWindow?: string;
@@ -73,6 +74,7 @@ const Employees = () => {
         password: '',
         address: '',
         aadharNo: '',
+        engagementType: 'Training' as 'Training' | 'Employment',
         basicSalary: 7500,
         hraSalary: 3750,
         convSalary: 3750,
@@ -126,6 +128,7 @@ const Employees = () => {
             password: '',
             address: '#14/A, 1st main 6th cross,kaveri nagara opposite led mydana KC halli main road,Bommanahalli,Karnataka-560068',
             aadharNo: '1234 5678 9012',
+            engagementType: 'Training' as 'Training' | 'Employment',
             basicSalary: 7500,
             hraSalary: 3750,
             convSalary: 3750,
@@ -154,6 +157,7 @@ const Employees = () => {
             password: '',
             address: employee.address || '',
             aadharNo: employee.aadharNo || '',
+            engagementType: (employee.engagementType || 'Training') as 'Training' | 'Employment',
             basicSalary: employee.salary?.basic || 7500,
             hraSalary: employee.salary?.hra || 3750,
             convSalary: employee.salary?.conveyance || 3750,
@@ -695,7 +699,36 @@ const Employees = () => {
 
                             {/* Salary Structure Section */}
                             <div className="p-4 bg-brand-bg/50 border border-brand-border rounded-2xl space-y-4">
-                                <h3 className="text-xs font-black uppercase tracking-wider text-brand-primary">Salary Structure & Stipend</h3>
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xs font-black uppercase tracking-wider text-brand-primary">Salary Structure & Stipend</h3>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase">Offer Mode:</span>
+                                        <div className="flex bg-slate-900 border border-amber-500/40 p-1 rounded-xl gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, engagementType: 'Training' })}
+                                                className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                                                    (formData.engagementType || 'Training') === 'Training'
+                                                        ? 'bg-amber-500 text-slate-950 shadow-md'
+                                                        : 'text-slate-400 hover:text-white'
+                                                }`}
+                                            >
+                                                Training
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, engagementType: 'Employment' })}
+                                                className={`px-3 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
+                                                    formData.engagementType === 'Employment'
+                                                        ? 'bg-indigo-600 text-white shadow-md'
+                                                        : 'text-slate-400 hover:text-white'
+                                                }`}
+                                            >
+                                                Employment
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                     <div>
                                         <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Basic (Monthly)</label>
@@ -728,7 +761,9 @@ const Employees = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[9px] font-bold uppercase text-amber-500 mb-1">Training Stipend (INR)</label>
+                                        <label className="block text-[9px] font-bold uppercase text-amber-500 mb-1">
+                                            {formData.engagementType === 'Employment' ? 'Monthly Salary (INR)' : 'Training Stipend (INR)'}
+                                        </label>
                                         <input
                                             type="number"
                                             name="trainingSalary"
