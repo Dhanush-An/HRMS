@@ -132,7 +132,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                 await new Promise((r) => setTimeout(r, 100));
 
                 const canvas = await html2canvas(pageEl, {
-                    scale: 2,
+                    scale: 3,
                     useCORS: true,
                     allowTaint: true,
                     logging: false,
@@ -144,12 +144,15 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                         const styleAndLinks = clonedDoc.querySelectorAll('style, link');
                         styleAndLinks.forEach((el) => el.remove());
 
-                        // Inject clean, robust base typography & layout utility styles for html2canvas rendering
+                        // Inject clean, high-DPI base typography & layout utility styles for html2canvas rendering
                         const cleanStyle = clonedDoc.createElement('style');
                         cleanStyle.textContent = `
                             * {
                                 box-sizing: border-box !important;
                                 font-family: Georgia, 'Times New Roman', Times, serif !important;
+                                -webkit-font-smoothing: antialiased !important;
+                                -moz-osx-font-smoothing: grayscale !important;
+                                text-rendering: optimizeLegibility !important;
                             }
                             body, html {
                                 background-color: #ffffff !important;
@@ -255,9 +258,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     }
                 });
 
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const imgData = canvas.toDataURL('image/png', 1.0);
                 if (i > 0) pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             }
 
             const cleanFileName = `Offer_Letter_${empName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
