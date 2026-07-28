@@ -467,31 +467,33 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                         {/* ================= PAGE 1 ================= */}
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             <div>
-                                {/* Header */}
-                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #0f172a', paddingBottom: '16px', marginBottom: '16px' }} className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-4">
-                                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }} className="flex items-center gap-4">
-                                        <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Logo" style={{ height: '64px', width: 'auto', maxHeight: '64px', objectFit: 'contain' }} className="h-16 w-auto object-contain" />
-                                        <div>
-                                            <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', margin: 0, padding: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }} className="text-2xl font-black tracking-tight text-slate-900">
-                                                FORGE INDIA
-                                            </h1>
-                                            <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b', margin: 0, padding: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }} className="text-xl font-black tracking-tight text-slate-800 -mt-1">
-                                                CONNECT PVT LTD
-                                            </h2>
-                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px', marginBottom: '6px' }} className="text-[9px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-0.5 mb-1.5">
-                                                Connecting Talent With Opportunity
-                                            </p>
-                                            <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', fontSize: '9px', fontWeight: 700, color: '#1e293b' }} className="flex gap-4 text-[9px] font-bold text-slate-800">
-                                                <span>CIN: U47G12TZ2025PTC035121</span>
-                                                <span>GST: 33AAGCF4763Q1Z3</span>
-                                                <span>MOB: +91 6369406416</span>
+                                 {/* Header */}
+                                <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '2px solid #0f172a', paddingBottom: '10px', marginBottom: '16px' }} className="border-b-2 border-slate-900 pb-2.5 mb-4">
+                                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }} className="flex justify-between items-start">
+                                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }} className="flex items-center gap-4">
+                                            <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Logo" style={{ height: '64px', width: 'auto', maxHeight: '64px', objectFit: 'contain' }} className="h-16 w-auto object-contain" />
+                                            <div>
+                                                <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', margin: 0, padding: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }} className="text-2xl font-black tracking-tight text-slate-900">
+                                                    FORGE INDIA
+                                                </h1>
+                                                <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b', margin: 0, padding: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }} className="text-xl font-black tracking-tight text-slate-800 -mt-1">
+                                                    CONNECT PVT LTD
+                                                </h2>
+                                                <p style={{ fontSize: '9px', fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }} className="text-[9px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-0.5">
+                                                    Connecting Talent With Opportunity
+                                                </p>
                                             </div>
                                         </div>
+                                        <div style={{ textAlign: 'right', fontSize: '9px', color: '#475569', lineHeight: 1.4 }} className="text-right text-[9px] text-slate-600 space-y-0.5">
+                                            <p style={{ fontWeight: 700, color: '#1e293b', margin: 0 }} className="font-bold text-slate-800">CORPORATE HEADQUARTERS:</p>
+                                            <p style={{ margin: 0 }}>RK Towers, Rayakottai road, Opposite to HP Petrol Bunk,</p>
+                                            <p style={{ margin: 0 }}>Wahab Nager, Krishnagiri-635002</p>
+                                        </div>
                                     </div>
-                                    <div style={{ textAlign: 'right', fontSize: '9px', color: '#475569', lineHeight: 1.4 }} className="text-right text-[9px] text-slate-600 space-y-0.5">
-                                        <p style={{ fontWeight: 700, color: '#1e293b', margin: 0 }} className="font-bold text-slate-800">CORPORATE HEADQUARTERS:</p>
-                                        <p style={{ margin: 0 }}>RK Towers, Rayakottai road, Opposite to HP Petrol Bunk,</p>
-                                        <p style={{ margin: 0 }}>Wahab Nager, Krishnagiri-635002</p>
+                                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', fontWeight: 700, color: '#1e293b', borderTop: '1px solid #e2e8f0', paddingTop: '8px', marginTop: '10px', whiteSpace: 'nowrap' }} className="flex justify-between items-center text-[9px] font-bold text-slate-800 border-t border-slate-200 pt-2 mt-2.5 whitespace-nowrap">
+                                        <span style={{ whiteSpace: 'nowrap' }}>CIN: U47G12TZ2025PTC035121</span>
+                                        <span style={{ whiteSpace: 'nowrap' }}>GST: 33AAGCF4763Q1Z3</span>
+                                        <span style={{ whiteSpace: 'nowrap' }}>MOB: +91 6369406416</span>
                                     </div>
                                 </div>
 
