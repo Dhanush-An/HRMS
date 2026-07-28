@@ -607,55 +607,55 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             </div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
                                 {/* Section 3 */}
-                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-3">
-                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '12px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                <div style={{ marginBottom: '14px' }} className="mb-3 space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 3. COMPENSATION & STRUCTURE
                                     </h3>
 
-                                    <div style={{ border: '1px solid #0f172a', borderRadius: '12px', overflow: 'hidden', fontSize: '12px', marginBottom: '16px' }} className="border border-slate-900 rounded-xl overflow-hidden text-xs">
+                                    <div style={{ border: '1px solid #0f172a', borderRadius: '12px', overflow: 'hidden', fontSize: '11px', marginBottom: '10px' }} className="border border-slate-900 rounded-xl overflow-hidden text-xs">
                                         <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }} className="w-full text-left border-collapse">
                                             <thead>
                                                 <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 700, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
-                                                    <th style={{ padding: '12px', borderRight: '1px solid #334155' }} className="p-3 border-r border-slate-700">Remuneration Component</th>
-                                                    <th style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">Monthly (INR)</th>
-                                                    <th style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">Annual (INR)</th>
+                                                    <th style={{ padding: '6px 10px', borderRight: '1px solid #334155' }} className="p-2 border-r border-slate-700">Remuneration Component</th>
+                                                    <th style={{ padding: '6px 10px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-2 border-r border-slate-700 text-right">Monthly (INR)</th>
+                                                    <th style={{ padding: '6px 10px', textAlign: 'right' }} className="p-2 text-right">Annual (INR)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-3 border-r border-slate-200 font-medium">Primary Basic Salary</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{basicMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{basicAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-2 border-r border-slate-200 font-medium">Primary Basic Salary</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-2 border-r border-slate-200 text-right font-bold">{basicMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }} className="p-2 text-right font-bold">{basicAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-3 border-r border-slate-200 font-medium">House Rent Allowance (HRA)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{hraMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{hraAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-2 border-r border-slate-200 font-medium">House Rent Allowance (HRA)</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-2 border-r border-slate-200 text-right font-bold">{hraMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }} className="p-2 text-right font-bold">{hraAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-3 border-r border-slate-200 font-medium">Statutory Allowances (Med/Conv)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{convMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{convAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-2 border-r border-slate-200 font-medium">Statutory Allowances (Med/Conv)</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-2 border-r border-slate-200 text-right font-bold">{convMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }} className="p-2 text-right font-bold">{convAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ borderBottom: '2px solid #0f172a', backgroundColor: '#f8fafc', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', color: '#0f172a', textTransform: 'uppercase' }} className="p-3 border-r border-slate-300 uppercase font-black">GROSS SALARY (TOTAL EARNINGS)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', color: '#0f172a' }} className="p-3 border-r border-slate-300 text-right font-black">INR {grossSalaryMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', color: '#0f172a' }} className="p-3 text-right font-black">INR {grossSalaryAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', color: '#0f172a', textTransform: 'uppercase' }} className="p-2 border-r border-slate-300 uppercase font-black">GROSS SALARY (TOTAL EARNINGS)</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', color: '#0f172a' }} className="p-2 border-r border-slate-300 text-right font-black">INR {grossSalaryMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right', color: '#0f172a' }} className="p-2 text-right font-black">INR {grossSalaryAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-3 border-r border-slate-200 font-medium text-red-600">Less: Provident Fund (PF Deduction)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 border-r border-slate-200 text-right font-bold text-red-600">- {pfMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 text-right font-bold text-red-600">- {pfAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-2 border-r border-slate-200 font-medium text-red-600">Less: Provident Fund (PF Deduction)</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 border-r border-slate-200 text-right font-bold text-red-600">- {pfMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 text-right font-bold text-red-600">- {pfAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-3 border-r border-slate-200 font-medium text-red-600">Less: Employee State Insurance (ESI)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 border-r border-slate-200 text-right font-bold text-red-600">- {esiMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 text-right font-bold text-red-600">- {esiAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-2 border-r border-slate-200 font-medium text-red-600">Less: Employee State Insurance (ESI)</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 border-r border-slate-200 text-right font-bold text-red-600">- {esiMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 text-right font-bold text-red-600">- {esiAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-black">
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-3 border-r border-slate-700 uppercase">NET SALARY (TAKE HOME)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">INR {netMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">INR {netAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-2 border-r border-slate-700 uppercase">NET SALARY (TAKE HOME)</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-2 border-r border-slate-700 text-right">INR {netMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right' }} className="p-2 text-right">INR {netAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -665,14 +665,14 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     {(() => {
                                         const isTrainingMode = employee.engagementType === 'Training';
                                         return (
-                                            <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: '16px', marginBottom: '16px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center my-4">
-                                                <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '16px', margin: 0 }} className="text-slate-800 font-black text-base">
+                                            <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '14px', padding: '10px 16px', textAlign: 'center', marginTop: '10px', marginBottom: '10px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-3 text-center my-2">
+                                                <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '14px', margin: 0 }} className="text-slate-800 font-black text-sm">
                                                     {isTrainingMode ? 'Monthly Training Period Stipend: ' : 'Monthly Net Take-Home Salary: '}
-                                                    <span style={{ color: '#030712', fontWeight: 900, fontSize: '20px' }} className="text-slate-950 font-black text-xl">
+                                                    <span style={{ color: '#030712', fontWeight: 900, fontSize: '18px' }} className="text-slate-950 font-black text-lg">
                                                         INR {(isTrainingMode ? (trainingSalary || netMonthly) : netMonthly).toLocaleString('en-IN')}
                                                     </span>
                                                 </p>
-                                                <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                                                <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
                                                     {isTrainingMode ? '(STIPEND AMOUNT DURING TRAINING PERIOD)' : '(AFTER STATUTORY DEDUCTIONS - PF & ESI)'}
                                                 </p>
                                             </div>
@@ -681,36 +681,36 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 </div>
 
                                 {/* Section 4 */}
-                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
-                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                <div style={{ marginBottom: '12px' }} className="mb-3 space-y-1.5">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '6px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 4. JOB DESCRIPTION & RESPONSIBILITIES
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs space-y-1.5">
                                         {parsedResponsibilities.map((resp, idx) => (
-                                            <div key={idx} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '10px', marginBottom: '6px' }} className="flex items-start gap-2.5">
-                                                <span style={{ color: '#d97706', fontWeight: 900, fontSize: '14px', lineHeight: 1 }} className="text-amber-500 font-black text-sm leading-none mt-0.5">✓</span>
-                                                <span style={{ color: '#1e293b', fontWeight: 500, lineHeight: 1.5 }} className="text-slate-800 font-medium leading-relaxed">{resp}</span>
+                                            <div key={idx} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '10px', marginBottom: '4px' }} className="flex items-start gap-2.5">
+                                                <span style={{ color: '#d97706', fontWeight: 900, fontSize: '13px', lineHeight: 1 }} className="text-amber-500 font-black text-sm leading-none mt-0.5">✓</span>
+                                                <span style={{ color: '#1e293b', fontWeight: 500, lineHeight: 1.4 }} className="text-slate-800 font-medium leading-relaxed">{resp}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
                                 {/* Section 5 */}
-                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
-                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                <div style={{ marginBottom: '12px' }} className="mb-3 space-y-1.5">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '6px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 5. PROBATIONARY PERIOD
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800">
                                         You will undergo a <span style={{ fontWeight: 900 }} className="font-black">Probation for three months</span>. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.
                                     </div>
                                 </div>
 
                                 {/* Section 6 */}
-                                <div className="space-y-2">
-                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                <div style={{ marginBottom: '12px' }} className="mb-3 space-y-1.5">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '6px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 6. LEAVE & HOLIDAY ENTITLEMENT
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800">
                                         You are entitled to 12 Sick/Casual leaves annually (01 per month). Public holidays apply as per the annual company schedule.
                                     </div>
                                 </div>
