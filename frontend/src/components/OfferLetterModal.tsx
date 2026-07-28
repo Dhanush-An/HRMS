@@ -105,7 +105,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const totalDeductionMonthly = pfMonthly + esiMonthly;
 
     const netMonthly = grossSalaryMonthly - totalDeductionMonthly;
-    const ctcMonthly = grossSalaryMonthly + totalDeductionMonthly;
 
     const basicAnnual = basicMonthly * 12;
     const hraAnnual = hraMonthly * 12;
@@ -116,7 +115,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const esiAnnual = esiMonthly * 12;
 
     const netAnnual = netMonthly * 12;
-    const ctcAnnual = ctcMonthly * 12;
 
     // Parse responsibilities
     const defaultResponsibilities = [
@@ -644,15 +642,10 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                                     <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 border-r border-slate-200 text-right font-bold text-red-600">- {esiMonthly.toLocaleString('en-IN')}</td>
                                                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 text-right font-bold text-red-600">- {esiAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
-                                                <tr style={{ borderBottom: '2px solid #0f172a', backgroundColor: '#eff6ff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #93c5fd', color: '#1e3a8a', textTransform: 'uppercase' }} className="p-3 border-r border-blue-300 uppercase font-black">NET SALARY (TAKE HOME)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #93c5fd', textAlign: 'right', color: '#1e3a8a' }} className="p-3 border-r border-blue-300 text-right font-black">INR {netMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', color: '#1e3a8a' }} className="p-3 text-right font-black">INR {netAnnual.toLocaleString('en-IN')}</td>
-                                                </tr>
                                                 <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-black">
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-3 border-r border-slate-700 uppercase">GROSS COST TO COMPANY (CTC)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">INR {ctcMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">INR {ctcAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-3 border-r border-slate-700 uppercase">NET SALARY (TAKE HOME)</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">INR {netMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">INR {netAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
