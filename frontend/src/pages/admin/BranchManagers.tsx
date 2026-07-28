@@ -15,8 +15,11 @@ import {
     EyeOff,
     Edit2,
     Trash2,
+    CheckCircle2,
+    XCircle as InactiveIcon
 } from 'lucide-react';
 import api from '../../api';
+import { cn } from '../../utils/cn';
 
 interface BMContact {
     id: string;
@@ -26,6 +29,7 @@ interface BMContact {
     email: string;
     phone: string;
     avatar: string;
+    status: 'Active' | 'Inactive';
 }
 
 const BranchManagers: React.FC = () => {
@@ -46,7 +50,8 @@ const BranchManagers: React.FC = () => {
                         department: emp.department,
                         email: emp.email,
                         phone: emp.phone || 'N/A',
-                        avatar: emp.name ? emp.name.charAt(0).toUpperCase() : 'U'
+                        avatar: emp.name ? emp.name.charAt(0).toUpperCase() : 'U',
+                        status: (emp.status === 'Inactive' ? 'Inactive' : 'Active') as 'Active' | 'Inactive'
                     }));
                 setBMContacts(mapped);
             }
@@ -130,7 +135,7 @@ const BranchManagers: React.FC = () => {
             email: contact.email,
             role: contact.role,
             department: contact.department,
-            status: 'Active',
+            status: contact.status || 'Active',
             phone: contact.phone === 'N/A' ? '' : contact.phone,
             joiningDate: new Date().toISOString().split('T')[0],
             username: '',
@@ -139,6 +144,21 @@ const BranchManagers: React.FC = () => {
         setIsEditing(true);
         setShowPassword(false);
         setIsModalOpen(true);
+    };
+
+    const handleToggleStatus = async (contact: BMContact) => {
+        const newStatus = contact.status === 'Active' ? 'Inactive' : 'Active';
+        try {
+            const res = await api.put(`/api/employees/${contact.id}/status`, { status: newStatus });
+            if (res.ok) {
+                fetchBMEmployees();
+            } else {
+                const fallbackRes = await api.put(`/api/employees/${contact.id}`, { status: newStatus });
+                if (fallbackRes.ok) fetchBMEmployees();
+            }
+        } catch (err: any) {
+            console.error('Error toggling status:', err);
+        }
     };
 
     const handleDelete = async (id: string) => {
@@ -238,32 +258,52 @@ const BranchManagers: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between sm:justify-end gap-4 md:gap-8 w-full sm:w-auto border-t sm:border-t-0 border-brand-border pt-4 sm:pt-0">
-                                    <div className="flex items-center gap-4 md:gap-8 overflow-hidden">
-                                        <div className="flex items-center gap-2 text-xs sm:text-sm text-brand-muted">
-                                            <Mail className="w-3.5 h-3.5 text-brand-primary flex-shrink-0" />
-                                            <span className="truncate max-w-[150px] sm:max-w-none">{contact.email}</span>
+                                    <div className="flex items-center justify-between sm:justify-end gap-3 md:gap-6 w-full sm:w-auto border-t sm:border-t-0 border-brand-border pt-4 sm:pt-0">
+                                        <div className="flex items-center gap-4 md:gap-8 overflow-hidden">
+                                            <div className="flex items-center gap-2 text-xs sm:text-sm text-brand-muted">
+                                                <Mail className="w-3.5 h-3.5 text-brand-primary flex-shrink-0" />
+                                                <span className="truncate max-w-[150px] sm:max-w-none">{contact.email}</span>
+                                            </div>
+                                            <div className="items-center gap-2 text-xs sm:text-sm text-brand-muted hidden md:flex">
+                                                <Phone className="w-3.5 h-3.5 text-brand-primary flex-shrink-0" />
+                                                <span>{contact.phone}</span>
+                                            </div>
                                         </div>
-                                        <div className="items-center gap-2 text-xs sm:text-sm text-brand-muted hidden md:flex">
-                                            <Phone className="w-3.5 h-3.5 text-brand-primary flex-shrink-0" />
-                                            <span>{contact.phone}</span>
-                                        </div>
+
+                                        {/* ACTIVE / INACTIVE BUTTON */}
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleToggleStatus(contact); }}
+                                            className={cn(
+                                                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex-shrink-0 cursor-pointer active:scale-95 border",
+                                                contact.status === 'Active'
+                                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/20"
+                                                    : "bg-rose-500/10 text-rose-500 border-rose-500/30 hover:bg-rose-500/20"
+                                            )}
+                                            title="Click to toggle Active / Inactive status"
+                                        >
+                                            {contact.status === 'Active' ? (
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                                            ) : (
+                                                <InactiveIcon className="w-3.5 h-3.5 text-rose-500" />
+                                            )}
+                                            <span>{contact.status}</span>
+                                        </button>
+
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); openEditModal(contact); }}
+                                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 rounded-lg transition-colors flex-shrink-0"
+                                        >
+                                            <Edit2 className="w-3.5 h-3.5" />
+                                            <span className="hidden sm:inline">Edit</span>
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDelete(contact.id); }}
+                                            className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors flex-shrink-0"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <span className="hidden sm:inline">Delete</span>
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); openEditModal(contact); }}
-                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/20 rounded-lg transition-colors flex-shrink-0"
-                                    >
-                                        <Edit2 className="w-3.5 h-3.5" />
-                                        <span className="hidden sm:inline">Edit</span>
-                                    </button>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleDelete(contact.id); }}
-                                        className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500/20 rounded-lg transition-colors flex-shrink-0"
-                                    >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                        <span className="hidden sm:inline">Delete</span>
-                                    </button>
-                                </div>
                             </div>
                         ))}
                     </div>
@@ -381,7 +421,7 @@ const BranchManagers: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Role</label>
                                     <div className="w-full bg-brand-bg border border-brand-primary/30 rounded-2xl p-3 sm:p-4 flex items-center gap-3 cursor-not-allowed">
@@ -389,6 +429,18 @@ const BranchManagers: React.FC = () => {
                                         <span className="text-brand-muted text-sm font-medium">Branch Manager</span>
                                         <input type="hidden" name="role" value="subadmin" />
                                     </div>
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Status</label>
+                                    <select
+                                        name="status"
+                                        value={formData.status}
+                                        onChange={handleInputChange}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-3 sm:p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm sm:text-base cursor-pointer"
+                                    >
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-1.5 sm:mb-2">Department</label>
