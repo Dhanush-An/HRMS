@@ -241,6 +241,50 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             th { background-color: #f8fafc !important; font-weight: 700 !important; }
                         `;
                         clonedDoc.head.appendChild(cleanStyle);
+
+                        // Deep clone computed inline styles from active document DOM to cloned DOM
+                        try {
+                            if (documentRef.current) {
+                                const origPages = Array.from(documentRef.current.querySelectorAll('.offer-page'));
+                                const clonePages = Array.from(clonedDoc.querySelectorAll('.offer-page'));
+
+                                origPages.forEach((origPage, pIdx) => {
+                                    const clonePage = clonePages[pIdx];
+                                    if (!clonePage) return;
+
+                                    const origEls = Array.from(origPage.querySelectorAll('*'));
+                                    const cloneEls = Array.from(clonePage.querySelectorAll('*'));
+
+                                    origEls.forEach((origEl, eIdx) => {
+                                        const cloneEl = cloneEls[eIdx] as HTMLElement;
+                                        if (cloneEl && origEl) {
+                                            const comp = window.getComputedStyle(origEl);
+                                            cloneEl.style.fontFamily = "Georgia, 'Times New Roman', Times, serif";
+                                            if (comp.color) cloneEl.style.color = comp.color;
+                                            if (comp.backgroundColor && comp.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+                                                cloneEl.style.backgroundColor = comp.backgroundColor;
+                                            }
+                                            if (comp.borderColor && comp.borderColor !== 'rgba(0, 0, 0, 0)') {
+                                                cloneEl.style.borderColor = comp.borderColor;
+                                            }
+                                            if (comp.borderWidth) cloneEl.style.borderWidth = comp.borderWidth;
+                                            if (comp.borderStyle) cloneEl.style.borderStyle = comp.borderStyle;
+                                            if (comp.borderRadius) cloneEl.style.borderRadius = comp.borderRadius;
+                                            if (comp.fontSize) cloneEl.style.fontSize = comp.fontSize;
+                                            if (comp.fontWeight) cloneEl.style.fontWeight = comp.fontWeight;
+                                            if (comp.textAlign) cloneEl.style.textAlign = comp.textAlign;
+                                            if (comp.display) cloneEl.style.display = comp.display;
+                                            if (comp.flexDirection) cloneEl.style.flexDirection = comp.flexDirection;
+                                            if (comp.justifyContent) cloneEl.style.justifyContent = comp.justifyContent;
+                                            if (comp.alignItems) cloneEl.style.alignItems = comp.alignItems;
+                                            if (comp.gap) cloneEl.style.gap = comp.gap;
+                                        }
+                                    });
+                                });
+                            }
+                        } catch (styleErr) {
+                            console.warn('[PDF GENERATION] Style copy warning:', styleErr);
+                        }
                     }
                 });
 
