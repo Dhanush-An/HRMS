@@ -662,7 +662,9 @@ const Employees = () => {
                                         required
                                     >
                                         <option value="Employee">Employee (Employee Dashboard Access)</option>
-                                        <option value="HR">Human Resource (HR Dashboard Access)</option>
+                                        <option value="Human Resource">Human Resource (HR Dashboard Access)</option>
+                                        <option value="HR Recruiter">HR Recruiter (Employee Dashboard Access)</option>
+                                        <option value="HR Recruiter (HR Access)">HR Recruiter (HR Dashboard Access)</option>
                                         <option value="Junior AI Associate Developer">Junior AI Associate Developer (Employee Access)</option>
                                         <option value="Software Developer">Software Developer (Employee Access)</option>
                                         <option value="Frontend Developer">Frontend Developer (Employee Access)</option>

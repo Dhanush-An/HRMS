@@ -427,6 +427,8 @@ const HR: React.FC = () => {
                                         required
                                     >
                                         <option value="hr">HR (Human Resource)</option>
+                                        <option value="HR Recruiter (Employee Access)">HR Recruiter (Employee Dashboard Access)</option>
+                                        <option value="HR Recruiter">HR Recruiter (HR Dashboard Access)</option>
                                         <option value="hr_manager">HR Manager</option>
                                         <option value="hr_executive">HR Executive</option>
                                         <option value="employee">Employee</option>
