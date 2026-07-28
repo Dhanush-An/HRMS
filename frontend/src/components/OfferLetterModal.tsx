@@ -196,6 +196,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             font-family: Georgia, 'Times New Roman', Times, serif !important;
                             -webkit-font-smoothing: antialiased !important;
                             text-rendering: optimizeLegibility !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                            color-adjust: exact !important;
                         }
                         html, body {
                             margin: 0 !important;
@@ -203,6 +206,12 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             background: #ffffff !important;
                             color: #0f172a !important;
                             width: 100% !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        div, p, span, table, th, td, tr, h1, h2, h3, h4, h5, h6 {
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
                         }
                         .printable-document {
                             width: 100% !important;
@@ -233,6 +242,8 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             display: flex !important;
                             flex-direction: column !important;
                             justify-content: space-between !important;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
                         }
                         img {
                             max-height: 64px !important;
@@ -484,7 +495,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 </div>
 
                                 {/* Info Box Grid */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '12px', marginBottom: '24px', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', backgroundColor: '#f8fafc' }} className="grid grid-cols-2 gap-4 text-xs mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '12px', marginBottom: '24px', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', backgroundColor: '#f8fafc', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="grid grid-cols-2 gap-4 text-xs mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
                                     <div style={{ textAlign: 'left' }}>
                                         <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Employee Information:</p>
                                         <h3 style={{ fontSize: '15px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', margin: 0 }} className="font-black text-base text-slate-900 uppercase">{empName}</h3>
@@ -519,7 +530,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 1. COMPANY OVERVIEW & VISION
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', textAlign: 'justify', color: '#1e293b', fontSize: '12px', lineHeight: 1.6 }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-justify text-slate-800 text-xs leading-relaxed">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', textAlign: 'justify', color: '#1e293b', fontSize: '12px', lineHeight: 1.6, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-justify text-slate-800 text-xs leading-relaxed">
                                         <p style={{ margin: 0 }}>
                                             <span style={{ fontWeight: 900 }} className="font-black">FORGE INDIA CONNECT PVT LTD</span> is a professionally driven and rapidly growing organization established with a clear vision of connecting talent with opportunity and supporting businesses with reliable and result-oriented solutions. Over the past five years, the company has steadily built its presence across multiple domains including Business Development, Staffing & Payroll Management. Our mission is to bridge the gap between human potential and industry requirements through innovation, ethics, and excellence.
                                         </p>
@@ -531,7 +542,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 2. TERMS OF ENGAGEMENT
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '12px' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 grid grid-cols-2 gap-[12px] text-xs">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '12px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 grid grid-cols-2 gap-[12px] text-xs">
                                         <div>
                                             <p style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Job Title:</p>
                                             <p style={{ fontWeight: 900, color: '#0f172a', margin: '2px 0 0 0' }} className="font-black text-slate-900">{empRole}</p>
@@ -581,7 +592,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <div style={{ border: '1px solid #0f172a', borderRadius: '12px', overflow: 'hidden', fontSize: '12px', marginBottom: '16px' }} className="border border-slate-900 rounded-xl overflow-hidden text-xs">
                                         <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }} className="w-full text-left border-collapse">
                                             <thead>
-                                                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 700, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }} className="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
+                                                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 700, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
                                                     <th style={{ padding: '12px', borderRight: '1px solid #334155' }} className="p-3 border-r border-slate-700">Remuneration Component</th>
                                                     <th style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">Monthly (INR)</th>
                                                     <th style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">Annual (INR)</th>
@@ -603,7 +614,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                                     <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{convMonthly.toLocaleString('en-IN')}</td>
                                                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{convAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
-                                                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900 }} className="bg-slate-900 text-white font-black">
+                                                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-black">
                                                     <td style={{ padding: '12px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-3 border-r border-slate-700 uppercase">GROSS COST TO COMPANY (CTC)</td>
                                                     <td style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">INR {grossMonthly.toLocaleString('en-IN')}</td>
                                                     <td style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">INR {grossAnnual.toLocaleString('en-IN')}</td>
@@ -613,7 +624,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     </div>
 
                                     {/* Monthly Training Period Salary Highlight Box */}
-                                    <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: '16px', marginBottom: '16px' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center my-4">
+                                    <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: '16px', marginBottom: '16px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center my-4">
                                         <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '16px', margin: 0 }} className="text-slate-800 font-black text-base">
                                             Monthly Training Period Salary: <span style={{ color: '#030712', fontWeight: 900, fontSize: '20px' }} className="text-slate-950 font-black text-xl">INR {trainingSalary.toLocaleString('en-IN')}</span>
                                         </p>
@@ -628,7 +639,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 4. JOB DESCRIPTION & RESPONSIBILITIES
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2">
                                         {parsedResponsibilities.map((resp, idx) => (
                                             <div key={idx} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '10px', marginBottom: '6px' }} className="flex items-start gap-2.5">
                                                 <span style={{ color: '#d97706', fontWeight: 900, fontSize: '14px', lineHeight: 1 }} className="text-amber-500 font-black text-sm leading-none mt-0.5">✓</span>
@@ -643,7 +654,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 5. PROBATIONARY PERIOD
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
                                         You will undergo a <span style={{ fontWeight: 900 }} className="font-black">Probation for three months</span>. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.
                                     </div>
                                 </div>
@@ -653,7 +664,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 6. LEAVE & HOLIDAY ENTITLEMENT
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
                                         You are entitled to 12 Sick/Casual leaves annually (01 per month). Public holidays apply as per the annual company schedule.
                                     </div>
                                 </div>
@@ -676,7 +687,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 7. CONFIDENTIALITY & NDA
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', fontStyle: 'italic', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', fontStyle: 'italic', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-800">
                                         "You shall maintain absolute secrecy of all organizational data, proprietary software, and client lists. Any breach will result in immediate termination and legal prosecution."
                                     </div>
                                 </div>
@@ -686,7 +697,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 8. NOTICE PERIOD & TERMINATION
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
                                         Separation requires a formal <span style={{ fontWeight: 900 }} className="font-black">Notice Period of 30 Days</span> or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.
                                     </div>
                                 </div>
@@ -696,7 +707,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 9. SELECTION CONTINGENCIES
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
                                         Engagement depends on clear Background Verification (BGV) reports. Any discrepancy in credentials will result in instant offer withdrawal.
                                     </div>
                                 </div>
@@ -706,7 +717,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 10. NON-SOLICITATION
                                     </h3>
-                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', fontStyle: 'italic', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', fontStyle: 'italic', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-800">
                                         "Upon cessation, you shall not solicit clients or employees of Forge India Connect for a period of one (01) year."
                                     </div>
                                 </div>
@@ -745,7 +756,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 </div>
 
                                 {/* Verifiable Badge */}
-                                <div style={{ border: '2px dashed #f59e0b', borderRadius: '16px', padding: '12px', textAlign: 'center', backgroundColor: '#fffbeb' }} className="border-2 border-dashed border-amber-500/60 rounded-2xl p-3 text-center bg-amber-500/5">
+                                <div style={{ border: '2px dashed #f59e0b', borderRadius: '16px', padding: '12px', textAlign: 'center', backgroundColor: '#fffbeb', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="border-2 border-dashed border-amber-500/60 rounded-2xl p-3 text-center bg-amber-500/5">
                                     <p style={{ color: '#b45309', fontWeight: 900, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }} className="text-amber-700 font-black text-xs uppercase tracking-[0.15em]">
                                         E-VERIFIABLE APPOINTMENT CONTRACT
                                     </p>
