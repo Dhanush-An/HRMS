@@ -194,7 +194,67 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     };
 
     const handlePrint = () => {
-        window.print();
+        if (!documentRef.current) return;
+        const printContent = documentRef.current.innerHTML;
+        const printWindow = window.open('', '_blank', 'width=900,height=1000');
+        if (!printWindow) {
+            window.print();
+            return;
+        }
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Appointment Letter - FORGE INDIA CONNECT PVT LTD</title>
+                    <style>
+                        @page {
+                            size: A4 portrait;
+                            margin: 0;
+                        }
+                        * {
+                            box-sizing: border-box !important;
+                            font-family: Georgia, 'Times New Roman', Times, serif !important;
+                        }
+                        html, body {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            background: #ffffff !important;
+                            color: #0f172a !important;
+                        }
+                        .offer-page {
+                            width: 210mm !important;
+                            min-height: 297mm !important;
+                            height: 297mm !important;
+                            margin: 0 auto !important;
+                            padding: 16mm !important;
+                            box-shadow: none !important;
+                            border: none !important;
+                            background: #ffffff !important;
+                            color: #0f172a !important;
+                            page-break-after: always !important;
+                            break-after: page !important;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                            box-sizing: border-box !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            justify-content: space-between !important;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${printContent}
+                </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+            printWindow.print();
+            printWindow.close();
+        }, 400);
     };
 
     return (
