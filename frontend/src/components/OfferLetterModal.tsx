@@ -117,6 +117,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         : defaultResponsibilities;
 
     // Download PDF handler: captures 3-page document cleanly and saves PDF file
+    // Download PDF handler: captures 3-page document cleanly and saves PDF file
     const handleDownloadPdf = async () => {
         if (!documentRef.current) return;
         setIsGeneratingPdf(true);
@@ -139,42 +140,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     backgroundColor: '#ffffff',
                     scrollX: 0,
                     scrollY: 0,
-                    onclone: (clonedDoc) => {
-                        // Inject clean base typography overrides into cloned document
-                        const overrideStyle = clonedDoc.createElement('style');
-                        overrideStyle.textContent = `
-                            * {
-                                box-sizing: border-box !important;
-                                font-family: Georgia, 'Times New Roman', Times, serif !important;
-                                -webkit-font-smoothing: antialiased !important;
-                                text-rendering: optimizeLegibility !important;
-                            }
-                            body, html {
-                                background-color: #ffffff !important;
-                                margin: 0 !important;
-                                padding: 0 !important;
-                            }
-                            .offer-page {
-                                width: 210mm !important;
-                                min-height: 297mm !important;
-                                height: 297mm !important;
-                                padding: 16mm !important;
-                                background: #ffffff !important;
-                                color: #0f172a !important;
-                                display: flex !important;
-                                flex-direction: column !important;
-                                justify-content: space-between !important;
-                                position: relative !important;
-                                box-sizing: border-box !important;
-                            }
-                            img {
-                                max-height: 64px !important;
-                                width: auto !important;
-                                object-fit: contain !important;
-                            }
-                        `;
-                        clonedDoc.head.appendChild(overrideStyle);
-                    }
                 });
 
                 const imgData = canvas.toDataURL('image/png', 1.0);
@@ -183,102 +148,17 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             }
 
             const cleanFileName = `Offer_Letter_${empName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
-            
-            try {
-                pdf.save(cleanFileName);
-            } catch (saveErr) {
-                // Fallback to Blob URL download if pdf.save is blocked
-                const pdfBlob = pdf.output('blob');
-                const blobUrl = URL.createObjectURL(pdfBlob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = cleanFileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-            }
+            pdf.save(cleanFileName);
         } catch (err) {
             console.error('Error generating PDF file:', err);
-            // Fallback cleanly to print stream instead of error alert
-            handlePrint();
+            window.print();
         } finally {
             setIsGeneratingPdf(false);
         }
     };
 
     const handlePrint = () => {
-        if (!documentRef.current) return;
-        const printContent = documentRef.current.innerHTML;
-        const styleTags = Array.from(document.querySelectorAll('style'))
-            .map((s) => s.outerHTML)
-            .join('\n');
-
-        const printWindow = window.open('', '_blank', 'width=900,height=1000');
-        if (!printWindow) {
-            window.print();
-            return;
-        }
-
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <title>Appointment Letter - FORGE INDIA CONNECT PVT LTD</title>
-                    ${styleTags}
-                    <style>
-                        @page {
-                            size: A4 portrait;
-                            margin: 0;
-                        }
-                        * {
-                            box-sizing: border-box !important;
-                            font-family: Georgia, 'Times New Roman', Times, serif !important;
-                        }
-                        html, body {
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            background: #ffffff !important;
-                            color: #0f172a !important;
-                        }
-                        .offer-page {
-                            width: 210mm !important;
-                            min-height: 297mm !important;
-                            height: 297mm !important;
-                            margin: 0 auto !important;
-                            padding: 16mm !important;
-                            box-shadow: none !important;
-                            border: none !important;
-                            background: #ffffff !important;
-                            color: #0f172a !important;
-                            page-break-after: always !important;
-                            break-after: page !important;
-                            page-break-inside: avoid !important;
-                            break-inside: avoid !important;
-                            box-sizing: border-box !important;
-                            display: flex !important;
-                            flex-direction: column !important;
-                            justify-content: space-between !important;
-                        }
-                        img {
-                            max-height: 64px !important;
-                            width: auto !important;
-                            object-fit: contain !important;
-                        }
-                    </style>
-                </head>
-                <body>
-                    ${printContent}
-                </body>
-            </html>
-        `);
-
-        printWindow.document.close();
-        printWindow.focus();
-        setTimeout(() => {
-            printWindow.print();
-            printWindow.close();
-        }, 500);
+        window.print();
     };
 
     return (
