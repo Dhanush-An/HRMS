@@ -490,8 +490,8 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                         </div>
                                         <div style={{ textAlign: 'right', fontSize: '9px', color: '#475569', lineHeight: 1.4 }} className="text-right text-[9px] text-slate-600 space-y-0.5">
                                             <p style={{ fontWeight: 700, color: '#1e293b', margin: 0 }} className="font-bold text-slate-800">CORPORATE HEADQUARTERS:</p>
-                                            <p style={{ margin: 0 }}>RK Towers, Rayakottai road, Opposite to HP Petrol Bunk,</p>
-                                            <p style={{ margin: 0 }}>Wahab Nager, Krishnagiri-635002</p>
+                                            <p style={{ margin: 0 }}>2nd floor, No 62, 11th Block, Marilingappa Extension,</p>
+                                            <p style={{ margin: 0 }}>Nagarbhavi, Bengaluru, Karnataka 560072</p>
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', fontWeight: 700, color: '#1e293b', borderTop: '1px solid #e2e8f0', paddingTop: '8px', marginTop: '10px', whiteSpace: 'nowrap' }} className="flex justify-between items-center text-[9px] font-bold text-slate-800 border-t border-slate-200 pt-2 mt-2.5 whitespace-nowrap">
@@ -592,9 +592,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
                             {/* Footer Page 1 */}
                             <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
+                                <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
                                 <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
-                                <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
+                                <span>2nd floor, No 62, 11th Block, Marilingappa Ext, Nagarbhavi, Bengaluru - 560072</span>
                             </div>
                         </div>
 
@@ -718,9 +718,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
                             {/* Footer Page 2 */}
                             <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
+                                <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
                                 <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
-                                <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
+                                <span>2nd floor, No 62, 11th Block, Marilingappa Ext, Nagarbhavi, Bengaluru - 560072</span>
                             </div>
                         </div>
 
@@ -818,9 +818,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
                             {/* Footer Page 3 */}
                             <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
+                                <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
                                 <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
-                                <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
+                                <span>2nd floor, No 62, 11th Block, Marilingappa Ext, Nagarbhavi, Bengaluru - 560072</span>
                             </div>
                         </div>
                     </div>
