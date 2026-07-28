@@ -646,27 +646,27 @@ const Employees = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Role / Designation</label>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Role / System Dashboard Access</label>
                                     <select
                                         name="role"
                                         value={formData.role}
                                         onChange={handleInputChange}
-                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium cursor-pointer"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-bold text-sm cursor-pointer"
                                         required
                                     >
-                                        <option value="Employee">Employee</option>
-                                        <option value="HR">HR (Human Resource)</option>
-                                        <option value="Junior AI Associate Developer">Junior AI Associate Developer</option>
-                                        <option value="Software Developer">Software Developer</option>
-                                        <option value="Frontend Developer">Frontend Developer</option>
-                                        <option value="Backend Developer">Backend Developer</option>
-                                        <option value="Full Stack Developer">Full Stack Developer</option>
-                                        <option value="UI/UX Designer">UI/UX Designer</option>
-                                        <option value="QA / Test Engineer">QA / Test Engineer</option>
-                                        <option value="HR Executive">HR Executive</option>
-                                        <option value="HR Manager">HR Manager</option>
-                                        <option value="Project Manager">Project Manager</option>
-                                        <option value="Team Lead">Team Lead</option>
+                                        <option value="Employee">Employee (Employee Dashboard Access)</option>
+                                        <option value="HR">Human Resource (HR Dashboard Access)</option>
+                                        <option value="Junior AI Associate Developer">Junior AI Associate Developer (Employee Access)</option>
+                                        <option value="Software Developer">Software Developer (Employee Access)</option>
+                                        <option value="Frontend Developer">Frontend Developer (Employee Access)</option>
+                                        <option value="Backend Developer">Backend Developer (Employee Access)</option>
+                                        <option value="Full Stack Developer">Full Stack Developer (Employee Access)</option>
+                                        <option value="UI/UX Designer">UI/UX Designer (Employee Access)</option>
+                                        <option value="QA / Test Engineer">QA / Test Engineer (Employee Access)</option>
+                                        <option value="HR Executive">HR Executive (HR Access)</option>
+                                        <option value="HR Manager">HR Manager (HR Access)</option>
+                                        <option value="Project Manager">Project Manager (Employee Access)</option>
+                                        <option value="Team Lead">Team Lead (Employee Access)</option>
                                     </select>
                                 </div>
                                 <div>

@@ -39,7 +39,9 @@ const ProtectedRoute = ({ allowedRoles, children }: ProtectedRouteProps) => {
     }
 
     let role: string = (user.role || 'employee').toLowerCase();
-    if (role !== 'admin' && role !== 'subadmin' && role !== 'hr') {
+    if (role === 'hr' || role.includes('human resource') || role.includes('hr executive') || role.includes('hr manager')) {
+        role = 'hr';
+    } else if (role !== 'admin' && role !== 'subadmin') {
         role = 'employee';
     }
     const normalizedAllowedRoles = allowedRoles.map(r => r.toLowerCase());

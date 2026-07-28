@@ -52,7 +52,7 @@ const LoginPage: React.FC = () => {
                     navigate('/admin-dashboard');
                 } else if (role === 'subadmin') {
                     navigate('/subadmin-dashboard');
-                } else if (role === 'hr') {
+                } else if (role === 'hr' || role.includes('human resource') || role.includes('hr executive') || role.includes('hr manager')) {
                     navigate('/hr-dashboard');
                 } else {
                     navigate('/employee-dashboard');
