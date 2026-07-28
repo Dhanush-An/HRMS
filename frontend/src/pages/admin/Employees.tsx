@@ -825,26 +825,25 @@ const Employees = () => {
                                                 setFormData({
                                                     ...formData,
                                                     basicSalary: basic,
-                                                    hraSalary: Math.round(basic * 0.5),
-                                                    convSalary: Math.round(basic * 0.5)
+                                                    hraSalary: Math.round(basic * 0.5)
                                                 });
                                             }}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">HRA (Monthly)</label>
+                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">HRA (50% of Basic)</label>
                                         <input
                                             type="number"
                                             name="hraSalary"
-                                            value={formData.hraSalary || ''}
+                                            value={formData.hraSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.5) : '')}
                                             placeholder="0"
                                             onChange={(e) => setFormData({ ...formData, hraSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Statutory Allowance</label>
+                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Statutory Allowance (Manual)</label>
                                         <input
                                             type="number"
                                             name="convSalary"
