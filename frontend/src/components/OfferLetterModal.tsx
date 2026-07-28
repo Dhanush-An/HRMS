@@ -127,24 +127,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
             const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
 
-            // Pre-collect ALL CSS rules from the browser's CSSOM (covers both dev <style> tags
-            // and production <link> external stylesheets). This captures 100% of Tailwind's
-            // compiled utility classes regardless of how Vite bundles them.
-            let allCssText = '';
-            for (let s = 0; s < document.styleSheets.length; s++) {
-                try {
-                    const sheet = document.styleSheets[s];
-                    const rules = sheet.cssRules || sheet.rules;
-                    for (let r = 0; r < rules.length; r++) {
-                        allCssText += rules[r].cssText + '\n';
-                    }
-                } catch (_e) {
-                    // Cross-origin stylesheet - skip silently
-                }
-            }
-            // Sanitize oklch() color functions that html2canvas cannot parse
-            const sanitizedCss = allCssText.replace(/oklch\([^)]*\)/gi, '#000000');
-
             for (let i = 0; i < pages.length; i++) {
                 const pageEl = pages[i] as HTMLElement;
                 await new Promise((r) => setTimeout(r, 100));
@@ -158,22 +140,19 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     scrollX: 0,
                     scrollY: 0,
                     onclone: (clonedDoc) => {
-                        // Remove ALL existing style/link tags from the clone
-                        const allStylesAndLinks = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-                        allStylesAndLinks.forEach((el) => el.remove());
-
-                        // Inject the pre-collected, sanitized CSS (contains 100% of Tailwind utilities)
-                        const fullStyle = clonedDoc.createElement('style');
-                        fullStyle.textContent = sanitizedCss;
-                        clonedDoc.head.appendChild(fullStyle);
-
-                        // Add overrides for font and page dimensions
+                        // Inject clean base typography overrides into cloned document
                         const overrideStyle = clonedDoc.createElement('style');
                         overrideStyle.textContent = `
                             * {
+                                box-sizing: border-box !important;
                                 font-family: Georgia, 'Times New Roman', Times, serif !important;
                                 -webkit-font-smoothing: antialiased !important;
                                 text-rendering: optimizeLegibility !important;
+                            }
+                            body, html {
+                                background-color: #ffffff !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
                             }
                             .offer-page {
                                 width: 210mm !important;
@@ -181,6 +160,12 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 height: 297mm !important;
                                 padding: 16mm !important;
                                 background: #ffffff !important;
+                                color: #0f172a !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                                justify-content: space-between !important;
+                                position: relative !important;
+                                box-sizing: border-box !important;
                             }
                             img {
                                 max-height: 64px !important;
@@ -475,325 +460,325 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     `}</style>
                     <div ref={documentRef} className="flex flex-col gap-10 items-center w-full">
                         {/* ================= PAGE 1 ================= */}
-                        <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif" }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
+                        <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             <div>
                                 {/* Header */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }} className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-4">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }} className="flex items-center gap-4">
+                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #0f172a', paddingBottom: '16px', marginBottom: '16px' }} className="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-4">
+                                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }} className="flex items-center gap-4">
                                         <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Logo" style={{ height: '64px', width: 'auto', maxHeight: '64px', objectFit: 'contain' }} className="h-16 w-auto object-contain" />
                                         <div>
-                                            <h1 className="text-2xl font-black tracking-tight text-slate-900">
+                                            <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#0f172a', margin: 0, padding: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }} className="text-2xl font-black tracking-tight text-slate-900">
                                                 FORGE INDIA
                                             </h1>
-                                            <h2 className="text-xl font-black tracking-tight text-slate-800 -mt-1">
+                                            <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b', margin: 0, padding: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }} className="text-xl font-black tracking-tight text-slate-800 -mt-1">
                                                 CONNECT PVT LTD
                                             </h2>
-                                            <p className="text-[9px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-0.5">
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }} className="text-[9px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-0.5">
                                                 Connecting Talent With Opportunity
                                             </p>
                                         </div>
                                     </div>
-                                    <div style={{ textAlign: 'right' }} className="text-right text-[9px] text-slate-600 space-y-0.5">
-                                        <p className="font-bold text-slate-800">CORPORATE HEADQUARTERS:</p>
-                                        <p>RK Towers, Rayakottai road, Opposite to HP Petrol Bunk,</p>
-                                        <p>Wahab Nager, Krishnagiri-635002</p>
+                                    <div style={{ textAlign: 'right', fontSize: '9px', color: '#475569', lineHeight: 1.4 }} className="text-right text-[9px] text-slate-600 space-y-0.5">
+                                        <p style={{ fontWeight: 700, color: '#1e293b', margin: 0 }} className="font-bold text-slate-800">CORPORATE HEADQUARTERS:</p>
+                                        <p style={{ margin: 0 }}>RK Towers, Rayakottai road, Opposite to HP Petrol Bunk,</p>
+                                        <p style={{ margin: 0 }}>Wahab Nager, Krishnagiri-635002</p>
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="flex justify-between items-center text-[9px] text-slate-600 mb-6 font-semibold">
+                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', fontWeight: 600, color: '#475569', marginBottom: '24px' }} className="flex justify-between items-center text-[9px] text-slate-600 mb-6 font-semibold">
                                     <span>CIN: U47G12TZ2025PTC035121</span>
                                     <span>GST: 33AAGCF4763Q1Z3</span>
                                     <span>MOB: +91 6369406416</span>
                                 </div>
 
                                 {/* Title Banner */}
-                                <div className="text-center my-6">
-                                    <div className="inline-block border-y-2 border-slate-900 py-1 px-8">
-                                        <h2 className="text-2xl font-black tracking-[0.25em] text-slate-900">
+                                <div style={{ textAlign: 'center', marginTop: '24px', marginBottom: '24px' }} className="text-center my-6">
+                                    <div style={{ display: 'inline-block', borderTop: '2px solid #0f172a', borderBottom: '2px solid #0f172a', paddingTop: '6px', paddingBottom: '6px', paddingLeft: '32px', paddingRight: '32px' }} className="inline-block border-y-2 border-slate-900 py-1 px-8">
+                                        <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', letterSpacing: '0.25em', margin: 0 }} className="text-2xl font-black tracking-[0.25em] text-slate-900">
                                             LETTER OF APPOINTMENT
                                         </h2>
                                     </div>
-                                    <p className="text-[9px] font-bold tracking-[0.15em] text-slate-500 uppercase mt-1">
+                                    <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.15em', marginTop: '4px' }} className="text-[9px] font-bold tracking-[0.15em] text-slate-500 uppercase mt-1">
                                         Confidential Employment Document
                                     </p>
                                 </div>
 
                                 {/* Info Box Grid */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }} className="grid grid-cols-2 gap-4 text-xs mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Employee Information:</p>
-                                        <h3 className="font-black text-base text-slate-900 uppercase">{empName}</h3>
-                                        <p className="text-slate-700 font-medium text-[11px] leading-tight mt-1">
-                                            <span className="font-bold">Address:</span> {empAddress}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: '12px', marginBottom: '24px', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', backgroundColor: '#f8fafc' }} className="grid grid-cols-2 gap-4 text-xs mb-6 border border-slate-200 rounded-xl p-4 bg-slate-50">
+                                    <div style={{ textAlign: 'left' }}>
+                                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Employee Information:</p>
+                                        <h3 style={{ fontSize: '15px', fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', margin: 0 }} className="font-black text-base text-slate-900 uppercase">{empName}</h3>
+                                        <p style={{ color: '#334155', fontWeight: 500, fontSize: '11px', marginTop: '4px', lineHeight: 1.3 }} className="text-slate-700 font-medium text-[11px] leading-tight mt-1">
+                                            <span style={{ fontWeight: 700 }}>Address:</span> {empAddress}
                                         </p>
-                                        <p className="text-slate-700 font-medium text-[11px] mt-1">
-                                            <span className="font-bold">Aadhar No:</span> {empAadhar}
+                                        <p style={{ color: '#334155', fontWeight: 500, fontSize: '11px', marginTop: '4px' }} className="text-slate-700 font-medium text-[11px] mt-1">
+                                            <span style={{ fontWeight: 700 }}>Aadhar No:</span> {empAadhar}
                                         </p>
                                     </div>
-                                    <div className="text-right space-y-1">
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Reference Details:</p>
-                                        <p className="text-slate-700"><span className="font-bold">DATE OF ISSUE:</span> {issueDate}</p>
-                                        <p className="text-slate-700"><span className="font-bold">OFFER ID:</span> {offerId}</p>
-                                        <p className="text-amber-600 font-bold text-[11px]">Validity: 7 Days</p>
+                                    <div style={{ textAlign: 'right' }} className="text-right space-y-1">
+                                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Reference Details:</p>
+                                        <p style={{ color: '#334155', margin: 0 }} className="text-slate-700"><span style={{ fontWeight: 700 }}>DATE OF ISSUE:</span> {issueDate}</p>
+                                        <p style={{ color: '#334155', margin: '4px 0 0 0' }} className="text-slate-700"><span style={{ fontWeight: 700 }}>OFFER ID:</span> {offerId}</p>
+                                        <p style={{ color: '#d97706', fontWeight: 700, fontSize: '11px', margin: '4px 0 0 0' }} className="text-amber-600 font-bold text-[11px]">Validity: 7 Days</p>
                                     </div>
                                 </div>
 
                                 {/* Salutation & Intro */}
-                                <div className="space-y-4 mb-6">
-                                    <p>Dear <span className="font-black uppercase">{empName}</span>,</p>
-                                    <p>
+                                <div style={{ marginBottom: '24px', lineHeight: 1.6 }} className="space-y-4 mb-6">
+                                    <p style={{ marginBottom: '12px' }}>Dear <span style={{ fontWeight: 900, textTransform: 'uppercase' }} className="font-black uppercase">{empName}</span>,</p>
+                                    <p style={{ margin: 0 }}>
                                         We are pleased to offer you the formal appointment for the position of{' '}
-                                        <span className="font-black underline">{empRole}</span> in the{' '}
-                                        <span className="font-bold italic">{empDept}</span> division at{' '}
-                                        <span className="font-black">FORGE INDIA CONNECT PVT LTD</span>.
+                                        <span style={{ fontWeight: 900, textDecoration: 'underline' }} className="font-black underline">{empRole}</span> in the{' '}
+                                        <span style={{ fontWeight: 700, fontStyle: 'italic' }} className="font-bold italic">{empDept}</span> division at{' '}
+                                        <span style={{ fontWeight: 900 }} className="font-black">FORGE INDIA CONNECT PVT LTD</span>.
                                     </p>
                                 </div>
 
                                 {/* Section 1 */}
-                                <div className="mb-6 space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 1. COMPANY OVERVIEW & VISION
+                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 1. COMPANY OVERVIEW & VISION
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-justify text-slate-800 text-xs leading-relaxed">
-                                        <p>
-                                            <span className="font-black">FORGE INDIA CONNECT PVT LTD</span> is a professionally driven and rapidly growing organization established with a clear vision of connecting talent with opportunity and supporting businesses with reliable and result-oriented solutions. Over the past five years, the company has steadily built its presence across multiple domains including Business Development, Staffing & Payroll Management. Our mission is to bridge the gap between human potential and industry requirements through innovation, ethics, and excellence.
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', textAlign: 'justify', color: '#1e293b', fontSize: '12px', lineHeight: 1.6 }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-justify text-slate-800 text-xs leading-relaxed">
+                                        <p style={{ margin: 0 }}>
+                                            <span style={{ fontWeight: 900 }} className="font-black">FORGE INDIA CONNECT PVT LTD</span> is a professionally driven and rapidly growing organization established with a clear vision of connecting talent with opportunity and supporting businesses with reliable and result-oriented solutions. Over the past five years, the company has steadily built its presence across multiple domains including Business Development, Staffing & Payroll Management. Our mission is to bridge the gap between human potential and industry requirements through innovation, ethics, and excellence.
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Section 2 */}
-                                <div className="space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 2. TERMS OF ENGAGEMENT
+                                <div style={{ marginBottom: '24px' }} className="space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 2. TERMS OF ENGAGEMENT
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 grid grid-cols-2 gap-[12px] text-xs">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '12px' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 grid grid-cols-2 gap-[12px] text-xs">
                                         <div>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Job Title:</p>
-                                            <p className="font-black text-slate-900">{empRole}</p>
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Job Title:</p>
+                                            <p style={{ fontWeight: 900, color: '#0f172a', margin: '2px 0 0 0' }} className="font-black text-slate-900">{empRole}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Joining Date:</p>
-                                            <p className="font-black text-slate-900">{joiningDate}</p>
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Joining Date:</p>
+                                            <p style={{ fontWeight: 900, color: '#0f172a', margin: '2px 0 0 0' }} className="font-black text-slate-900">{joiningDate}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Type:</p>
-                                            <p className="font-black text-slate-900">Full-Time</p>
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Type:</p>
+                                            <p style={{ fontWeight: 900, color: '#0f172a', margin: '2px 0 0 0' }} className="font-black text-slate-900">Full-Time</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Location (Mode):</p>
-                                            <p className="font-black text-slate-900">{workLocation}</p>
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Location (Mode):</p>
+                                            <p style={{ fontWeight: 900, color: '#0f172a', margin: '2px 0 0 0' }} className="font-black text-slate-900">{workLocation}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Reports To:</p>
-                                            <p className="font-black text-slate-900">{reportsTo}</p>
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Reports To:</p>
+                                            <p style={{ fontWeight: 900, color: '#0f172a', margin: '2px 0 0 0' }} className="font-black text-slate-900">{reportsTo}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Shift Window:</p>
-                                            <p className="font-black text-slate-900">{shiftWindow}</p>
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Shift Window:</p>
+                                            <p style={{ fontWeight: 900, color: '#0f172a', margin: '2px 0 0 0' }} className="font-black text-slate-900">{shiftWindow}</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Footer Page 1 */}
-                            <div className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:info@forgeindiaconnec.com" className="hover:underline font-bold text-indigo-700">info@forgeindiaconnec.com</a>
-                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" className="hover:underline">www.forgeindiaconnect.com</a>
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px' }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
+                                <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
+                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
                                 <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
                             </div>
                         </div>
 
 
                         {/* ================= PAGE 2 ================= */}
-                        <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif" }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
+                        <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             <div>
                                 {/* Section 3 */}
-                                <div className="mb-6 space-y-3">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 3. COMPENSATION & STRUCTURE
+                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-3">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '12px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 3. COMPENSATION & STRUCTURE
                                     </h3>
 
-                                    <div className="border border-slate-900 rounded-xl overflow-hidden text-xs">
-                                        <table className="w-full text-left border-collapse">
+                                    <div style={{ border: '1px solid #0f172a', borderRadius: '12px', overflow: 'hidden', fontSize: '12px', marginBottom: '16px' }} className="border border-slate-900 rounded-xl overflow-hidden text-xs">
+                                        <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }} className="w-full text-left border-collapse">
                                             <thead>
-                                                <tr className="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
-                                                    <th className="p-3 border-r border-slate-700">Remuneration Component</th>
-                                                    <th className="p-3 border-r border-slate-700 text-right">Monthly (INR)</th>
-                                                    <th className="p-3 text-right">Annual (INR)</th>
+                                                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 700, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }} className="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
+                                                    <th style={{ padding: '12px', borderRight: '1px solid #334155' }} className="p-3 border-r border-slate-700">Remuneration Component</th>
+                                                    <th style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">Monthly (INR)</th>
+                                                    <th style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">Annual (INR)</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-200">
-                                                <tr>
-                                                    <td className="p-3 border-r border-slate-200 font-medium">Primary Basic Salary</td>
-                                                    <td className="p-3 border-r border-slate-200 text-right font-bold">{basicMonthly.toLocaleString('en-IN')}</td>
-                                                    <td className="p-3 text-right font-bold">{basicAnnual.toLocaleString('en-IN')}</td>
+                                            <tbody>
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-3 border-r border-slate-200 font-medium">Primary Basic Salary</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{basicMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{basicAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
-                                                <tr>
-                                                    <td className="p-3 border-r border-slate-200 font-medium">House Rent Allowance (HRA)</td>
-                                                    <td className="p-3 border-r border-slate-200 text-right font-bold">{hraMonthly.toLocaleString('en-IN')}</td>
-                                                    <td className="p-3 text-right font-bold">{hraAnnual.toLocaleString('en-IN')}</td>
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-3 border-r border-slate-200 font-medium">House Rent Allowance (HRA)</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{hraMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{hraAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
-                                                <tr>
-                                                    <td className="p-3 border-r border-slate-200 font-medium">Statutory Allowances (Med/Conv)</td>
-                                                    <td className="p-3 border-r border-slate-200 text-right font-bold">{convMonthly.toLocaleString('en-IN')}</td>
-                                                    <td className="p-3 text-right font-bold">{convAnnual.toLocaleString('en-IN')}</td>
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-3 border-r border-slate-200 font-medium">Statutory Allowances (Med/Conv)</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{convMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{convAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
-                                                <tr className="bg-slate-900 text-white font-black">
-                                                    <td className="p-3 border-r border-slate-700 uppercase">GROSS COST TO COMPANY (CTC)</td>
-                                                    <td className="p-3 border-r border-slate-700 text-right">INR {grossMonthly.toLocaleString('en-IN')}</td>
-                                                    <td className="p-3 text-right">INR {grossAnnual.toLocaleString('en-IN')}</td>
+                                                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900 }} className="bg-slate-900 text-white font-black">
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-3 border-r border-slate-700 uppercase">GROSS COST TO COMPANY (CTC)</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">INR {grossMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">INR {grossAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
 
                                     {/* Monthly Training Period Salary Highlight Box */}
-                                    <div className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center my-4">
-                                        <p className="text-slate-800 font-black text-base">
-                                            Monthly Training Period Salary: <span className="text-slate-950 font-black text-xl">INR {trainingSalary.toLocaleString('en-IN')}</span>
+                                    <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: '16px', marginBottom: '16px' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center my-4">
+                                        <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '16px', margin: 0 }} className="text-slate-800 font-black text-base">
+                                            Monthly Training Period Salary: <span style={{ color: '#030712', fontWeight: 900, fontSize: '20px' }} className="text-slate-950 font-black text-xl">INR {trainingSalary.toLocaleString('en-IN')}</span>
                                         </p>
-                                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
+                                        <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
                                             (AFTER STATUTORY DEDUCTIONS)
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Section 4 */}
-                                <div className="mb-6 space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 4. JOB DESCRIPTION & RESPONSIBILITIES
+                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 4. JOB DESCRIPTION & RESPONSIBILITIES
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2">
                                         {parsedResponsibilities.map((resp, idx) => (
-                                            <div key={idx} className="flex items-start gap-2.5">
-                                                <span className="text-amber-500 font-black text-sm leading-none mt-0.5">✓</span>
-                                                <span className="text-slate-800 font-medium leading-relaxed">{resp}</span>
+                                            <div key={idx} style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '10px', marginBottom: '6px' }} className="flex items-start gap-2.5">
+                                                <span style={{ color: '#d97706', fontWeight: 900, fontSize: '14px', lineHeight: 1 }} className="text-amber-500 font-black text-sm leading-none mt-0.5">✓</span>
+                                                <span style={{ color: '#1e293b', fontWeight: 500, lineHeight: 1.5 }} className="text-slate-800 font-medium leading-relaxed">{resp}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
                                 {/* Section 5 */}
-                                <div className="mb-6 space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 5. PROBATIONARY PERIOD
+                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 5. PROBATIONARY PERIOD
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
-                                        You will undergo a <span className="font-black">Probation for three months</span>. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                        You will undergo a <span style={{ fontWeight: 900 }} className="font-black">Probation for three months</span>. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.
                                     </div>
                                 </div>
 
                                 {/* Section 6 */}
                                 <div className="space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 6. LEAVE & HOLIDAY ENTITLEMENT
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 6. LEAVE & HOLIDAY ENTITLEMENT
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
                                         You are entitled to 12 Sick/Casual leaves annually (01 per month). Public holidays apply as per the annual company schedule.
                                     </div>
                                 </div>
                             </div>
 
                             {/* Footer Page 2 */}
-                            <div className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:info@forgeindiaconnec.com" className="hover:underline font-bold text-indigo-700">info@forgeindiaconnec.com</a>
-                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" className="hover:underline">www.forgeindiaconnect.com</a>
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px' }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
+                                <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
+                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
                                 <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
                             </div>
                         </div>
 
 
                         {/* ================= PAGE 3 ================= */}
-                        <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif" }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
+                        <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             <div>
                                 {/* Section 7 */}
-                                <div className="mb-6 space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 7. CONFIDENTIALITY & NDA
+                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 7. CONFIDENTIALITY & NDA
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', fontStyle: 'italic', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-800">
                                         "You shall maintain absolute secrecy of all organizational data, proprietary software, and client lists. Any breach will result in immediate termination and legal prosecution."
                                     </div>
                                 </div>
 
                                 {/* Section 8 */}
-                                <div className="mb-6 space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 8. NOTICE PERIOD & TERMINATION
+                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 8. NOTICE PERIOD & TERMINATION
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
-                                        Separation requires a formal <span className="font-black">Notice Period of 30 Days</span> or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                        Separation requires a formal <span style={{ fontWeight: 900 }} className="font-black">Notice Period of 30 Days</span> or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.
                                     </div>
                                 </div>
 
                                 {/* Section 9 */}
-                                <div className="mb-6 space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 9. SELECTION CONTINGENCIES
+                                <div style={{ marginBottom: '24px' }} className="mb-6 space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 9. SELECTION CONTINGENCIES
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
                                         Engagement depends on clear Background Verification (BGV) reports. Any discrepancy in credentials will result in instant offer withdrawal.
                                     </div>
                                 </div>
 
                                 {/* Section 10 */}
-                                <div className="mb-8 space-y-2">
-                                    <h3 className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
-                                        <span className="w-2 h-4 bg-amber-500 inline-block"></span> 10. NON-SOLICITATION
+                                <div style={{ marginBottom: '32px' }} className="mb-8 space-y-2">
+                                    <h3 style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 900, letterSpacing: '0.05em', color: '#0f172a', textTransform: 'uppercase', marginBottom: '8px' }} className="font-black text-xs uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                                        <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 10. NON-SOLICITATION
                                     </h3>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-800">
+                                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', fontStyle: 'italic', color: '#1e293b' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs italic text-slate-800">
                                         "Upon cessation, you shall not solicit clients or employees of Forge India Connect for a period of one (01) year."
                                     </div>
                                 </div>
 
                                 {/* FINAL DECLARATION & ACCEPTANCE */}
-                                <div className="border-t-2 border-slate-900 pt-6 mb-12">
-                                    <h2 className="text-center text-lg font-black tracking-[0.2em] text-slate-900 mb-4">
+                                <div style={{ borderTop: '2px solid #0f172a', paddingTop: '24px', marginBottom: '32px' }} className="border-t-2 border-slate-900 pt-6 mb-12">
+                                    <h2 style={{ textAlign: 'center', fontSize: '18px', fontWeight: 900, letterSpacing: '0.2em', color: '#0f172a', marginBottom: '16px' }} className="text-center text-lg font-black tracking-[0.2em] text-slate-900 mb-4">
                                         FINAL DECLARATION & ACCEPTANCE
                                     </h2>
-                                    <p className="text-center italic text-xs text-slate-800">
-                                        "I, <span className="font-black uppercase not-italic">{empName}</span>, acknowledge the receipt of this Appointment Letter and hereby accept all terms and conditions specified."
+                                    <p style={{ textAlign: 'center', fontStyle: 'italic', fontSize: '12px', color: '#1e293b' }} className="text-center italic text-xs text-slate-800">
+                                        "I, <span style={{ fontWeight: 900, textTransform: 'uppercase', fontStyle: 'normal' }} className="font-black uppercase not-italic">{empName}</span>, acknowledge the receipt of this Appointment Letter and hereby accept all terms and conditions specified."
                                     </p>
                                 </div>
 
                                 {/* Signatures Area */}
-                                <div className="grid grid-cols-2 gap-8 text-xs pt-4 mb-10">
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', fontSize: '12px', paddingTop: '16px', marginBottom: '32px' }} className="grid grid-cols-2 gap-8 text-xs pt-4 mb-10">
                                     <div className="space-y-6">
                                         <div>
-                                            <p className="font-black text-slate-900 text-sm">MR. SANDEEP</p>
-                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">CHIEF EXECUTIVE OFFICER</p>
+                                            <p style={{ fontWeight: 900, color: '#0f172a', fontSize: '14px', margin: 0 }} className="font-black text-slate-900 text-sm">MR. SANDEEP</p>
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '2px 0 0 0' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">CHIEF EXECUTIVE OFFICER</p>
                                         </div>
-                                        <div>
-                                            <p className="font-black text-slate-900 text-sm">MR. AVINASH (MD)</p>
-                                            <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">MANAGING DIRECTOR</p>
+                                        <div style={{ marginTop: '24px' }}>
+                                            <p style={{ fontWeight: 900, color: '#0f172a', fontSize: '14px', margin: 0 }} className="font-black text-slate-900 text-sm">MR. AVINASH (MD)</p>
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '2px 0 0 0' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">MANAGING DIRECTOR</p>
                                         </div>
                                     </div>
 
-                                    <div className="text-right flex flex-col justify-end">
-                                        <div className="border-b border-slate-900 pb-1 mb-1">
-                                            <p className="font-black text-slate-900 text-sm uppercase">{empName}</p>
+                                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }} className="text-right flex flex-col justify-end">
+                                        <div style={{ borderBottom: '1px solid #0f172a', paddingBottom: '4px', marginBottom: '4px' }} className="border-b border-slate-900 pb-1 mb-1">
+                                            <p style={{ fontWeight: 900, color: '#0f172a', fontSize: '14px', textTransform: 'uppercase', margin: 0 }} className="font-black text-slate-900 text-sm uppercase">{empName}</p>
                                         </div>
-                                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                                        <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                                             ACCEPTING EMPLOYEE SIGNATURE
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Verifiable Badge */}
-                                <div className="border-2 border-dashed border-amber-500/60 rounded-2xl p-3 text-center bg-amber-500/5">
-                                    <p className="text-amber-700 font-black text-xs uppercase tracking-[0.15em]">
+                                <div style={{ border: '2px dashed #f59e0b', borderRadius: '16px', padding: '12px', textAlign: 'center', backgroundColor: '#fffbeb' }} className="border-2 border-dashed border-amber-500/60 rounded-2xl p-3 text-center bg-amber-500/5">
+                                    <p style={{ color: '#b45309', fontWeight: 900, fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.15em', margin: 0 }} className="text-amber-700 font-black text-xs uppercase tracking-[0.15em]">
                                         E-VERIFIABLE APPOINTMENT CONTRACT
                                     </p>
-                                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                                    <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                                         FIC CORPORATE OPERATIONS UNIT
                                     </p>
                                 </div>
                             </div>
 
                             {/* Footer Page 3 */}
-                            <div className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:info@forgeindiaconnec.com" className="hover:underline font-bold text-indigo-700">info@forgeindiaconnec.com</a>
-                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" className="hover:underline">www.forgeindiaconnect.com</a>
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px' }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
+                                <a href="mailto:info@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">info@forgeindiaconnect.com</a>
+                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
                                 <span>RK Towers, Rayakottai road, Wahab Nager, Krishnagiri-635002</span>
                             </div>
                         </div>
