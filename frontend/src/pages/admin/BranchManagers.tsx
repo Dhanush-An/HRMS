@@ -42,12 +42,19 @@ const BranchManagers: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 const mapped = data
-                    .filter((emp: any) => emp.department === 'Administration' || (emp.employeeId || emp.id)?.startsWith('BranchManagers'))
+                    .filter((emp: any) => 
+                        emp.role === 'subadmin' || 
+                        emp.role === 'branchmanager' || 
+                        emp.role === 'branch_manager' || 
+                        emp.department === 'Administration' || 
+                        (emp.employeeId || emp.id)?.startsWith('BranchManagers') ||
+                        (emp.employeeId || emp.id)?.startsWith('BM')
+                    )
                     .map((emp: any) => ({
                         id: emp.employeeId || emp.id || 'N/A',
                         name: emp.name,
-                        role: emp.role,
-                        department: emp.department,
+                        role: emp.role || 'subadmin',
+                        department: emp.department || 'Administration',
                         email: emp.email,
                         phone: emp.phone || 'N/A',
                         avatar: emp.name ? emp.name.charAt(0).toUpperCase() : 'U',
@@ -252,7 +259,17 @@ const BranchManagers: React.FC = () => {
                                         {contact.avatar}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="font-bold text-brand-text group-hover:text-brand-primary transition-colors truncate text-sm sm:text-base">{contact.name}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold text-brand-text group-hover:text-brand-primary transition-colors truncate text-sm sm:text-base">{contact.name}</p>
+                                            <span className={cn(
+                                                "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                                                contact.status === 'Active'
+                                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                                    : "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                                            )}>
+                                                {contact.status}
+                                            </span>
+                                        </div>
                                         <div className="flex items-center gap-2 mt-0.5">
                                             <p className="text-xs text-brand-muted truncate">{contact.department}</p>
                                         </div>
