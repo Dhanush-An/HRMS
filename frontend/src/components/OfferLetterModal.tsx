@@ -158,7 +158,111 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     };
 
     const handlePrint = () => {
-        window.print();
+        if (!documentRef.current) {
+            window.print();
+            return;
+        }
+
+        // Create hidden iframe for dedicated clean printing of ONLY the offer letter pages
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0px';
+        iframe.style.height = '0px';
+        iframe.style.border = '0';
+        iframe.style.zIndex = '-9999';
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentWindow?.document;
+        if (!doc) {
+            window.print();
+            return;
+        }
+
+        doc.open();
+        doc.write(`
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <title>Appointment Letter - ${empName}</title>
+                    <style>
+                        @page {
+                            size: A4 portrait;
+                            margin: 0;
+                        }
+                        * {
+                            box-sizing: border-box !important;
+                            font-family: Georgia, 'Times New Roman', Times, serif !important;
+                            -webkit-font-smoothing: antialiased !important;
+                            text-rendering: optimizeLegibility !important;
+                        }
+                        html, body {
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            background: #ffffff !important;
+                            color: #0f172a !important;
+                            width: 100% !important;
+                        }
+                        .printable-document {
+                            width: 100% !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            align-items: center !important;
+                        }
+                        .offer-page {
+                            position: relative !important;
+                            width: 210mm !important;
+                            height: 297mm !important;
+                            min-height: 297mm !important;
+                            max-height: 297mm !important;
+                            margin: 0 auto !important;
+                            padding: 16mm !important;
+                            box-shadow: none !important;
+                            border: none !important;
+                            background: #ffffff !important;
+                            color: #0f172a !important;
+                            page-break-before: auto !important;
+                            page-break-after: always !important;
+                            break-after: page !important;
+                            page-break-inside: avoid !important;
+                            break-inside: avoid !important;
+                            box-sizing: border-box !important;
+                            display: flex !important;
+                            flex-direction: column !important;
+                            justify-content: space-between !important;
+                        }
+                        img {
+                            max-height: 64px !important;
+                            width: auto !important;
+                            object-fit: contain !important;
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${documentRef.current.innerHTML}
+                </body>
+            </html>
+        `);
+        doc.close();
+
+        setTimeout(() => {
+            try {
+                iframe.contentWindow?.focus();
+                iframe.contentWindow?.print();
+            } catch (e) {
+                console.error('Iframe print error:', e);
+                window.print();
+            } finally {
+                setTimeout(() => {
+                    try {
+                        document.body.removeChild(iframe);
+                    } catch (_e) {}
+                }, 2000);
+            }
+        }, 300);
     };
 
     return (
