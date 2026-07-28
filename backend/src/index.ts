@@ -518,11 +518,10 @@ app.post('/api/employees/upload-offer-letter', authorizeRoles('admin', 'subadmin
 
         console.log(`[CLOUDINARY] Uploading offer letter for employee ${employeeId || 'New'}...`);
 
-        // Upload to Cloudinary as raw/pdf resource
+        // Upload to Cloudinary as auto resource (enables native PDF rendering & previewing)
         const uploadResult = await cloudinary.uploader.upload(pdfBase64, {
             folder: 'offer_letters',
-            resource_type: 'raw',
-            format: 'pdf',
+            resource_type: 'auto',
             public_id: `Offer_Letter_${(employeeId || 'employee').replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`
         });
 
