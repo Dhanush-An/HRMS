@@ -98,16 +98,25 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const basicMonthly = employee.salary?.basic || 7500;
     const hraMonthly = employee.salary?.hra || 3750;
     const convMonthly = employee.salary?.conveyance || 3750;
+    const grossSalaryMonthly = basicMonthly + hraMonthly + convMonthly;
+
     const pfMonthly = employee.salary?.pf || 0;
     const esiMonthly = employee.salary?.esi || 0;
-    const grossMonthly = basicMonthly + hraMonthly + convMonthly + pfMonthly + esiMonthly;
+    const totalDeductionMonthly = pfMonthly + esiMonthly;
+
+    const netMonthly = grossSalaryMonthly - totalDeductionMonthly;
+    const ctcMonthly = grossSalaryMonthly + totalDeductionMonthly;
 
     const basicAnnual = basicMonthly * 12;
     const hraAnnual = hraMonthly * 12;
     const convAnnual = convMonthly * 12;
+    const grossSalaryAnnual = grossSalaryMonthly * 12;
+
     const pfAnnual = pfMonthly * 12;
     const esiAnnual = esiMonthly * 12;
-    const grossAnnual = grossMonthly * 12;
+
+    const netAnnual = netMonthly * 12;
+    const ctcAnnual = ctcMonthly * 12;
 
     // Parse responsibilities
     const defaultResponsibilities = [
@@ -621,20 +630,30 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                                     <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{convMonthly.toLocaleString('en-IN')}</td>
                                                     <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{convAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
-                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-3 border-r border-slate-200 font-medium">Provident Fund (PF Contribution)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{pfMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{pfAnnual.toLocaleString('en-IN')}</td>
+                                                <tr style={{ borderBottom: '2px solid #0f172a', backgroundColor: '#f8fafc', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', color: '#0f172a', textTransform: 'uppercase' }} className="p-3 border-r border-slate-300 uppercase font-black">GROSS SALARY (TOTAL EARNINGS)</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', color: '#0f172a' }} className="p-3 border-r border-slate-300 text-right font-black">INR {grossSalaryMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right', color: '#0f172a' }} className="p-3 text-right font-black">INR {grossSalaryAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-3 border-r border-slate-200 font-medium">Employee State Insurance (ESI)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-3 border-r border-slate-200 text-right font-bold">{esiMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700 }} className="p-3 text-right font-bold">{esiAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-3 border-r border-slate-200 font-medium text-red-600">Less: Provident Fund (PF Deduction)</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 border-r border-slate-200 text-right font-bold text-red-600">- {pfMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 text-right font-bold text-red-600">- {pfAnnual.toLocaleString('en-IN')}</td>
+                                                </tr>
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-3 border-r border-slate-200 font-medium text-red-600">Less: Employee State Insurance (ESI)</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 border-r border-slate-200 text-right font-bold text-red-600">- {esiMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-3 text-right font-bold text-red-600">- {esiAnnual.toLocaleString('en-IN')}</td>
+                                                </tr>
+                                                <tr style={{ borderBottom: '2px solid #0f172a', backgroundColor: '#eff6ff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #93c5fd', color: '#1e3a8a', textTransform: 'uppercase' }} className="p-3 border-r border-blue-300 uppercase font-black">NET SALARY (TAKE HOME)</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #93c5fd', textAlign: 'right', color: '#1e3a8a' }} className="p-3 border-r border-blue-300 text-right font-black">INR {netMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right', color: '#1e3a8a' }} className="p-3 text-right font-black">INR {netAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-black">
                                                     <td style={{ padding: '12px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-3 border-r border-slate-700 uppercase">GROSS COST TO COMPANY (CTC)</td>
-                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">INR {grossMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">INR {grossAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-3 border-r border-slate-700 text-right">INR {ctcMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '12px', textAlign: 'right' }} className="p-3 text-right">INR {ctcAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -643,11 +662,11 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     {/* Monthly Training or Employment Salary Highlight Box */}
                                     <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '16px', padding: '20px', textAlign: 'center', marginTop: '16px', marginBottom: '16px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-2xl p-5 text-center my-4">
                                         <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '16px', margin: 0 }} className="text-slate-800 font-black text-base">
-                                            {employee.engagementType === 'Employment' ? 'Monthly Employment Salary: ' : 'Monthly Training Period Salary: '}
-                                            <span style={{ color: '#030712', fontWeight: 900, fontSize: '20px' }} className="text-slate-950 font-black text-xl">INR {trainingSalary.toLocaleString('en-IN')}</span>
+                                            {employee.engagementType === 'Employment' ? 'Net Monthly Take-Home Salary: ' : 'Monthly Training Period Stipend: '}
+                                            <span style={{ color: '#030712', fontWeight: 900, fontSize: '20px' }} className="text-slate-950 font-black text-xl">INR {(employee.engagementType === 'Employment' ? netMonthly : (trainingSalary || netMonthly)).toLocaleString('en-IN')}</span>
                                         </p>
                                         <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '4px' }} className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-                                            (AFTER STATUTORY DEDUCTIONS)
+                                            (AFTER STATUTORY DEDUCTIONS - PF & ESI)
                                         </p>
                                     </div>
                                 </div>
