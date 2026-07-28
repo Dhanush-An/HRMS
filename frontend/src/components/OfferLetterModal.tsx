@@ -480,9 +480,14 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                             <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#1e293b', margin: 0, padding: 0, letterSpacing: '-0.025em', lineHeight: 1.1 }} className="text-xl font-black tracking-tight text-slate-800 -mt-1">
                                                 CONNECT PVT LTD
                                             </h2>
-                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }} className="text-[9px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-0.5">
+                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px', marginBottom: '6px' }} className="text-[9px] font-bold tracking-[0.2em] text-amber-600 uppercase mt-0.5 mb-1.5">
                                                 Connecting Talent With Opportunity
                                             </p>
+                                            <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', fontSize: '9px', fontWeight: 700, color: '#1e293b' }} className="flex gap-4 text-[9px] font-bold text-slate-800">
+                                                <span>CIN: U47G12TZ2025PTC035121</span>
+                                                <span>GST: 33AAGCF4763Q1Z3</span>
+                                                <span>MOB: +91 6369406416</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div style={{ textAlign: 'right', fontSize: '9px', color: '#475569', lineHeight: 1.4 }} className="text-right text-[9px] text-slate-600 space-y-0.5">
@@ -490,12 +495,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                         <p style={{ margin: 0 }}>RK Towers, Rayakottai road, Opposite to HP Petrol Bunk,</p>
                                         <p style={{ margin: 0 }}>Wahab Nager, Krishnagiri-635002</p>
                                     </div>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', fontWeight: 600, color: '#475569', marginBottom: '24px' }} className="flex justify-between items-center text-[9px] text-slate-600 mb-6 font-semibold">
-                                    <span>CIN: U47G12TZ2025PTC035121</span>
-                                    <span>GST: 33AAGCF4763Q1Z3</span>
-                                    <span>MOB: +91 6369406416</span>
                                 </div>
 
                                 {/* Title Banner */}
