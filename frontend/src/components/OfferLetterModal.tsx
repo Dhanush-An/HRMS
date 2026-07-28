@@ -288,13 +288,20 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 padding: 0 !important;
                                 background: #ffffff !important;
                                 height: auto !important;
+                                min-height: 100% !important;
                                 overflow: visible !important;
                             }
                             body * {
                                 visibility: hidden !important;
                             }
                             .offer-modal-overlay,
-                            .offer-modal-overlay * {
+                            .offer-modal-overlay *,
+                            .offer-modal-content,
+                            .offer-modal-content *,
+                            .offer-document-scroll,
+                            .offer-document-scroll *,
+                            .offer-page,
+                            .offer-page * {
                                 visibility: visible !important;
                             }
                             .offer-modal-overlay {
@@ -309,9 +316,10 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 z-index: 999999 !important;
                                 padding: 0 !important;
                                 margin: 0 !important;
+                                display: block !important;
                             }
                             .offer-modal-content {
-                                position: relative !important;
+                                position: static !important;
                                 width: 100% !important;
                                 height: auto !important;
                                 max-height: none !important;
@@ -322,35 +330,47 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 border-radius: 0 !important;
                                 margin: 0 !important;
                                 padding: 0 !important;
+                                display: block !important;
                             }
                             .offer-modal-header,
                             .offer-modal-statusbar {
                                 display: none !important;
+                                height: 0 !important;
+                                overflow: hidden !important;
                             }
                             .offer-document-scroll {
-                                position: relative !important;
+                                position: static !important;
+                                width: 100% !important;
+                                height: auto !important;
                                 max-height: none !important;
                                 overflow: visible !important;
                                 background: #ffffff !important;
                                 padding: 0 !important;
                                 margin: 0 !important;
                                 gap: 0 !important;
+                                display: block !important;
                             }
                             .offer-page {
-                                visibility: visible !important;
                                 position: relative !important;
                                 width: 210mm !important;
-                                min-height: 297mm !important;
                                 height: 297mm !important;
+                                min-height: 297mm !important;
+                                max-height: 297mm !important;
                                 margin: 0 auto !important;
                                 padding: 16mm !important;
                                 box-shadow: none !important;
                                 border: none !important;
+                                background: #ffffff !important;
+                                color: #0f172a !important;
+                                page-break-before: auto !important;
                                 page-break-after: always !important;
                                 break-after: page !important;
                                 page-break-inside: avoid !important;
                                 break-inside: avoid !important;
                                 box-sizing: border-box !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                                justify-content: space-between !important;
                             }
                         }
                     `}</style>
