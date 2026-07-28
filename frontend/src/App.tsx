@@ -1,5 +1,15 @@
 import { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+
+const UnderscoreRedirect = () => {
+    const location = useLocation();
+    const cleanPath = location.pathname
+        .replace('/admin_dashboard', '/admin-dashboard')
+        .replace('/subadmin_dashboard', '/subadmin-dashboard')
+        .replace('/employee_dashboard', '/employee-dashboard')
+        .replace('/hr_dashboard', '/hr-dashboard');
+    return <Navigate to={cleanPath + location.search} replace />;
+};
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
@@ -129,13 +139,13 @@ function App() {
           </Route>
 
           {/* Legacy & Underscore Route Redirects */}
-          <Route path="/admin_dashboard/*" element={<Navigate to="/admin-dashboard" replace />} />
-          <Route path="/employee_dashboard/*" element={<Navigate to="/employee-dashboard" replace />} />
-          <Route path="/subadmin_dashboard/*" element={<Navigate to="/subadmin-dashboard" replace />} />
-          <Route path="/hr_dashboard/*" element={<Navigate to="/hr-dashboard" replace />} />
+          <Route path="/admin_dashboard/*" element={<UnderscoreRedirect />} />
+          <Route path="/employee_dashboard/*" element={<UnderscoreRedirect />} />
+          <Route path="/subadmin_dashboard/*" element={<UnderscoreRedirect />} />
+          <Route path="/hr_dashboard/*" element={<UnderscoreRedirect />} />
 
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/admin-dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </ThemeProvider>
