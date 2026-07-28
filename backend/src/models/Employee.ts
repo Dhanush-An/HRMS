@@ -32,6 +32,14 @@ export interface IEmployee extends Document {
         wfh: number;
         paid?: number; // Added to match index.ts approve logic
     };
+    address?: string;
+    aadharNo?: string;
+    trainingSalary?: number;
+    reportsTo?: string;
+    workLocation?: string;
+    shiftWindow?: string;
+    offerId?: string;
+    offerIssueDate?: string;
     pan?: string;
     uan?: string;
     pfNo?: string;
@@ -56,6 +64,14 @@ const EmployeeSchema: Schema = new Schema({
     branchId: { type: String, default: 'BR001' },
     branchName: { type: String, default: 'Chennai' },
     responsibilities: { type: String, default: '' },
+    address: { type: String, default: '' },
+    aadharNo: { type: String, default: '' },
+    trainingSalary: { type: Number, default: 15000 },
+    reportsTo: { type: String, default: 'TL' },
+    workLocation: { type: String, default: 'Bangalore (Onsite)' },
+    shiftWindow: { type: String, default: '9:30 AM - 6:30 PM' },
+    offerId: { type: String, default: '' },
+    offerIssueDate: { type: String, default: '' },
     salary: {
         basic: { type: Number, default: 0 },
         hra: { type: Number, default: 0 },

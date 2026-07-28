@@ -446,7 +446,7 @@ app.get('/api/employees/:id', async (req, res) => {
 // POST new employee
 app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
     try {
-        const { id, name, email, role, department, status, phone, joiningDate, branchId, branchName } = req.body;
+        const { id, name, email, role, department, status, phone, joiningDate, branchId, branchName, address, aadharNo, trainingSalary, reportsTo, workLocation, shiftWindow, offerResponsibilities, responsibilities } = req.body;
         const user = (req as any).user;
 
         let finalBranchId = branchId;
@@ -464,6 +464,11 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password || 'Password123!', salt);
 
+        const currentYear = new Date().getFullYear();
+        const randomOfferNum = Math.floor(1000 + Math.random() * 9000);
+        const generatedOfferId = req.body.offerId || `FIC/HR/AP/${currentYear}/${randomOfferNum}`;
+        const todayFormatted = req.body.offerIssueDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
         const newEmployee = new Employee({
             employeeId: finalId,
             name,
@@ -477,9 +482,17 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
             phone: phone || '',
             branchId: finalBranchId || 'BR001',
             branchName: finalBranchName || 'Chennai',
-            salary: req.body.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 },
-            leaveBalance: req.body.leaveBalance || { sick: 10, casual: 12, earned: 15, wfh: 10 },
-            responsibilities: req.body.responsibilities || ''
+            salary: req.body.salary || { basic: 7500, hra: 3750, conveyance: 3750, medical: 0, special: 0, other: 0, pf: 0, tax: 0 },
+            leaveBalance: req.body.leaveBalance || { sick: 12, casual: 12, earned: 15, wfh: 10 },
+            responsibilities: responsibilities || offerResponsibilities || '',
+            address: address || '',
+            aadharNo: aadharNo || '',
+            trainingSalary: trainingSalary !== undefined ? Number(trainingSalary) : 15000,
+            reportsTo: reportsTo || 'TL',
+            workLocation: workLocation || 'Bangalore (Onsite)',
+            shiftWindow: shiftWindow || '9:30 AM - 6:30 PM',
+            offerId: generatedOfferId,
+            offerIssueDate: todayFormatted
         });
 
         await newEmployee.save();

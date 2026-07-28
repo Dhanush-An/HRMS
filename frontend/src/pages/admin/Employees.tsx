@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
+import { OfferLetterModal } from '../../components/OfferLetterModal';
 
 interface Employee {
     id: string;
@@ -32,6 +33,15 @@ interface Employee {
     phone?: string;
     branchName?: string;
     responsibilities?: string;
+    address?: string;
+    aadharNo?: string;
+    trainingSalary?: number;
+    reportsTo?: string;
+    workLocation?: string;
+    shiftWindow?: string;
+    offerId?: string;
+    offerIssueDate?: string;
+    salary?: any;
 }
 
 const Employees = () => {
@@ -45,17 +55,31 @@ const Employees = () => {
     const [selectedEmployeeForRole, setSelectedEmployeeForRole] = useState<Employee | null>(null);
     const [roleResponsibilities, setRoleResponsibilities] = useState('');
 
+    const [isOfferModalOpen, setIsOfferModalOpen] = useState(false);
+    const [selectedEmployeeForOffer, setSelectedEmployeeForOffer] = useState<any>(null);
+    const [isNewOfferProcess, setIsNewOfferProcess] = useState(false);
+
     const [formData, setFormData] = useState({
         id: '',
         name: '',
         email: '',
-        role: '',
-        department: '',
+        role: 'Junior AI Associate Developer',
+        department: 'IT',
         status: 'Active',
         phone: '',
-        joiningDate: '',
+        joiningDate: new Date().toISOString().split('T')[0],
         username: '',
-        password: ''
+        password: '',
+        address: '',
+        aadharNo: '',
+        basicSalary: 7500,
+        hraSalary: 3750,
+        convSalary: 3750,
+        trainingSalary: 15000,
+        reportsTo: 'TL',
+        workLocation: 'Bangalore (Onsite)',
+        shiftWindow: '9:30 AM - 6:30 PM',
+        responsibilities: `Develop, test, and maintain AI-powered applications and software solutions.\nIntegrate AI/ML models into web, mobile, and enterprise applications.\nAssist in building intelligent automation systems and AI-driven features.\nSupport the development and deployment of machine learning models.\nWork with datasets for data cleaning, preprocessing, and feature engineering.\nEvaluate model performance and optimize accuracy and efficiency.`
     });
     const [searchQuery, setSearchQuery] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -92,13 +116,23 @@ const Employees = () => {
             id: '',
             name: '',
             email: '',
-            role: '',
-            department: '',
+            role: 'Junior AI Associate Developer',
+            department: 'IT',
             status: 'Active',
             phone: '',
             joiningDate: new Date().toISOString().split('T')[0],
             username: '',
-            password: ''
+            password: '',
+            address: '#14/A, 1st main 6th cross,kaveri nagara opposite led mydana KC halli main road,Bommanahalli,Karnataka-560068',
+            aadharNo: '1234 5678 9012',
+            basicSalary: 7500,
+            hraSalary: 3750,
+            convSalary: 3750,
+            trainingSalary: 15000,
+            reportsTo: 'TL',
+            workLocation: 'Bangalore (Onsite)',
+            shiftWindow: '9:30 AM - 6:30 PM',
+            responsibilities: `Develop, test, and maintain AI-powered applications and software solutions.\nIntegrate AI/ML models into web, mobile, and enterprise applications.\nAssist in building intelligent automation systems and AI-driven features.\nSupport the development and deployment of machine learning models.\nWork with datasets for data cleaning, preprocessing, and feature engineering.\nEvaluate model performance and optimize accuracy and efficiency.`
         });
         setIsModalOpen(true);
     };
@@ -116,7 +150,17 @@ const Employees = () => {
             phone: employee.phone || '',
             joiningDate: employee.joiningDate,
             username: (employee as any).username || employee.email,
-            password: '' // Don't show password during edit
+            password: '',
+            address: employee.address || '',
+            aadharNo: employee.aadharNo || '',
+            basicSalary: employee.salary?.basic || 7500,
+            hraSalary: employee.salary?.hra || 3750,
+            convSalary: employee.salary?.conveyance || 3750,
+            trainingSalary: employee.trainingSalary ?? 15000,
+            reportsTo: employee.reportsTo || 'TL',
+            workLocation: employee.workLocation || 'Bangalore (Onsite)',
+            shiftWindow: employee.shiftWindow || '9:30 AM - 6:30 PM',
+            responsibilities: employee.responsibilities || ''
         });
         setIsModalOpen(true);
     };
@@ -124,6 +168,13 @@ const Employees = () => {
     const openProfile = (employee: Employee) => {
         setSelectedEmployee(employee);
         setIsProfileOpen(true);
+    };
+
+    const openOfferLetter = (employee: Employee) => {
+        setSelectedEmployeeForOffer(employee);
+        setIsNewOfferProcess(false);
+        setIsOfferModalOpen(true);
+        setActiveDropdown(null);
     };
 
     const handleDelete = async (id: string) => {
@@ -155,13 +206,38 @@ const Employees = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const payload = {
+                ...formData,
+                salary: {
+                    basic: Number(formData.basicSalary) || 7500,
+                    hra: Number(formData.hraSalary) || 3750,
+                    conveyance: Number(formData.convSalary) || 3750,
+                    medical: 0,
+                    special: 0,
+                    other: 0,
+                    pf: 0,
+                    tax: 0
+                }
+            };
+
             const response = isEditing && selectedEmployee
-                ? await api.put(`/api/employees/${selectedEmployee.id}`, formData)
-                : await api.post('/api/employees', formData);
+                ? await api.put(`/api/employees/${selectedEmployee.id}`, payload)
+                : await api.post('/api/employees', payload);
 
             if (response.ok) {
+                const savedEmployee = await response.json();
                 setIsModalOpen(false);
                 fetchEmployees();
+
+                if (!isEditing) {
+                    // Show offer letter processing & preview modal!
+                    setSelectedEmployeeForOffer(savedEmployee);
+                    setIsNewOfferProcess(true);
+                    setIsOfferModalOpen(true);
+                }
+            } else {
+                const err = await response.json();
+                alert(`Error saving employee: ${err.message || 'Unknown error'}`);
             }
         } catch (error: any) {
             console.error('Error saving employee:', error);
@@ -343,18 +419,25 @@ const Employees = () => {
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
                                                         <button
+                                                            onClick={() => openOfferLetter(emp)}
+                                                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 transition-colors border-b border-brand-border"
+                                                        >
+                                                            <FileText className="w-3.5 h-3.5" />
+                                                            Offer Letter
+                                                        </button>
+                                                        <button
                                                             onClick={() => openRoleModal(emp)}
-                                                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-brand-primary hover:bg-brand-primary-light flex items-center gap-2 transition-colors border-b border-brand-border pb-2.5"
+                                                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-brand-primary hover:bg-brand-primary-light flex items-center gap-2 transition-colors border-b border-brand-border"
                                                         >
                                                             <ShieldCheck className="w-3.5 h-3.5" />
                                                             Role & Responsibility
                                                         </button>
                                                         <button
                                                             onClick={() => handleDeactivate(emp.id)}
-                                                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 transition-colors pt-2.5"
+                                                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition-colors pt-2.5"
                                                         >
                                                             <UserMinus className="w-3.5 h-3.5" />
-                                                            Disactive
+                                                            Deactivate
                                                         </button>
                                                     </div>
                                                 </>
@@ -576,6 +659,97 @@ const Employees = () => {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Employee Address</label>
+                                    <textarea
+                                        name="address"
+                                        value={formData.address}
+                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                        placeholder="Full address (e.g. #14/A, 1st main, kaveri nagara...)"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm min-h-[90px] resize-none"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Aadhar Number</label>
+                                    <input
+                                        name="aadharNo"
+                                        value={formData.aadharNo}
+                                        onChange={(e) => setFormData({ ...formData, aadharNo: e.target.value })}
+                                        placeholder="12 Digit Aadhar Number"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium mb-4"
+                                    />
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Reports To</label>
+                                    <input
+                                        name="reportsTo"
+                                        value={formData.reportsTo}
+                                        onChange={handleInputChange}
+                                        placeholder="e.g. TL"
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Salary Structure Section */}
+                            <div className="p-4 bg-brand-bg/50 border border-brand-border rounded-2xl space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-wider text-brand-primary">Salary Structure & Stipend</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Basic (Monthly)</label>
+                                        <input
+                                            type="number"
+                                            name="basicSalary"
+                                            value={formData.basicSalary}
+                                            onChange={(e) => setFormData({ ...formData, basicSalary: Number(e.target.value) })}
+                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">HRA (Monthly)</label>
+                                        <input
+                                            type="number"
+                                            name="hraSalary"
+                                            value={formData.hraSalary}
+                                            onChange={(e) => setFormData({ ...formData, hraSalary: Number(e.target.value) })}
+                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Statutory Allowance</label>
+                                        <input
+                                            type="number"
+                                            name="convSalary"
+                                            value={formData.convSalary}
+                                            onChange={(e) => setFormData({ ...formData, convSalary: Number(e.target.value) })}
+                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-amber-500 mb-1">Training Stipend (INR)</label>
+                                        <input
+                                            type="number"
+                                            name="trainingSalary"
+                                            value={formData.trainingSalary}
+                                            onChange={(e) => setFormData({ ...formData, trainingSalary: Number(e.target.value) })}
+                                            className="w-full bg-brand-surface border border-amber-500/50 text-amber-400 rounded-xl p-3 font-black text-sm"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Responsibilities */}
+                            <div>
+                                <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Job Description & Responsibilities</label>
+                                <textarea
+                                    name="responsibilities"
+                                    value={formData.responsibilities}
+                                    onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
+                                    placeholder="Enter bulleted responsibilities (one per line)..."
+                                    className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium text-sm min-h-[120px]"
+                                />
+                            </div>
+
                             <div className="flex gap-4 mt-10">
                                 <button
                                     type="button"
@@ -658,7 +832,24 @@ const Employees = () => {
                                     </button>
                                 </div>
                                 <div className="space-y-4">
-                                    {['Resume.pdf', 'ID_Proof.jpg', 'Offer_Letter.pdf'].map((doc, i) => (
+                                    <div
+                                        onClick={() => openOfferLetter(selectedEmployee)}
+                                        className="flex items-center justify-between p-4 bg-amber-500/10 rounded-2xl border border-amber-500/30 group hover:border-amber-500 transition-all cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center border border-amber-500/30 group-hover:scale-110 transition-transform text-amber-500">
+                                                <FileText className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <span className="text-sm text-brand-text font-black block">Appointment_Offer_Letter.pdf</span>
+                                                <span className="text-[10px] text-amber-500 font-bold uppercase tracking-wider">Click to View & Download</span>
+                                            </div>
+                                        </div>
+                                        <button className="text-amber-500 hover:text-amber-400 p-2 rounded-lg bg-amber-500/10">
+                                            <Eye className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                    {['Resume.pdf', 'ID_Proof.jpg'].map((doc, i) => (
                                         <div key={i} className="flex items-center justify-between p-4 bg-brand-bg rounded-2xl border border-brand-border group hover:border-brand-primary/30 transition-all cursor-pointer">
                                             <div className="flex items-center gap-4">
                                                 <div className="w-10 h-10 bg-brand-surface rounded-xl flex items-center justify-center border border-brand-border group-hover:scale-110 transition-transform">
@@ -733,6 +924,14 @@ const Employees = () => {
                     </div>
                 </div>
             )}
+
+            {/* Offer Letter View & Download Modal */}
+            <OfferLetterModal
+                isOpen={isOfferModalOpen}
+                onClose={() => setIsOfferModalOpen(false)}
+                employee={selectedEmployeeForOffer}
+                isNewProcess={isNewOfferProcess}
+            />
         </div>
     );
 };
