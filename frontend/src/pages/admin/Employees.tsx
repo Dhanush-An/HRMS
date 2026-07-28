@@ -75,14 +75,14 @@ const Employees = () => {
         address: '',
         aadharNo: '',
         engagementType: 'Training' as 'Training' | 'Employment',
-        basicSalary: 7500,
-        hraSalary: 3750,
-        convSalary: 3750,
-        trainingSalary: 15000,
-        reportsTo: 'TL',
+        basicSalary: 0,
+        hraSalary: 0,
+        convSalary: 0,
+        trainingSalary: 0,
+        reportsTo: '',
         workLocation: 'Bangalore (Onsite)',
         shiftWindow: '9:30 AM - 6:30 PM',
-        responsibilities: `Develop, test, and maintain AI-powered applications and software solutions.\nIntegrate AI/ML models into web, mobile, and enterprise applications.\nAssist in building intelligent automation systems and AI-driven features.\nSupport the development and deployment of machine learning models.\nWork with datasets for data cleaning, preprocessing, and feature engineering.\nEvaluate model performance and optimize accuracy and efficiency.`
+        responsibilities: ''
     });
     const [searchQuery, setSearchQuery] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -126,17 +126,17 @@ const Employees = () => {
             joiningDate: new Date().toISOString().split('T')[0],
             username: '',
             password: '',
-            address: '#14/A, 1st main 6th cross,kaveri nagara opposite led mydana KC halli main road,Bommanahalli,Karnataka-560068',
-            aadharNo: '1234 5678 9012',
+            address: '',
+            aadharNo: '',
             engagementType: 'Training' as 'Training' | 'Employment',
-            basicSalary: 7500,
-            hraSalary: 3750,
-            convSalary: 3750,
-            trainingSalary: 15000,
-            reportsTo: 'TL',
+            basicSalary: 0,
+            hraSalary: 0,
+            convSalary: 0,
+            trainingSalary: 0,
+            reportsTo: '',
             workLocation: 'Bangalore (Onsite)',
             shiftWindow: '9:30 AM - 6:30 PM',
-            responsibilities: `Develop, test, and maintain AI-powered applications and software solutions.\nIntegrate AI/ML models into web, mobile, and enterprise applications.\nAssist in building intelligent automation systems and AI-driven features.\nSupport the development and deployment of machine learning models.\nWork with datasets for data cleaning, preprocessing, and feature engineering.\nEvaluate model performance and optimize accuracy and efficiency.`
+            responsibilities: ''
         });
         setIsModalOpen(true);
     };
