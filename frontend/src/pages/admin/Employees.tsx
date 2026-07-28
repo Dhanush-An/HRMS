@@ -221,7 +221,7 @@ const Employees = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const payload = {
+            const payload: any = {
                 ...formData,
                 salary: {
                     basic: Number(formData.basicSalary) || 0,
@@ -235,6 +235,13 @@ const Employees = () => {
                     tax: 0
                 }
             };
+
+            if (!payload.username || payload.username.trim() === '') {
+                delete payload.username;
+            }
+            if (!payload.password || payload.password.trim() === '') {
+                delete payload.password;
+            }
 
             const response = isEditing && selectedEmployee
                 ? await api.put(`/api/employees/${selectedEmployee.id}`, payload)

@@ -562,6 +562,15 @@ app.put('/api/employees/:id', async (req, res) => {
         }
 
         const updateData = { ...req.body };
+
+        // Delete empty or whitespace-only username & email fields to avoid unique key collisions
+        if (!updateData.username || typeof updateData.username !== 'string' || updateData.username.trim() === '') {
+            delete updateData.username;
+        }
+        if (!updateData.email || typeof updateData.email !== 'string' || updateData.email.trim() === '') {
+            delete updateData.email;
+        }
+
         if (user.role !== 'admin' && user.role !== 'hr' && user.role !== 'subadmin') {
             // Employees can only update their personal fields
             delete updateData.role;

@@ -183,12 +183,23 @@ const HR: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const payload: any = { ...formData };
+            if (!payload.username || payload.username.trim() === '') {
+                delete payload.username;
+            }
+            if (!payload.password || payload.password.trim() === '') {
+                delete payload.password;
+            }
+
             const res = isEditing
-                ? await api.put(`/api/employees/${formData.id}`, formData)
-                : await api.post('/api/employees', formData);
+                ? await api.put(`/api/employees/${formData.id}`, payload)
+                : await api.post('/api/employees', payload);
             if (res.ok) {
                 setIsModalOpen(false);
                 fetchHREmployees();
+            } else {
+                const errData = await res.json();
+                alert(`Error saving: ${errData.message || 'Unknown error'}`);
             }
         } catch (err: any) {
             alert(`Error saving: ${err.message || 'Unknown error'}`);
