@@ -467,7 +467,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                         {/* ================= PAGE 1 ================= */}
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             {/* Background Watermark */}
-                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '450px', height: '450px', opacity: 0.07, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '500px', opacity: 0.09, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
                                 <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Watermark" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                             </div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
@@ -602,7 +602,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                         {/* ================= PAGE 2 ================= */}
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             {/* Background Watermark */}
-                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '450px', height: '450px', opacity: 0.07, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '500px', opacity: 0.09, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
                                 <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Watermark" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                             </div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
@@ -728,7 +728,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                         {/* ================= PAGE 3 ================= */}
                         <div style={{ fontFamily: "Georgia, 'Times New Roman', Times, serif", backgroundColor: '#ffffff', color: '#0f172a', width: '210mm', minHeight: '297mm', padding: '16mm', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative', fontSize: '13px', lineHeight: 1.6, border: '1px solid #e2e8f0', boxSizing: 'border-box' }} className="offer-page bg-white text-slate-900 w-[210mm] min-h-[297mm] p-[16mm] shadow-2xl flex flex-col justify-between relative text-[13px] leading-relaxed border border-slate-200">
                             {/* Background Watermark */}
-                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '450px', height: '450px', opacity: 0.07, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '500px', height: '500px', opacity: 0.09, pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
                                 <img src={OFFICIAL_LOGO_BASE64} alt="Forge India Watermark" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                             </div>
                             <div style={{ position: 'relative', zIndex: 1 }}>
