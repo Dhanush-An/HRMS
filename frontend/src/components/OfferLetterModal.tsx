@@ -254,25 +254,61 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 color: #0f172a !important;
                                 width: 100% !important;
                                 height: auto !important;
+                                min-height: auto !important;
                                 overflow: visible !important;
                             }
-                            body * {
-                                visibility: hidden !important;
+                            body > *:not(.offer-modal-overlay) {
+                                display: none !important;
                             }
-                            .printable-document,
-                            .printable-document * {
-                                visibility: visible !important;
-                            }
-                            .printable-document {
-                                position: absolute !important;
-                                left: 0 !important;
-                                top: 0 !important;
+                            .offer-modal-overlay {
+                                position: static !important;
+                                inset: auto !important;
                                 width: 100% !important;
+                                height: auto !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                                background: #ffffff !important;
+                                padding: 0 !important;
+                                margin: 0 !important;
+                                display: block !important;
+                            }
+                            .offer-modal-content {
+                                position: static !important;
+                                width: 100% !important;
+                                height: auto !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                                background: #ffffff !important;
+                                box-shadow: none !important;
+                                border: none !important;
+                                border-radius: 0 !important;
                                 margin: 0 !important;
                                 padding: 0 !important;
-                                display: flex !important;
-                                flex-direction: column !important;
-                                items-center: center !important;
+                                display: block !important;
+                            }
+                            .offer-modal-header,
+                            .offer-modal-statusbar {
+                                display: none !important;
+                            }
+                            .offer-document-scroll {
+                                position: static !important;
+                                width: 100% !important;
+                                height: auto !important;
+                                max-height: none !important;
+                                overflow: visible !important;
+                                background: #ffffff !important;
+                                padding: 0 !important;
+                                margin: 0 !important;
+                                display: block !important;
+                            }
+                            .printable-document {
+                                position: static !important;
+                                width: 100% !important;
+                                height: auto !important;
+                                overflow: visible !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                display: block !important;
                             }
                             .offer-page {
                                 position: relative !important;
