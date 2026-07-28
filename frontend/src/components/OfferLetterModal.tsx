@@ -129,18 +129,36 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     scrollX: 0,
                     scrollY: 0,
                     onclone: (clonedDoc) => {
-                        // Strip production CSS rules that contain unsupported oklch color functions or selectors
-                        const styleElements = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-                        styleElements.forEach((el) => {
-                            if (el.textContent?.includes('oklch') || el.textContent?.includes(':where')) {
-                                el.remove();
-                            }
-                        });
+                        // Remove ALL external stylesheets and style tags in clone to prevent html2canvas CSS parser errors
+                        const styleAndLinks = clonedDoc.querySelectorAll('style, link');
+                        styleAndLinks.forEach((el) => el.remove());
 
+                        // Inject clean, robust base typography & layout styles for html2canvas rendering
                         const cleanStyle = clonedDoc.createElement('style');
                         cleanStyle.textContent = `
-                            * { box-sizing: border-box !important; font-family: Georgia, 'Times New Roman', Times, serif !important; }
-                            .offer-page { width: 210mm !important; min-height: 297mm !important; padding: 16mm !important; background: #ffffff !important; color: #0f172a !important; }
+                            * {
+                                box-sizing: border-box !important;
+                                font-family: Georgia, 'Times New Roman', Times, serif !important;
+                            }
+                            body, html {
+                                background-color: #ffffff !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                            }
+                            .offer-page {
+                                width: 210mm !important;
+                                min-height: 297mm !important;
+                                padding: 16mm !important;
+                                background: #ffffff !important;
+                                color: #0f172a !important;
+                                border: 1px solid #e2e8f0 !important;
+                                box-shadow: none !important;
+                                display: flex !important;
+                                flex-direction: column !important;
+                                justify-content: space-between !important;
+                                position: relative !important;
+                                box-sizing: border-box !important;
+                            }
                         `;
                         clonedDoc.head.appendChild(cleanStyle);
                     }
