@@ -140,24 +140,28 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                     scrollX: 0,
                     scrollY: 0,
                     onclone: (clonedDoc) => {
-                        // Remove link/style elements in clone to avoid html2canvas parser errors
-                        const styleAndLinks = clonedDoc.querySelectorAll('style, link');
-                        styleAndLinks.forEach((el) => el.remove());
+                        // Only remove external <link> stylesheets (which use oklch() and crash html2canvas).
+                        // KEEP all <style> tags so Tailwind's compiled CSS remains intact.
+                        const externalLinks = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
+                        externalLinks.forEach((el) => el.remove());
 
-                        // Inject clean, high-DPI base typography & layout utility styles for html2canvas rendering
-                        const cleanStyle = clonedDoc.createElement('style');
-                        cleanStyle.textContent = `
+                        // Sanitize any oklch() values inside remaining <style> tags
+                        const styleTags = clonedDoc.querySelectorAll('style');
+                        styleTags.forEach((styleTag) => {
+                            if (styleTag.textContent) {
+                                styleTag.textContent = styleTag.textContent.replace(
+                                    /oklch\([^)]*\)/gi, 'transparent'
+                                );
+                            }
+                        });
+
+                        // Add minimal overrides on top of the preserved Tailwind styles
+                        const overrideStyle = clonedDoc.createElement('style');
+                        overrideStyle.textContent = `
                             * {
-                                box-sizing: border-box !important;
                                 font-family: Georgia, 'Times New Roman', Times, serif !important;
                                 -webkit-font-smoothing: antialiased !important;
-                                -moz-osx-font-smoothing: grayscale !important;
                                 text-rendering: optimizeLegibility !important;
-                            }
-                            body, html {
-                                background-color: #ffffff !important;
-                                margin: 0 !important;
-                                padding: 0 !important;
                             }
                             .offer-page {
                                 width: 210mm !important;
@@ -165,96 +169,14 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 height: 297mm !important;
                                 padding: 16mm !important;
                                 background: #ffffff !important;
-                                color: #0f172a !important;
-                                display: flex !important;
-                                flex-direction: column !important;
-                                justify-content: space-between !important;
-                                position: relative !important;
-                                box-sizing: border-box !important;
                             }
                             img {
                                 max-height: 64px !important;
                                 width: auto !important;
                                 object-fit: contain !important;
                             }
-                            .flex { display: flex !important; }
-                            .flex-row { flex-direction: row !important; }
-                            .flex-col { flex-direction: column !important; }
-                            .justify-between { justify-content: space-between !important; }
-                            .justify-center { justify-content: center !important; }
-                            .justify-end { justify-content: flex-end !important; }
-                            .items-center { align-items: center !important; }
-                            .items-start { align-items: flex-start !important; }
-                            .items-end { align-items: flex-end !important; }
-                            .grid { display: grid !important; }
-                            .grid-cols-2 { display: grid !important; grid-template-columns: 1fr 1fr !important; }
-                            .grid-cols-3 { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; }
-                            .gap-1 { gap: 0.25rem !important; }
-                            .gap-2 { gap: 0.5rem !important; }
-                            .gap-3 { gap: 0.75rem !important; }
-                            .gap-4 { gap: 1rem !important; }
-                            .gap-6 { gap: 1.5rem !important; }
-                            .gap-8 { gap: 2rem !important; }
-                            .text-left { text-align: left !important; }
-                            .text-right { text-align: right !important; }
-                            .text-center { text-align: center !important; }
-                            .w-full { width: 100% !important; }
-                            .w-auto { width: auto !important; }
-                            .h-16 { height: 4rem !important; }
-                            .font-black { font-weight: 900 !important; }
-                            .font-bold { font-weight: 700 !important; }
-                            .font-semibold { font-weight: 600 !important; }
-                            .font-medium { font-weight: 500 !important; }
-                            .font-normal { font-weight: 400 !important; }
-                            .uppercase { text-transform: uppercase !important; }
-                            .tracking-tight { letter-spacing: -0.025em !important; }
-                            .tracking-wider { letter-spacing: 0.05em !important; }
-                            .tracking-widest { letter-spacing: 0.1em !important; }
-                            .text-2xl { font-size: 1.5rem !important; line-height: 2rem !important; }
-                            .text-xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
-                            .text-lg { font-size: 1.125rem !important; line-height: 1.75rem !important; }
-                            .text-base { font-size: 1rem !important; line-height: 1.5rem !important; }
-                            .text-sm { font-size: 0.875rem !important; line-height: 1.25rem !important; }
-                            .text-xs { font-size: 0.75rem !important; line-height: 1rem !important; }
-                            .text-slate-900 { color: #0f172a !important; }
-                            .text-slate-800 { color: #1e293b !important; }
-                            .text-slate-700 { color: #334155 !important; }
-                            .text-slate-600 { color: #475569 !important; }
-                            .text-slate-500 { color: #64748b !important; }
-                            .text-amber-600 { color: #d97706 !important; }
-                            .bg-white { background-color: #ffffff !important; }
-                            .bg-slate-50 { background-color: #f8fafc !important; }
-                            .bg-slate-100 { background-color: #f1f5f9 !important; }
-                            .border { border: 1px solid #cbd5e1 !important; }
-                            .border-b { border-bottom: 1px solid #cbd5e1 !important; }
-                            .border-b-2 { border-bottom: 2px solid #0f172a !important; }
-                            .border-t { border-top: 1px solid #cbd5e1 !important; }
-                            .border-t-2 { border-top: 2px solid #0f172a !important; }
-                            .border-y-2 { border-top: 2px solid #0f172a !important; border-bottom: 2px solid #0f172a !important; }
-                            .rounded-xl { border-radius: 0.75rem !important; }
-                            .rounded-2xl { border-radius: 1rem !important; }
-                            .p-2 { padding: 0.5rem !important; }
-                            .p-3 { padding: 0.75rem !important; }
-                            .p-4 { padding: 1rem !important; }
-                            .p-6 { padding: 1.5rem !important; }
-                            .pb-2 { padding-bottom: 0.5rem !important; }
-                            .pb-3 { padding-bottom: 0.75rem !important; }
-                            .pb-4 { padding-bottom: 1rem !important; }
-                            .pt-4 { padding-top: 1rem !important; }
-                            .mb-1 { margin-bottom: 0.25rem !important; }
-                            .mb-2 { margin-bottom: 0.5rem !important; }
-                            .mb-3 { margin-bottom: 0.75rem !important; }
-                            .mb-4 { margin-bottom: 1rem !important; }
-                            .mb-6 { margin-bottom: 1.5rem !important; }
-                            .mt-1 { margin-top: 0.25rem !important; }
-                            .mt-2 { margin-top: 0.5rem !important; }
-                            .mt-4 { margin-top: 1rem !important; }
-                            .mt-6 { margin-top: 1.5rem !important; }
-                            table { width: 100% !important; border-collapse: collapse !important; }
-                            th, td { border: 1px solid #cbd5e1 !important; padding: 0.5rem 0.75rem !important; }
-                            th { background-color: #f8fafc !important; font-weight: 700 !important; }
                         `;
-                        clonedDoc.head.appendChild(cleanStyle);
+                        clonedDoc.head.appendChild(overrideStyle);
                     }
                 });
 
