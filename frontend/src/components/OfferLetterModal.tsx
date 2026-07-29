@@ -94,6 +94,13 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const shiftWindow = employee.shiftWindow || '9:30 AM - 6:30 PM';
     const trainingSalary = employee.trainingSalary ?? 15000;
 
+    const isTrainingMode = employee.engagementType === 'Training' ||
+        (Boolean(empRole) && (
+            empRole.toLowerCase().includes('trainee') ||
+            empRole.toLowerCase().includes('intern') ||
+            empRole.toLowerCase().includes('training')
+        ));
+
     // Salary breakdown
     const basicMonthly = employee.salary?.basic || 7500;
     const hraMonthly = employee.salary?.hra || 3750;
@@ -114,7 +121,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const pfAnnual = pfMonthly * 12;
     const esiAnnual = esiMonthly * 12;
 
-    const netAnnual = netMonthly * 12;
+    const netAnnual = (isTrainingMode ? (trainingSalary || netMonthly) : netMonthly) * 12;
 
     // Parse responsibilities
     const defaultResponsibilities = [
@@ -653,31 +660,32 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                                     <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 text-right font-bold text-red-600">- {esiAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-black">
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-2 border-r border-slate-700 uppercase">NET SALARY (TAKE HOME)</td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-2 border-r border-slate-700 text-right">INR {netMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right' }} className="p-2 text-right">INR {netAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-2 border-r border-slate-700 uppercase">
+                                                        {isTrainingMode ? 'NET STIPEND (TAKE HOME)' : 'NET SALARY (TAKE HOME)'}
+                                                    </td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-2 border-r border-slate-700 text-right">
+                                                        INR {(isTrainingMode ? (trainingSalary || netMonthly) : netMonthly).toLocaleString('en-IN')}
+                                                    </td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right' }} className="p-2 text-right">
+                                                        INR {netAnnual.toLocaleString('en-IN')}
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
 
                                     {/* Monthly Training or Employment Salary Highlight Box */}
-                                    {(() => {
-                                        const isTrainingMode = employee.engagementType === 'Training';
-                                        return (
-                                            <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '14px', padding: '10px 16px', textAlign: 'center', marginTop: '10px', marginBottom: '10px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-3 text-center my-2">
-                                                <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '14px', margin: 0 }} className="text-slate-800 font-black text-sm">
-                                                    {isTrainingMode ? 'Monthly Training Period Stipend: ' : 'Monthly Net Take-Home Salary: '}
-                                                    <span style={{ color: '#030712', fontWeight: 900, fontSize: '18px' }} className="text-slate-950 font-black text-lg">
-                                                        INR {(isTrainingMode ? (trainingSalary || netMonthly) : netMonthly).toLocaleString('en-IN')}
-                                                    </span>
-                                                </p>
-                                                <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
-                                                    {isTrainingMode ? '(STIPEND AMOUNT DURING TRAINING PERIOD)' : '(AFTER STATUTORY DEDUCTIONS - PF & ESI)'}
-                                                </p>
-                                            </div>
-                                        );
-                                    })()}
+                                    <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '14px', padding: '10px 16px', textAlign: 'center', marginTop: '10px', marginBottom: '10px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-3 text-center my-2">
+                                        <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '14px', margin: 0 }} className="text-slate-800 font-black text-sm">
+                                            {isTrainingMode ? 'Monthly Training Period Stipend: ' : 'Monthly Net Take-Home Salary: '}
+                                            <span style={{ color: '#030712', fontWeight: 900, fontSize: '18px' }} className="text-slate-950 font-black text-lg">
+                                                INR {(isTrainingMode ? (trainingSalary || netMonthly) : netMonthly).toLocaleString('en-IN')}
+                                            </span>
+                                        </p>
+                                        <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+                                            {isTrainingMode ? '(STIPEND AMOUNT DURING TRAINING PERIOD)' : '(AFTER STATUTORY DEDUCTIONS - PF & ESI)'}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 {/* Section 4 */}

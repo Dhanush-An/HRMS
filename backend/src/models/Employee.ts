@@ -35,6 +35,7 @@ export interface IEmployee extends Document {
     address?: string;
     aadharNo?: string;
     trainingSalary?: number;
+    engagementType?: 'Training' | 'Employment';
     reportsTo?: string;
     workLocation?: string;
     shiftWindow?: string;
@@ -68,6 +69,7 @@ const EmployeeSchema: Schema = new Schema({
     address: { type: String, default: '' },
     aadharNo: { type: String, default: '' },
     trainingSalary: { type: Number, default: 15000 },
+    engagementType: { type: String, enum: ['Training', 'Employment'], default: 'Training' },
     reportsTo: { type: String, default: 'TL' },
     workLocation: { type: String, default: 'Bangalore (Onsite)' },
     shiftWindow: { type: String, default: '9:30 AM - 6:30 PM' },

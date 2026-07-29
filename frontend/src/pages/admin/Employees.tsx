@@ -197,9 +197,15 @@ const Employees = () => {
     };
 
     const openOfferLetter = (employee: Employee) => {
+        const isTrainingRole = employee.role ? (
+            employee.role.toLowerCase().includes('trainee') ||
+            employee.role.toLowerCase().includes('intern') ||
+            employee.role.toLowerCase().includes('training')
+        ) : false;
+
         setSelectedEmployeeForOffer({
             ...employee,
-            engagementType: employee.engagementType || 'Employment'
+            engagementType: employee.engagementType || (isTrainingRole ? 'Training' : 'Employment')
         });
         setIsNewOfferProcess(false);
         setIsOfferModalOpen(true);

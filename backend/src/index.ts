@@ -446,7 +446,7 @@ app.get('/api/employees/:id', async (req, res) => {
 // POST new employee
 app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
     try {
-        const { id, name, email, role, department, status, phone, joiningDate, branchId, branchName, address, aadharNo, trainingSalary, reportsTo, workLocation, shiftWindow, offerResponsibilities, responsibilities } = req.body;
+        const { id, name, email, role, department, status, phone, joiningDate, branchId, branchName, address, aadharNo, trainingSalary, engagementType, reportsTo, workLocation, shiftWindow, offerResponsibilities, responsibilities } = req.body;
         const user = (req as any).user;
 
         let finalBranchId = branchId;
@@ -488,6 +488,7 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
             address: address || '',
             aadharNo: aadharNo || '',
             trainingSalary: trainingSalary !== undefined ? Number(trainingSalary) : 15000,
+            engagementType: engagementType || 'Training',
             reportsTo: reportsTo || 'TL',
             workLocation: workLocation || 'Bangalore (Onsite)',
             shiftWindow: shiftWindow || '9:30 AM - 6:30 PM',
