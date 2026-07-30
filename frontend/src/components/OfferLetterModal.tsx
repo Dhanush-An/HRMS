@@ -20,6 +20,9 @@ interface EmployeeOfferData {
     offerIssueDate?: string;
     reportsTo?: string;
     workLocation?: string;
+    workMode?: string;
+    noticePeriod?: string;
+    noticePeriodCondition?: string;
     shiftWindow?: string;
     trainingSalary?: number;
     engagementType?: 'Training' | 'Employment';
@@ -91,6 +94,9 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const joiningDate = employee.joiningDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
     const reportsTo = employee.reportsTo || 'TL';
     const workLocation = employee.workLocation || 'Bangalore (Onsite)';
+    const workMode = employee.workMode || 'Work from Office';
+    const noticePeriod = employee.noticePeriod || '30 Days';
+    const noticePeriodCondition = employee.noticePeriodCondition || 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.';
     const shiftWindow = employee.shiftWindow || '9:30 AM - 6:30 PM';
     const trainingSalary = employee.trainingSalary ?? 15000;
 
@@ -756,7 +762,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 8. NOTICE PERIOD & TERMINATION
                                     </h3>
                                     <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '16px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-800">
-                                        Separation requires a formal <span style={{ fontWeight: 900 }} className="font-black">Notice Period of 30 Days</span> or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.
+                                        {noticePeriodCondition || (<>Separation requires a formal <span style={{ fontWeight: 900 }} className="font-black">Notice Period of {noticePeriod}</span> or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.</>)}
                                     </div>
                                 </div>
 

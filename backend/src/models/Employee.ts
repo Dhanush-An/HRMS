@@ -38,6 +38,9 @@ export interface IEmployee extends Document {
     engagementType?: 'Training' | 'Employment';
     reportsTo?: string;
     workLocation?: string;
+    workMode?: string;
+    noticePeriod?: string;
+    noticePeriodCondition?: string;
     shiftWindow?: string;
     offerId?: string;
     offerIssueDate?: string;
@@ -72,6 +75,9 @@ const EmployeeSchema: Schema = new Schema({
     engagementType: { type: String, enum: ['Training', 'Employment'], default: 'Training' },
     reportsTo: { type: String, default: 'TL' },
     workLocation: { type: String, default: 'Bangalore (Onsite)' },
+    workMode: { type: String, default: 'Work from Office' },
+    noticePeriod: { type: String, default: '30 Days' },
+    noticePeriodCondition: { type: String, default: 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.' },
     shiftWindow: { type: String, default: '9:30 AM - 6:30 PM' },
     offerId: { type: String, default: '' },
     offerIssueDate: { type: String, default: '' },

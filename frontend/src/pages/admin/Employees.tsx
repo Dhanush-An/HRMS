@@ -39,6 +39,9 @@ interface Employee {
     engagementType?: 'Training' | 'Employment';
     reportsTo?: string;
     workLocation?: string;
+    workMode?: string;
+    noticePeriod?: string;
+    noticePeriodCondition?: string;
     shiftWindow?: string;
     offerId?: string;
     offerIssueDate?: string;
@@ -83,6 +86,9 @@ const Employees = () => {
         trainingSalary: 0,
         reportsTo: '',
         workLocation: 'Bangalore (Onsite)',
+        workMode: 'Work from Office',
+        noticePeriod: '30 Days',
+        noticePeriodCondition: 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.',
         shiftWindow: '9:30 AM - 6:30 PM',
         responsibilities: ''
     });
@@ -148,6 +154,9 @@ const Employees = () => {
             trainingSalary: 0,
             reportsTo: '',
             workLocation: '',
+            workMode: 'Work from Office',
+            noticePeriod: '30 Days',
+            noticePeriodCondition: 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.',
             shiftWindow: '',
             responsibilities: ''
         });
@@ -185,6 +194,9 @@ const Employees = () => {
             trainingSalary: employee.trainingSalary ?? 15000,
             reportsTo: employee.reportsTo || 'TL',
             workLocation: employee.workLocation || 'Bangalore (Onsite)',
+            workMode: (employee as any).workMode || 'Work from Office',
+            noticePeriod: (employee as any).noticePeriod || '30 Days',
+            noticePeriodCondition: (employee as any).noticePeriodCondition || 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.',
             shiftWindow: employee.shiftWindow || '9:30 AM - 6:30 PM',
             responsibilities: employee.responsibilities || ''
         });
@@ -783,6 +795,74 @@ const Employees = () => {
                                         placeholder="e.g. TL"
                                         className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-medium"
                                     />
+                                </div>
+                            </div>
+
+                            {/* Location, Work Mode & Notice Period Section */}
+                            <div className="p-4 bg-brand-bg/50 border border-brand-border rounded-2xl space-y-4">
+                                <h3 className="text-xs font-black uppercase tracking-wider text-violet-400">Location, Mode & Notice Period</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Work Location</label>
+                                        <select
+                                            name="workLocation"
+                                            value={formData.workLocation}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm cursor-pointer"
+                                        >
+                                            <option value="Bangalore (Onsite)">Bangalore (Onsite)</option>
+                                            <option value="Chennai (Onsite)">Chennai (Onsite)</option>
+                                            <option value="Coimbatore (Onsite)">Coimbatore (Onsite)</option>
+                                            <option value="Hyderabad (Onsite)">Hyderabad (Onsite)</option>
+                                            <option value="Mumbai (Onsite)">Mumbai (Onsite)</option>
+                                            <option value="Delhi (Onsite)">Delhi (Onsite)</option>
+                                            <option value="Remote">Remote</option>
+                                            <option value="Hybrid">Hybrid</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Work Mode</label>
+                                        <select
+                                            name="workMode"
+                                            value={formData.workMode}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm cursor-pointer"
+                                        >
+                                            <option value="Work from Office">Work from Office</option>
+                                            <option value="Work from Home">Work from Home</option>
+                                            <option value="Hybrid">Hybrid</option>
+                                            <option value="Remote">Remote</option>
+                                            <option value="Field Work">Field Work</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-rose-400 mb-1">Notice Period</label>
+                                        <select
+                                            name="noticePeriod"
+                                            value={formData.noticePeriod}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-brand-surface border border-rose-500/50 text-rose-400 rounded-xl p-3 font-bold text-sm cursor-pointer"
+                                        >
+                                            <option value="Immediate">Immediate</option>
+                                            <option value="7 Days">7 Days</option>
+                                            <option value="15 Days">15 Days</option>
+                                            <option value="30 Days">30 Days</option>
+                                            <option value="60 Days">60 Days</option>
+                                            <option value="90 Days">90 Days</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-rose-400 mb-1">Notice Period Condition</label>
+                                        <textarea
+                                            name="noticePeriodCondition"
+                                            value={formData.noticePeriodCondition}
+                                            onChange={(e) => setFormData({ ...formData, noticePeriodCondition: e.target.value })}
+                                            placeholder="e.g. Separation requires a formal Notice Period of 30 Days or salary in lieu..."
+                                            className="w-full bg-brand-surface border border-rose-500/50 text-rose-300 rounded-xl p-3 font-medium text-xs min-h-[80px] resize-none"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
