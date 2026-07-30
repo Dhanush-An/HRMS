@@ -94,7 +94,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const joiningDate = employee.joiningDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
     const reportsTo = employee.reportsTo || 'TL';
     const workLocation = employee.workLocation || 'Bangalore (Onsite)';
-    const _workMode = employee.workMode || 'Work from Office';
     const noticePeriod = employee.noticePeriod || '30 Days';
     const noticePeriodCondition = employee.noticePeriodCondition || 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.';
     const shiftWindow = employee.shiftWindow || '9:30 AM - 6:30 PM';
