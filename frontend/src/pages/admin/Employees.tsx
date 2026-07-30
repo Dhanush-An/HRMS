@@ -804,21 +804,14 @@ const Employees = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Work Location</label>
-                                        <select
+                                        <input
+                                            type="text"
                                             name="workLocation"
                                             value={formData.workLocation}
                                             onChange={handleInputChange}
-                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm cursor-pointer"
-                                        >
-                                            <option value="Bangalore (Onsite)">Bangalore (Onsite)</option>
-                                            <option value="Chennai (Onsite)">Chennai (Onsite)</option>
-                                            <option value="Coimbatore (Onsite)">Coimbatore (Onsite)</option>
-                                            <option value="Hyderabad (Onsite)">Hyderabad (Onsite)</option>
-                                            <option value="Mumbai (Onsite)">Mumbai (Onsite)</option>
-                                            <option value="Delhi (Onsite)">Delhi (Onsite)</option>
-                                            <option value="Remote">Remote</option>
-                                            <option value="Hybrid">Hybrid</option>
-                                        </select>
+                                            placeholder="e.g. Bangalore (Onsite)"
+                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
+                                        />
                                     </div>
                                     <div>
                                         <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Work Mode</label>
