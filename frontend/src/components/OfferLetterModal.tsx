@@ -798,11 +798,11 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                 {/* Signatures Area */}
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', fontSize: '12px', paddingTop: '16px', marginBottom: '32px' }} className="grid grid-cols-2 gap-8 text-xs pt-4 mb-10">
                                     <div className="flex flex-col justify-end">
-                                         <div style={{ marginBottom: '-30px', position: 'relative', zIndex: 10 }}>
+                                         <div style={{ marginBottom: '-45px', position: 'relative', zIndex: 10 }}>
                                              <img 
                                                  src="/dhanush_signature.png" 
                                                  alt="Dhanush Signature" 
-                                                 style={{ height: '95px', objectFit: 'contain', mixBlendMode: 'multiply' }} 
+                                                 style={{ height: '150px', objectFit: 'contain', mixBlendMode: 'multiply' }} 
                                              />
                                          </div>
                                          <p style={{ fontWeight: 900, color: '#0f172a', fontSize: '14px', margin: 0 }} className="font-black text-slate-900 text-sm">MR. DHANUSH</p>
