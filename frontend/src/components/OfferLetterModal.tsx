@@ -272,8 +272,6 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             print-color-adjust: exact !important;
                         }
                         img {
-                            max-height: 64px !important;
-                            width: auto !important;
                             object-fit: contain !important;
                         }
                     </style>
@@ -802,7 +800,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                              <img 
                                                  src="/dhanush_signature.png" 
                                                  alt="Dhanush Signature" 
-                                                 style={{ height: '220px', objectFit: 'contain', mixBlendMode: 'multiply' }} 
+                                                 style={{ height: '220px', maxHeight: 'none', objectFit: 'contain', mixBlendMode: 'multiply' }} 
                                              />
                                          </div>
                                          <p style={{ fontWeight: 900, color: '#0f172a', fontSize: '14px', margin: 0 }} className="font-black text-slate-900 text-sm">MR. DHANUSH</p>
