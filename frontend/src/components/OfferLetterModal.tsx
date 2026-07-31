@@ -797,15 +797,16 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
                                 {/* Signatures Area */}
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', fontSize: '12px', paddingTop: '16px', marginBottom: '32px' }} className="grid grid-cols-2 gap-8 text-xs pt-4 mb-10">
-                                    <div className="space-y-6">
-                                        <div>
-                                            <p style={{ fontWeight: 900, color: '#0f172a', fontSize: '14px', margin: 0 }} className="font-black text-slate-900 text-sm">MR. SANDEEP</p>
-                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '2px 0 0 0' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">CHIEF EXECUTIVE OFFICER</p>
-                                        </div>
-                                        <div style={{ marginTop: '24px' }}>
-                                            <p style={{ fontWeight: 900, color: '#0f172a', fontSize: '14px', margin: 0 }} className="font-black text-slate-900 text-sm">MR. AVINASH (MD)</p>
-                                            <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '2px 0 0 0' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">MANAGING DIRECTOR</p>
-                                        </div>
+                                    <div className="flex flex-col justify-end">
+                                         <div style={{ marginBottom: '-10px', position: 'relative', zIndex: 10 }}>
+                                             <img 
+                                                 src="/dhanush_signature.png" 
+                                                 alt="Dhanush Signature" 
+                                                 style={{ height: '55px', objectFit: 'contain', mixBlendMode: 'multiply' }} 
+                                             />
+                                         </div>
+                                         <p style={{ fontWeight: 900, color: '#0f172a', fontSize: '14px', margin: 0 }} className="font-black text-slate-900 text-sm">MR. DHANUSH</p>
+                                         <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '2px 0 0 0' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">HR MANAGER</p>
                                     </div>
 
                                     <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }} className="text-right flex flex-col justify-end">
