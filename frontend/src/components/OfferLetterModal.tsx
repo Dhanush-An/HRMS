@@ -3,6 +3,7 @@ import { XCircle, Download, Printer, CheckCircle, FileText, Loader2 } from 'luci
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { OFFICIAL_LOGO_BASE64 } from '../assets/logoBase64';
+import { DHANUSH_SIGNATURE_BASE64 } from '../assets/signatureBase64';
 
 interface EmployeeOfferData {
     id?: string;
@@ -798,7 +799,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                     <div className="flex flex-col justify-end">
                                          <div style={{ marginBottom: '-70px', position: 'relative', zIndex: 10 }}>
                                              <img 
-                                                 src="/dhanush_signature.png" 
+                                                 src={DHANUSH_SIGNATURE_BASE64} 
                                                  alt="Dhanush Signature" 
                                                  style={{ height: '220px', maxHeight: 'none', objectFit: 'contain', mixBlendMode: 'multiply' }} 
                                              />
