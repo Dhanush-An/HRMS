@@ -16,6 +16,7 @@ import {
     User,
     MoreVertical,
     UserMinus,
+    UserCheck,
     ShieldCheck
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
@@ -238,16 +239,20 @@ const Employees = () => {
         }
     };
 
-    const handleDeactivate = async (id: string) => {
-        if (!window.confirm('Are you sure you want to deactivate this employee?')) return;
+    const handleToggleStatus = async (id: string, currentStatus: string) => {
+        const isCurrentlyActive = currentStatus === 'Active';
+        const newStatus = isCurrentlyActive ? 'Inactive' : 'Active';
+        const actionText = isCurrentlyActive ? 'deactivate' : 'activate';
+
+        if (!window.confirm(`Are you sure you want to ${actionText} this employee?`)) return;
         try {
-            const response = await api.put(`/api/employees/${id}/status`, { status: 'Inactive' });
+            const response = await api.put(`/api/employees/${id}/status`, { status: newStatus });
             if (response.ok) {
                 fetchEmployees();
                 setActiveDropdown(null);
             }
         } catch (error) {
-            console.error("Error deactivating employee:", error);
+            console.error(`Error updating status for employee:`, error);
         }
     };
 
@@ -491,13 +496,23 @@ const Employees = () => {
                                                             <ShieldCheck className="w-3.5 h-3.5" />
                                                             Role & Responsibility
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleDeactivate(emp.id)}
-                                                            className="w-full text-left px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition-colors pt-2.5"
-                                                        >
-                                                            <UserMinus className="w-3.5 h-3.5" />
-                                                            Deactivate
-                                                        </button>
+                                                        {emp.status === 'Active' ? (
+                                                            <button
+                                                                onClick={() => handleToggleStatus(emp.id, emp.status)}
+                                                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition-colors pt-2.5"
+                                                            >
+                                                                <UserMinus className="w-3.5 h-3.5" />
+                                                                Deactivate
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleToggleStatus(emp.id, emp.status)}
+                                                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-emerald-500 hover:bg-emerald-500/10 flex items-center gap-2 transition-colors pt-2.5"
+                                                            >
+                                                                <UserCheck className="w-3.5 h-3.5" />
+                                                                Activate
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </>
                                             )}
