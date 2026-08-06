@@ -154,15 +154,15 @@ const Employees = () => {
     const openAddModal = () => {
         setIsEditing(false);
         setIsCustomRole(false);
-        const defaultBranch = branches[0];
+        const defaultBranch = branches.find(b => (b.name && b.name.toLowerCase().includes('bangalore')) || (b.branchCode && b.branchCode.includes('BLR'))) || branches[0];
         setFormData({
             id: '',
             name: '',
             email: '',
             role: 'Employee',
             department: 'IT',
-            branchId: defaultBranch?.branchId || defaultBranch?.id || 'BR001',
-            branchName: defaultBranch?.name || defaultBranch?.branchName || 'Chennai',
+            branchId: defaultBranch?.branchId || defaultBranch?.id || 'BR002',
+            branchName: defaultBranch?.name || defaultBranch?.branchName || 'Bangalore Branch',
             status: 'Active',
             phone: '',
             joiningDate: new Date().toISOString().split('T')[0],
