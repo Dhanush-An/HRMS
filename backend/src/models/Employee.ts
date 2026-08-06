@@ -41,6 +41,8 @@ export interface IEmployee extends Document {
     workMode?: string;
     noticePeriod?: string;
     noticePeriodCondition?: string;
+    probationaryPeriod?: string;
+    probationaryPeriodCondition?: string;
     shiftWindow?: string;
     offerId?: string;
     offerIssueDate?: string;
@@ -78,6 +80,8 @@ const EmployeeSchema: Schema = new Schema({
     workMode: { type: String, default: 'Work from Office' },
     noticePeriod: { type: String, default: '30 Days' },
     noticePeriodCondition: { type: String, default: 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.' },
+    probationaryPeriod: { type: String, default: '3 Months' },
+    probationaryPeriodCondition: { type: String, default: 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.' },
     shiftWindow: { type: String, default: '9:30 AM - 6:30 PM' },
     offerId: { type: String, default: '' },
     offerIssueDate: { type: String, default: '' },

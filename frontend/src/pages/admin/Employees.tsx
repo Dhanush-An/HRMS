@@ -43,6 +43,8 @@ interface Employee {
     workMode?: string;
     noticePeriod?: string;
     noticePeriodCondition?: string;
+    probationaryPeriod?: string;
+    probationaryPeriodCondition?: string;
     shiftWindow?: string;
     offerId?: string;
     offerIssueDate?: string;
@@ -90,6 +92,8 @@ const Employees = () => {
         workMode: 'Work from Office',
         noticePeriod: '30 Days',
         noticePeriodCondition: 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.',
+        probationaryPeriod: '3 Months',
+        probationaryPeriodCondition: 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.',
         shiftWindow: '9:30 AM - 6:30 PM',
         responsibilities: ''
     });
@@ -158,6 +162,8 @@ const Employees = () => {
             workMode: 'Work from Office',
             noticePeriod: '30 Days',
             noticePeriodCondition: 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.',
+            probationaryPeriod: '3 Months',
+            probationaryPeriodCondition: 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.',
             shiftWindow: '',
             responsibilities: ''
         });
@@ -198,6 +204,8 @@ const Employees = () => {
             workMode: (employee as any).workMode || 'Work from Office',
             noticePeriod: (employee as any).noticePeriod || '30 Days',
             noticePeriodCondition: (employee as any).noticePeriodCondition || 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.',
+            probationaryPeriod: (employee as any).probationaryPeriod || '3 Months',
+            probationaryPeriodCondition: (employee as any).probationaryPeriodCondition || 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.',
             shiftWindow: employee.shiftWindow || '9:30 AM - 6:30 PM',
             responsibilities: employee.responsibilities || ''
         });
@@ -813,9 +821,9 @@ const Employees = () => {
                                 </div>
                             </div>
 
-                            {/* Location, Work Mode & Notice Period Section */}
+                            {/* Location, Work Mode, Probation & Notice Period Section */}
                             <div className="p-4 bg-brand-bg/50 border border-brand-border rounded-2xl space-y-4">
-                                <h3 className="text-xs font-black uppercase tracking-wider text-violet-400">Location, Mode & Notice Period</h3>
+                                <h3 className="text-xs font-black uppercase tracking-wider text-violet-400">Location, Mode, Probation & Notice Period</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Work Location</label>
@@ -842,6 +850,33 @@ const Employees = () => {
                                             <option value="Remote">Remote</option>
                                             <option value="Field Work">Field Work</option>
                                         </select>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-amber-400 mb-1">Probationary Period</label>
+                                        <select
+                                            name="probationaryPeriod"
+                                            value={formData.probationaryPeriod}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-brand-surface border border-amber-500/50 text-amber-400 rounded-xl p-3 font-bold text-sm cursor-pointer"
+                                        >
+                                            <option value="1 Month">1 Month</option>
+                                            <option value="2 Months">2 Months</option>
+                                            <option value="3 Months">3 Months</option>
+                                            <option value="6 Months">6 Months</option>
+                                            <option value="No Probation">No Probation</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-amber-400 mb-1">Probationary Period Condition</label>
+                                        <textarea
+                                            name="probationaryPeriodCondition"
+                                            value={formData.probationaryPeriodCondition}
+                                            onChange={(e) => setFormData({ ...formData, probationaryPeriodCondition: e.target.value })}
+                                            placeholder="e.g. You will undergo a Probation for three months. Confirmation is performance-contingent..."
+                                            className="w-full bg-brand-surface border border-amber-500/50 text-amber-300 rounded-xl p-3 font-medium text-xs min-h-[80px] resize-none"
+                                        />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

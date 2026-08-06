@@ -24,6 +24,8 @@ interface EmployeeOfferData {
     workMode?: string;
     noticePeriod?: string;
     noticePeriodCondition?: string;
+    probationaryPeriod?: string;
+    probationaryPeriodCondition?: string;
     shiftWindow?: string;
     trainingSalary?: number;
     engagementType?: 'Training' | 'Employment';
@@ -97,6 +99,8 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const workLocation = employee.workLocation || 'Bangalore (Onsite)';
     const noticePeriod = employee.noticePeriod || '30 Days';
     const noticePeriodCondition = employee.noticePeriodCondition || 'Separation requires a formal Notice Period of 30 Days or salary in lieu. Immediate termination applies for gross misconduct, fraud, or code of conduct violations.';
+    const probationaryPeriod = employee.probationaryPeriod || '3 Months';
+    const probationaryPeriodCondition = employee.probationaryPeriodCondition || 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.';
     const shiftWindow = employee.shiftWindow || '9:30 AM - 6:30 PM';
     const trainingSalary = employee.trainingSalary ?? 15000;
 
@@ -713,7 +717,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 5. PROBATIONARY PERIOD
                                     </h3>
                                     <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '10px 14px', fontSize: '12px', color: '#1e293b', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800">
-                                        You will undergo a <span style={{ fontWeight: 900 }} className="font-black">Probation for three months</span>. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.
+                                        {probationaryPeriodCondition || (<>You will undergo a <span style={{ fontWeight: 900 }} className="font-black">Probation for {probationaryPeriod}</span>. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.</>)}
                                     </div>
                                 </div>
 
