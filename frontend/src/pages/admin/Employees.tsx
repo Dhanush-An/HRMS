@@ -32,6 +32,7 @@ interface Employee {
     status: string;
     joiningDate: string;
     phone?: string;
+    branchId?: string;
     branchName?: string;
     responsibilities?: string;
     address?: string;
@@ -54,6 +55,7 @@ interface Employee {
 
 const Employees = () => {
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const [branches, setBranches] = useState<any[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
@@ -73,6 +75,8 @@ const Employees = () => {
         email: '',
         role: 'Junior AI Associate Developer',
         department: 'IT',
+        branchId: '',
+        branchName: '',
         status: 'Active',
         phone: '',
         joiningDate: new Date().toISOString().split('T')[0],
@@ -108,6 +112,18 @@ const Employees = () => {
         'QA / Test Engineer', 'HR Executive', 'HR Manager', 'Project Manager', 'Team Lead'
     ];
 
+    const fetchBranches = async () => {
+        try {
+            const res = await api.get('/api/branches');
+            if (res.ok) {
+                const data = await res.json();
+                setBranches(Array.isArray(data) ? data : []);
+            }
+        } catch (error) {
+            console.error('Error fetching branches:', error);
+        }
+    };
+
     const fetchEmployees = async () => {
         try {
             const response = await api.get('/api/employees');
@@ -121,6 +137,7 @@ const Employees = () => {
 
     useEffect(() => {
         fetchEmployees();
+        fetchBranches();
     }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -137,12 +154,15 @@ const Employees = () => {
     const openAddModal = () => {
         setIsEditing(false);
         setIsCustomRole(false);
+        const defaultBranch = branches[0];
         setFormData({
             id: '',
             name: '',
             email: '',
             role: 'Employee',
             department: 'IT',
+            branchId: defaultBranch?.branchId || defaultBranch?.id || 'BR001',
+            branchName: defaultBranch?.name || defaultBranch?.branchName || 'Chennai',
             status: 'Active',
             phone: '',
             joiningDate: new Date().toISOString().split('T')[0],
@@ -179,12 +199,15 @@ const Employees = () => {
         } else {
             setIsCustomRole(false);
         }
+        const foundBranch = branches.find(b => (b.branchId || b.id) === employee.branchId || b.name === employee.branchName);
         setFormData({
             id: employee.id,
             name: employee.name,
             email: employee.email,
             role: employee.role,
             department: employee.department,
+            branchId: employee.branchId || foundBranch?.branchId || foundBranch?.id || branches[0]?.branchId || 'BR001',
+            branchName: employee.branchName || foundBranch?.name || branches[0]?.name || 'Chennai',
             status: employee.status,
             phone: employee.phone || '',
             joiningDate: employee.joiningDate,
@@ -707,7 +730,7 @@ const Employees = () => {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
                                         <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest">Role / System Access</label>
@@ -765,6 +788,34 @@ const Employees = () => {
                                             <option value="Other">Other (Specify Custom Role...)</option>
                                         </select>
                                     )}
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Branch</label>
+                                    <select
+                                        name="branchId"
+                                        value={formData.branchId}
+                                        onChange={(e) => {
+                                            const bId = e.target.value;
+                                            const selectedBranch = branches.find(b => (b.branchId || b.id) === bId);
+                                            setFormData({
+                                                ...formData,
+                                                branchId: bId,
+                                                branchName: selectedBranch ? (selectedBranch.name || selectedBranch.branchName) : formData.branchName
+                                            });
+                                        }}
+                                        className="w-full bg-brand-bg border border-brand-border rounded-2xl p-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all font-bold text-sm cursor-pointer"
+                                        required
+                                    >
+                                        {branches.length === 0 ? (
+                                            <option value="BR001">Chennai</option>
+                                        ) : (
+                                            branches.map((b) => (
+                                                <option key={b.branchId || b.id} value={b.branchId || b.id}>
+                                                    {b.name || b.branchName} ({b.branchCode || b.branchId})
+                                                </option>
+                                            ))
+                                        )}
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Department</label>
@@ -1066,7 +1117,7 @@ const Employees = () => {
                                     <p className="text-white/80 font-bold uppercase tracking-widest text-xs mt-1">{selectedEmployee.role}</p>
                                     <div className="flex items-center gap-3 mt-4">
                                         <span className="bg-white/20 text-white px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-tighter border border-white/20">{selectedEmployee.id}</span>
-                                        <span className="text-white/90 font-bold text-sm">{selectedEmployee.department}</span>
+                                        <span className="text-white/90 font-bold text-sm">{selectedEmployee.department}{selectedEmployee.branchName ? ` • ${selectedEmployee.branchName}` : ''}</span>
                                     </div>
                                 </div>
                             </div>
