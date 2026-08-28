@@ -34,7 +34,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api';
 
 const BRANCH_LOCATIONS = {
-    'Bangalore': { lat: 12.971748775481734, lng: 77.50804575326372 },
+    'Bangalore': { lat: 12.97025, lng: 77.50675 },
     'Chennai': { lat: 13.0827, lng: 80.2707 },
     'Palacode': { lat: 12.299359170545028, lng: 78.0733771109474 }
 };
