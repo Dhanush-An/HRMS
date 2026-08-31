@@ -27,6 +27,7 @@ interface Branch {
     openingDate?: string;
     latitude?: number;
     longitude?: number;
+    radius?: number;
     branchType: 'Head Office' | 'Regional Office' | 'Franchise';
     status: 'Active' | 'Inactive';
 }
@@ -951,7 +952,7 @@ const Branches = () => {
                                             />
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:col-span-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:col-span-2">
                                         <div>
                                             <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Opening Date</label>
                                             <input 
@@ -976,6 +977,15 @@ const Branches = () => {
                                                 type="number" step="any" placeholder="e.g. 77.5946"
                                                 value={formBranch.longitude || ''}
                                                 onChange={e => setFormBranch({...formBranch, longitude: parseFloat(e.target.value)})}
+                                                className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-brand-muted uppercase tracking-widest mb-1.5 pl-1">Geofence Radius (m)</label>
+                                            <input 
+                                                type="number" step="any" placeholder="e.g. 25"
+                                                value={formBranch.radius || ''}
+                                                onChange={e => setFormBranch({...formBranch, radius: parseFloat(e.target.value)})}
                                                 className="w-full bg-brand-bg border border-brand-border rounded-xl p-3.5 text-brand-text font-bold text-xs focus:ring-2 focus:ring-brand-primary/30 outline-none"
                                             />
                                         </div>

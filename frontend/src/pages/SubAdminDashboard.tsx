@@ -374,10 +374,10 @@ const SubAdminDashboard: React.FC = () => {
                 selectedBranch.longitude
             );
 
-            console.log(`[GEOFENCE] Distance to ${loginOptions.workLocation} branch: ${distance.toFixed(2)}m`);
+            const allowedRadius = (selectedBranch as any).radius || (loginOptions.workLocation?.toLowerCase().includes('bangalore') ? 25 : 10);
 
-            if (distance > 10) {
-                alert(`Access Denied: You are ${distance.toFixed(0)}m away. Kindly check the location. You must be within 10m of the office to check-in.`);
+            if (distance > allowedRadius) {
+                alert(`Access Denied: You are ${distance.toFixed(0)}m away. Kindly check the location. You must be within ${allowedRadius}m of the office to check-in.`);
                 setIsSubmitting(false);
                 return;
             }

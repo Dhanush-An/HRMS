@@ -11,6 +11,7 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/hrms_db').t
             $set: { 
                 latitude: 12.97025, 
                 longitude: 77.50675,
+                radius: 25,
                 address: '1st Floor, #962, above SBI Bank, near Deepa Complex, Papreddy Palya, 2nd Stage, Nagarbhavi',
                 city: 'Bengaluru',
                 state: 'Karnataka',

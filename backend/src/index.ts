@@ -122,6 +122,7 @@ const seedBranches = async () => {
                     branchType: 'Regional Office',
                     latitude: 12.97025,
                     longitude: 77.50675,
+                    radius: 25,
                     status: 'Active'
                 },
                 {
@@ -707,7 +708,7 @@ app.get('/api/branches', async (req, res) => {
 // POST new branch
 app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
     try {
-        const { branchId, name, branchCode, address, city, state, country, pincode, managerName, phone, email, employeeStrength, openingDate, branchType, status, password, subAdminEmail, subAdminPassword } = req.body;
+        const { branchId, name, branchCode, address, city, state, country, pincode, managerName, phone, email, employeeStrength, openingDate, latitude, longitude, radius, branchType, status, password, subAdminEmail, subAdminPassword } = req.body;
         
         let finalBranchId = branchId;
         if (!finalBranchId) {
@@ -729,6 +730,9 @@ app.post('/api/branches', authorizeRoles('admin'), async (req, res) => {
             email,
             employeeStrength: employeeStrength || 0,
             openingDate,
+            latitude,
+            longitude,
+            radius: radius || 10,
             branchType: branchType || 'Regional Office',
             status: status || 'Active'
         });

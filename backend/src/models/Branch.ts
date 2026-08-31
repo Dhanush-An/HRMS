@@ -16,6 +16,7 @@ export interface IBranch extends Document {
     openingDate?: string;
     latitude?: number;
     longitude?: number;
+    radius?: number;
     branchType: 'Head Office' | 'Regional Office' | 'Franchise';
     status: 'Active' | 'Inactive';
 }
@@ -36,6 +37,7 @@ const BranchSchema: Schema = new Schema({
     openingDate: { type: String },
     latitude: { type: Number },
     longitude: { type: Number },
+    radius: { type: Number, default: 10 },
     branchType: { type: String, enum: ['Head Office', 'Regional Office', 'Franchise'], default: 'Regional Office' },
     status: { type: String, enum: ['Active', 'Inactive'], default: 'Active' }
 }, {
