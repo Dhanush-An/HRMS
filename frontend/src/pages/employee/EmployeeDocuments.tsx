@@ -35,14 +35,16 @@ const EmployeeDocuments = () => {
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedDocType, setSelectedDocType] = useState<string>('');
     const [uploadData, setUploadData] = useState({ file: null as File | null });
+    const [isUploading, setIsUploading] = useState(false);
 
     const userStr = localStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
+    const employeeId = user?.id || user?.employeeId;
 
     const fetchDocuments = async () => {
-        if (!user?.id) return;
+        if (!employeeId) return;
         try {
-            const response = await api.get(`/api/documents?employeeId=${user.id}`);
+            const response = await api.get(`/api/documents?employeeId=${employeeId}`);
             const apiDocs = await response.json();
 
             // Merge required docs with uploaded ones
@@ -64,10 +66,10 @@ const EmployeeDocuments = () => {
     };
 
     useEffect(() => {
-        if (user?.id) {
+        if (employeeId) {
             fetchDocuments();
         }
-    }, [user?.id]);
+    }, [employeeId]);
 
     const handleOpenUpload = (docType: string) => {
         setSelectedDocType(docType);
@@ -93,21 +95,23 @@ const EmployeeDocuments = () => {
 
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user?.id || !uploadData.file) return;
+        if (!employeeId || !uploadData.file) return;
 
+        setIsUploading(true);
         try {
             const formData = new FormData();
             formData.append('title', selectedDocType);
             formData.append('type', selectedDocType);
-            formData.append('employeeId', user.id);
-            formData.append('uploadedBy', user.name);
+            formData.append('employeeId', employeeId);
+            formData.append('uploadedBy', user?.name || 'Employee');
             formData.append('file', uploadData.file);
 
-            // Use fetch directly for FormData or update api.post if it supports it
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/documents`, {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${baseUrl}/api/documents`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
                 },
                 body: formData
             });
@@ -115,13 +119,24 @@ const EmployeeDocuments = () => {
             if (response.ok) {
                 await fetchDocuments();
                 setShowUploadModal(false);
+                setUploadData({ file: null });
+                alert("Document uploaded successfully!");
             } else {
-                const err = await response.json();
-                alert(`Upload failed: ${err.message || 'Unknown error'}`);
+                let errorMsg = 'Unknown error';
+                try {
+                    const err = await response.json();
+                    errorMsg = err.message || errorMsg;
+                } catch {
+                    const text = await response.text();
+                    if (text) errorMsg = text.slice(0, 150);
+                }
+                alert(`Upload failed: ${errorMsg}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Upload failed", error);
-            alert("An error occurred during upload.");
+            alert(`An error occurred during upload: ${error?.message || error}`);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -232,9 +247,11 @@ const EmployeeDocuments = () => {
                             <div className="border-4 border-dashed border-brand-bg rounded-[2rem] p-10 text-center hover:border-brand-primary/30 transition-all cursor-pointer relative group bg-brand-surface shadow-inner">
                                 <input
                                     type="file"
+                                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                     onChange={(e) => setUploadData({ file: e.target.files ? e.target.files[0] : null })}
                                     required
+                                    disabled={isUploading}
                                 />
                                 <div className="group-hover:scale-110 transition-transform duration-300">
                                     <div className="w-16 h-16 bg-brand-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-primary/10">
@@ -242,23 +259,25 @@ const EmployeeDocuments = () => {
                                     </div>
                                 </div>
                                 <p className="text-brand-text text-sm font-black uppercase tracking-tight">{uploadData.file ? uploadData.file.name : "Select Document"}</p>
-                                <p className="text-brand-muted text-[10px] font-bold mt-2 uppercase tracking-widest italic opacity-60">PDF, JPG, or PNG (Max 10MB)</p>
+                                <p className="text-brand-muted text-[10px] font-bold mt-2 uppercase tracking-widest italic opacity-60">PDF, JPG, PNG, or DOC (Max 10MB)</p>
                             </div>
 
                             <div className="flex gap-3">
                                 <button
                                     type="button"
                                     onClick={() => setShowUploadModal(false)}
-                                    className="flex-1 py-4 bg-brand-bg text-brand-muted rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest border border-brand-border hover:bg-brand-surface transition-all active:scale-95"
+                                    disabled={isUploading}
+                                    className="flex-1 py-4 bg-brand-bg text-brand-muted rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest border border-brand-border hover:bg-brand-surface transition-all active:scale-95 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-[2] py-4 bg-brand-primary text-white rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-primary/30 border-t border-white/20"
+                                    disabled={isUploading || !uploadData.file}
+                                    className="flex-[2] py-4 bg-brand-primary text-white rounded-[1.25rem] font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-brand-primary/30 border-t border-white/20 disabled:opacity-50 disabled:pointer-events-none"
                                 >
-                                    <Upload className="w-4 h-4" />
-                                    Deploy File
+                                    <Upload className={`w-4 h-4 ${isUploading ? 'animate-spin' : ''}`} />
+                                    {isUploading ? 'Uploading...' : 'Deploy File'}
                                 </button>
                             </div>
                         </form>

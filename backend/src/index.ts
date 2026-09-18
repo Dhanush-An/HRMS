@@ -203,11 +203,10 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
         cloudinary: cloudinary,
         params: {
             folder: 'hrms_uploads',
-            allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'mp4', 'mov', 'avi'],
             resource_type: 'auto'
         } as any,
     });
-    console.log('[INIT] Cloudinary configured for uploads');
+    console.log('[INIT] Cloudinary configured for uploads (images, PDFs, documents, videos)');
 } else {
     storage = multer.diskStorage({
         destination: (req, file, cb) => {
@@ -1655,18 +1654,23 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
         }
 
         const isCloudinary = process.env.CLOUDINARY_CLOUD_NAME ? true : false;
-        const newDoc = new DocumentModel({
-            employeeId,
-            title,
-            type,
-            uploadedBy,
-            fileUrl: isCloudinary ? req.file.path : `/uploads/${req.file.filename}`,
-            uploadDate: new Date().toISOString().split('T')[0],
-            status: 'Pending'
-        });
+        const fileUrl = isCloudinary ? req.file.path : `/uploads/${req.file.filename}`;
 
-        await newDoc.save();
-        res.status(201).json(newDoc);
+        const updatedDoc = await DocumentModel.findOneAndUpdate(
+            { employeeId, type },
+            {
+                employeeId,
+                title,
+                type,
+                uploadedBy,
+                fileUrl,
+                uploadDate: new Date().toISOString().split('T')[0],
+                status: 'Pending'
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        res.status(201).json(updatedDoc);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -2173,6 +2177,18 @@ app.post('/api/upload', authorizeRoles('admin', 'hr'), upload.single('file'), (r
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
+});
+
+// Global Error Handler for upload/multer/runtime exceptions
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error('[SERVER ERROR]', err);
+    if (res.headersSent) {
+        return next(err);
+    }
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'An unexpected error occurred during request processing'
+    });
 });
 
 app.listen(PORT, async () => {
