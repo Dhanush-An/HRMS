@@ -133,8 +133,8 @@ function App() {
             <Route path="permissions" element={<Permissions />} />
             <Route path="expenses" element={<AdminExpenses />} />
             <Route path="performance" element={<Performance />} />
-            <Route path="documents" element={<Documents />} />
-            <Route path="my-documents" element={<EmployeeDocuments />} />
+            <Route path="documents" element={<Documents defaultTab="employees" />} />
+            <Route path="my-documents" element={<Documents defaultTab="my-documents" />} />
             <Route path="hr" element={<HR />} />
             <Route path="settings" element={<SubAdminSettings />} />
             <Route path="jobs" element={<JobsTab showAll />} />

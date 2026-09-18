@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Download, FileCheck, Shield, Upload, X, AlertCircle } from 'lucide-react';
+import { FileText, Download, FileCheck, Shield, Upload, X, AlertCircle, Camera, ArrowLeft } from 'lucide-react';
 import api from '../../api';
 
 interface DocumentParams {
@@ -12,9 +12,16 @@ interface DocumentParams {
     size?: string;
 }
 
-const EmployeeDocuments = () => {
+interface EmployeeDocumentsProps {
+    onBack?: () => void;
+    title?: string;
+    subtitle?: string;
+}
+
+const EmployeeDocuments: React.FC<EmployeeDocumentsProps> = ({ onBack, title, subtitle }) => {
     // List of required documents
     const requiredDocs = [
+        "Employee Photo",
         "10th Certificate",
         "11th Certificate",
         "12th Certificate",
@@ -39,7 +46,7 @@ const EmployeeDocuments = () => {
 
     const userStr = localStorage.getItem('user');
     const user = userStr ? JSON.parse(userStr) : null;
-    const employeeId = user?.id || user?.employeeId;
+    const employeeId = user?.id || user?.employeeId || user?._id;
 
     const fetchDocuments = async () => {
         if (!employeeId) return;
@@ -51,7 +58,7 @@ const EmployeeDocuments = () => {
             const mergedDocs: DocumentParams[] = requiredDocs.map((title, index) => {
                 const uploaded = Array.isArray(apiDocs) ? apiDocs.find((d: any) => d.type === title) : null;
                 return {
-                    id: uploaded?.id || `req-${index}`,
+                    id: uploaded?.id || uploaded?._id || `req-${index}`,
                     title: title,
                     type: title,
                     status: uploaded ? 'Uploaded' : 'Pending',
@@ -83,7 +90,8 @@ const EmployeeDocuments = () => {
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
             const fullUrl = doc.url.startsWith('http') ? doc.url : `${baseUrl}${doc.url}`;
             link.href = fullUrl;
-            link.setAttribute('download', `${doc.title}.pdf`); // Attempt to force download
+            const ext = doc.type === 'Employee Photo' ? 'jpg' : 'pdf';
+            link.setAttribute('download', `${doc.title}.${ext}`);
             link.target = "_blank";
             document.body.appendChild(link);
             link.click();
@@ -142,10 +150,22 @@ const EmployeeDocuments = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {onBack && (
+                <div>
+                    <button
+                        onClick={onBack}
+                        className="inline-flex items-center gap-2.5 px-4 py-2 bg-brand-surface border border-brand-border rounded-xl text-brand-muted hover:text-brand-text hover:border-brand-primary text-xs font-black uppercase tracking-wider transition-all shadow-sm hover:shadow active:scale-95"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to All Employees Documents
+                    </button>
+                </div>
+            )}
+
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-black text-brand-text mb-2 tracking-tight">My Documents</h1>
-                    <p className="text-brand-muted font-medium italic opacity-80">Manage and verify your professional records.</p>
+                    <h1 className="text-3xl font-black text-brand-text mb-2 tracking-tight">{title || "My Documents"}</h1>
+                    <p className="text-brand-muted font-medium italic opacity-80">{subtitle || "Manage and verify your professional records."}</p>
                 </div>
             </div>
 
@@ -165,17 +185,34 @@ const EmployeeDocuments = () => {
                                 <tr key={doc.id} className="hover:bg-brand-bg/40 transition-colors group">
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-5">
-                                            <div className={`p-3 rounded-2xl border transition-all duration-300 group-hover:scale-110 ${doc.status === 'Uploaded'
-                                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600'
-                                                : 'bg-brand-primary/10 border-brand-primary/20 text-brand-primary'}`}>
-                                                {doc.status === 'Uploaded' ? (
-                                                    <FileCheck className="w-5 h-5" />
-                                                ) : (
-                                                    <FileText className="w-5 h-5" />
-                                                )}
-                                            </div>
+                                            {doc.type === 'Employee Photo' && doc.url ? (
+                                                <img
+                                                    src={doc.url.startsWith('http') ? doc.url : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${doc.url}`}
+                                                    alt="Employee Photo"
+                                                    className="w-12 h-12 rounded-2xl object-cover border border-emerald-500/30 shadow-md group-hover:scale-105 transition-transform"
+                                                />
+                                            ) : (
+                                                <div className={`p-3 rounded-2xl border transition-all duration-300 group-hover:scale-110 ${doc.status === 'Uploaded'
+                                                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600'
+                                                    : 'bg-brand-primary/10 border-brand-primary/20 text-brand-primary'}`}>
+                                                    {doc.type === 'Employee Photo' ? (
+                                                        <Camera className="w-5 h-5" />
+                                                    ) : doc.status === 'Uploaded' ? (
+                                                        <FileCheck className="w-5 h-5" />
+                                                    ) : (
+                                                        <FileText className="w-5 h-5" />
+                                                    )}
+                                                </div>
+                                            )}
                                             <div>
-                                                <div className="text-brand-text font-black text-sm uppercase tracking-tight">{doc.title}</div>
+                                                <div className="text-brand-text font-black text-sm uppercase tracking-tight flex items-center gap-2">
+                                                    <span>{doc.title}</span>
+                                                    {doc.type === 'Employee Photo' && (
+                                                        <span className="px-2 py-0.5 text-[9px] font-black uppercase rounded-full bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                                                            Profile Picture
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <div className="text-[10px] text-brand-muted font-bold uppercase tracking-widest mt-1 opacity-70 italic">{doc.type}</div>
                                             </div>
                                         </div>
@@ -193,13 +230,22 @@ const EmployeeDocuments = () => {
                                     </td>
                                     <td className="px-8 py-5 whitespace-nowrap text-right">
                                         {doc.status === 'Uploaded' ? (
-                                            <button
-                                                onClick={() => handleDownload(doc)}
-                                                className="bg-brand-bg text-brand-muted hover:bg-emerald-500 hover:text-white p-2.5 rounded-xl border border-brand-border hover:border-emerald-500 transition-all active:scale-95 shadow-sm"
-                                                title="Secure Download"
-                                            >
-                                                <Download className="w-5 h-5" />
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleDownload(doc)}
+                                                    className="bg-brand-bg text-brand-muted hover:bg-emerald-500 hover:text-white p-2.5 rounded-xl border border-brand-border hover:border-emerald-500 transition-all active:scale-95 shadow-sm"
+                                                    title="Download / View"
+                                                >
+                                                    <Download className="w-5 h-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleOpenUpload(doc.title)}
+                                                    className="bg-brand-bg text-brand-muted hover:bg-brand-primary hover:text-white px-3 py-2 rounded-xl border border-brand-border hover:border-brand-primary transition-all active:scale-95 text-[10px] font-black uppercase tracking-wider"
+                                                    title="Re-upload"
+                                                >
+                                                    Update
+                                                </button>
+                                            </div>
                                         ) : (
                                             <button
                                                 onClick={() => handleOpenUpload(doc.title)}
@@ -235,7 +281,11 @@ const EmployeeDocuments = () => {
 
                         <div className="mb-8 p-5 bg-brand-primary/5 border border-brand-primary/10 rounded-[1.5rem] flex items-start gap-4 shadow-inner">
                             <div className="p-2 bg-brand-primary/10 rounded-xl">
-                                <AlertCircle className="w-5 h-5 text-brand-primary" />
+                                {selectedDocType === 'Employee Photo' ? (
+                                    <Camera className="w-5 h-5 text-brand-primary" />
+                                ) : (
+                                    <AlertCircle className="w-5 h-5 text-brand-primary" />
+                                )}
                             </div>
                             <div>
                                 <p className="text-xs text-brand-text font-black uppercase tracking-tight">Active Requirement</p>
@@ -247,7 +297,7 @@ const EmployeeDocuments = () => {
                             <div className="border-4 border-dashed border-brand-bg rounded-[2rem] p-10 text-center hover:border-brand-primary/30 transition-all cursor-pointer relative group bg-brand-surface shadow-inner">
                                 <input
                                     type="file"
-                                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                    accept={selectedDocType === 'Employee Photo' ? ".jpg,.jpeg,.png,.webp" : ".pdf,.jpg,.jpeg,.png,.doc,.docx"}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                     onChange={(e) => setUploadData({ file: e.target.files ? e.target.files[0] : null })}
                                     required
@@ -255,11 +305,17 @@ const EmployeeDocuments = () => {
                                 />
                                 <div className="group-hover:scale-110 transition-transform duration-300">
                                     <div className="w-16 h-16 bg-brand-primary/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-primary/10">
-                                        <Upload className="w-8 h-8 text-brand-primary group-hover:text-brand-primary/80 transition-colors" />
+                                        {selectedDocType === 'Employee Photo' ? (
+                                            <Camera className="w-8 h-8 text-brand-primary group-hover:text-brand-primary/80 transition-colors" />
+                                        ) : (
+                                            <Upload className="w-8 h-8 text-brand-primary group-hover:text-brand-primary/80 transition-colors" />
+                                        )}
                                     </div>
                                 </div>
-                                <p className="text-brand-text text-sm font-black uppercase tracking-tight">{uploadData.file ? uploadData.file.name : "Select Document"}</p>
-                                <p className="text-brand-muted text-[10px] font-bold mt-2 uppercase tracking-widest italic opacity-60">PDF, JPG, PNG, or DOC (Max 10MB)</p>
+                                <p className="text-brand-text text-sm font-black uppercase tracking-tight">{uploadData.file ? uploadData.file.name : (selectedDocType === 'Employee Photo' ? "Select Photo" : "Select Document")}</p>
+                                <p className="text-brand-muted text-[10px] font-bold mt-2 uppercase tracking-widest italic opacity-60">
+                                    {selectedDocType === 'Employee Photo' ? "JPG, PNG, or WEBP (Passport size photo)" : "PDF, JPG, PNG, or DOC (Max 10MB)"}
+                                </p>
                             </div>
 
                             <div className="flex gap-3">

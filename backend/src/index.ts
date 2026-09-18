@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import mongoose from 'mongoose';
 import connectDB from './config/db';
 import Employee from './models/Employee';
 import Attendance from './models/Attendance';
@@ -409,7 +410,8 @@ app.get('/api/employees', async (req, res) => {
     try {
         const user = (req as any).user;
         const query: any = {};
-        if (user.role !== 'admin' && user.branchId) {
+        const showAll = req.query.all === 'true';
+        if (!showAll && user.role !== 'admin' && user.branchId) {
             query.branchId = user.branchId;
         }
         const employees = await Employee.find(query);
@@ -1627,10 +1629,16 @@ app.get('/api/documents', async (req, res) => {
         const user = (req as any).user;
         const query: any = {};
         if (user.role === 'employee' || user.role === 'staff') {
-            query.employeeId = user.id;
-        } else if (user.role !== 'admin' && user.branchId) {
-            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
-            const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
+            const userIds = [user.id, (user as any).employeeId].filter(Boolean);
+            query.employeeId = { $in: userIds };
+        } else if (user.role === 'admin' || user.role === 'subadmin') {
+            // Admin and Subadmin can view all documents or filter by employeeId
+            if (employeeId) {
+                query.employeeId = employeeId;
+            }
+        } else if (user.branchId) {
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId _id');
+            const branchEmpIds = branchEmps.flatMap((e: any) => [e.employeeId, e._id?.toString()]).filter(Boolean);
             if (employeeId && (branchEmpIds.includes(employeeId as string) || employeeId === user.id)) {
                 query.employeeId = employeeId;
             } else {
@@ -1670,6 +1678,23 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
             },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+
+        // If uploading Employee Photo, also update Employee avatar
+        if (type === 'Employee Photo' && employeeId) {
+            try {
+                await Employee.findOneAndUpdate(
+                    {
+                        $or: [
+                            { employeeId: employeeId },
+                            ...(mongoose.Types.ObjectId.isValid(employeeId) ? [{ _id: employeeId }] : [])
+                        ]
+                    },
+                    { avatar: fileUrl }
+                );
+            } catch (avatarErr) {
+                console.warn('Could not sync avatar for employee photo:', avatarErr);
+            }
+        }
 
         res.status(201).json(updatedDoc);
     } catch (error: any) {
