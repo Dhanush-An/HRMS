@@ -487,6 +487,7 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
             salary: req.body.salary || { basic: 7500, hra: 3750, conveyance: 3750, medical: 0, special: 0, other: 0, pf: 0, tax: 0 },
             leaveBalance: req.body.leaveBalance || { sick: 12, casual: 12, earned: 15, wfh: 10 },
             responsibilities: responsibilities || offerResponsibilities || '',
+            avatar: req.body.avatar || '',
             address: address || '',
             aadharNo: aadharNo || '',
             trainingSalary: trainingSalary !== undefined ? Number(trainingSalary) : 15000,
@@ -632,7 +633,7 @@ app.post('/api/employees/:id/avatar', upload.single('avatar'), async (req, res) 
         const isCloudinary = process.env.CLOUDINARY_CLOUD_NAME ? true : false;
         const avatarUrl = isCloudinary ? req.file.path : `/uploads/${req.file.filename}`;
         const employee = await Employee.findOneAndUpdate(
-            { employeeId: req.params.id },
+            { $or: [{ employeeId: req.params.id }, { id: req.params.id }] },
             { $set: { avatar: avatarUrl } },
             { new: true }
         );
@@ -1630,7 +1631,7 @@ app.get('/api/documents', async (req, res) => {
         } else if (user.role !== 'admin' && user.branchId) {
             const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
             const branchEmpIds = branchEmps.map((e: any) => e.employeeId);
-            if (employeeId && branchEmpIds.includes(employeeId as string)) {
+            if (employeeId && (branchEmpIds.includes(employeeId as string) || employeeId === user.id)) {
                 query.employeeId = employeeId;
             } else {
                 query.employeeId = { $in: branchEmpIds };
@@ -2163,7 +2164,7 @@ app.put('/api/permissions/:id/status', authorizeRoles('admin', 'subadmin', 'hr')
 });
 
 // --- FILE UPLOAD ROUTE ---
-app.post('/api/upload', authorizeRoles('admin', 'hr'), upload.single('file'), (req, res) => {
+app.post('/api/upload', authorizeRoles('admin', 'subadmin', 'hr'), upload.single('file'), (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'No file uploaded' });

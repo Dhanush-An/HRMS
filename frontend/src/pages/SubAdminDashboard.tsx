@@ -25,7 +25,8 @@ import {
     ChevronRight,
     Loader2,
     Home,
-    MapPin
+    MapPin,
+    FileCheck
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
@@ -535,6 +536,7 @@ const SubAdminDashboard: React.FC = () => {
         { icon: CreditCard, label: 'Expenses', path: '/subadmin-dashboard/expenses' },
         { icon: TrendingUp, label: 'Performance', path: '/subadmin-dashboard/performance' },
         { icon: File, label: 'Documents', path: '/subadmin-dashboard/documents' },
+        { icon: FileCheck, label: 'My Documents', path: '/subadmin-dashboard/my-documents' },
         { icon: Briefcase, label: 'Jobs', path: '/subadmin-dashboard/jobs' },
         { icon: LogOut, label: 'Resignation', path: '/subadmin-dashboard/resignation' },
         { icon: Settings, label: 'Settings', path: '/subadmin-dashboard/settings' },

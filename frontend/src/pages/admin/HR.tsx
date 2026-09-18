@@ -15,6 +15,7 @@ import {
     EyeOff,
     Edit2,
     Trash2,
+    Camera
 } from 'lucide-react';
 import api from '../../api';
 
@@ -65,7 +66,7 @@ const HR: React.FC = () => {
                         department: emp.department,
                         email: emp.email,
                         phone: emp.phone || 'N/A',
-                        avatar: emp.name ? emp.name.charAt(0).toUpperCase() : 'U',
+                        avatar: emp.avatar || (emp.name ? emp.name.charAt(0).toUpperCase() : 'U'),
                         branchName: emp.branchName || ''
                     }));
                 setHrContacts(mapped);
@@ -84,6 +85,38 @@ const HR: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isCustomRole, setIsCustomRole] = useState(false);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+    const getAvatarUrl = (avatar?: string) => {
+        if (!avatar) return null;
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        return avatar.startsWith('http') ? avatar : `${baseUrl}${avatar}`;
+    };
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingAvatar(true);
+        try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', file);
+            const res = await api.postForm('/api/upload', uploadFormData);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.url) {
+                    setFormData(prev => ({ ...prev, avatar: data.url }));
+                }
+            } else {
+                alert('Failed to upload image.');
+            }
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            alert('Error uploading avatar image.');
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
 
     const PREDEFINED_HR_ROLES = [
         'hr', 'HR (Human Resource)', 'HR Recruiter (Employee Access)', 'HR Recruiter',
@@ -101,7 +134,8 @@ const HR: React.FC = () => {
         joiningDate: new Date().toISOString().split('T')[0],
         username: '',
         password: '',
-        branchName: ''
+        branchName: '',
+        avatar: ''
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -147,7 +181,8 @@ const HR: React.FC = () => {
             joiningDate: new Date().toISOString().split('T')[0],
             username: '',
             password: '',
-            branchName: isSubadmin ? userBranch : ''
+            branchName: isSubadmin ? userBranch : '',
+            avatar: ''
         });
         setShowPassword(false);
         setIsModalOpen(true);
@@ -170,7 +205,8 @@ const HR: React.FC = () => {
             joiningDate: new Date().toISOString().split('T')[0],
             username: '',
             password: '',
-            branchName: contact.branchName || ''
+            branchName: contact.branchName || '',
+            avatar: contact.avatar && (contact.avatar.startsWith('http') || contact.avatar.startsWith('/')) ? contact.avatar : ''
         });
         setIsEditing(true);
         setShowPassword(false);
@@ -275,8 +311,16 @@ const HR: React.FC = () => {
                                 className="bg-brand-surface border border-brand-border rounded-xl p-4 hover:border-brand-primary/30 transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group"
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-primary to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-brand-primary/20 flex-shrink-0">
-                                        {contact.avatar}
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-primary to-blue-500 flex items-center justify-center text-white text-sm font-bold shadow-md shadow-brand-primary/20 flex-shrink-0 overflow-hidden">
+                                        {contact.avatar && (contact.avatar.startsWith('http') || contact.avatar.startsWith('/')) ? (
+                                            <img
+                                                src={getAvatarUrl(contact.avatar) || ''}
+                                                alt={contact.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            contact.avatar || (contact.name ? contact.name.charAt(0) : 'U')
+                                        )}
                                     </div>
                                     <div className="min-w-0">
                                         <p className="font-bold text-brand-text group-hover:text-brand-primary transition-colors truncate text-sm sm:text-base">{contact.name}</p>
@@ -334,6 +378,44 @@ const HR: React.FC = () => {
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-6 text-left">
+                            {/* Photo / Avatar Upload */}
+                            <div className="flex flex-col items-center justify-center p-4 bg-brand-bg/50 rounded-2xl border border-dashed border-brand-border">
+                                <div className="relative group">
+                                    <div className="w-24 h-24 rounded-2xl p-1 bg-gradient-to-tr from-brand-primary to-blue-500 shadow-md">
+                                        <div className="w-full h-full rounded-[14px] bg-brand-surface overflow-hidden flex items-center justify-center">
+                                            {formData.avatar ? (
+                                                <img
+                                                    src={getAvatarUrl(formData.avatar) || ''}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <span className="text-3xl font-black text-brand-primary uppercase">
+                                                    {formData.name ? formData.name.charAt(0) : <User className="w-8 h-8 text-brand-muted" />}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <label className="absolute bottom-0 right-0 p-2 bg-brand-primary text-white rounded-xl shadow-lg hover:scale-110 active:scale-90 transition-all cursor-pointer border-2 border-brand-surface">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarUpload}
+                                            disabled={uploadingAvatar}
+                                            className="hidden"
+                                        />
+                                        {uploadingAvatar ? (
+                                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        ) : (
+                                            <Camera className="w-3.5 h-3.5" />
+                                        )}
+                                    </label>
+                                </div>
+                                <span className="text-[10px] font-bold text-brand-muted uppercase tracking-wider mt-2">
+                                    {uploadingAvatar ? 'Uploading image...' : formData.avatar ? 'Click camera icon to change photo' : 'Upload HR Photo'}
+                                </span>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Full Name</label>

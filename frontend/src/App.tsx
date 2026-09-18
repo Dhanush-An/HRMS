@@ -42,6 +42,7 @@ import EmployeePayroll from './pages/employee/EmployeePayroll';
 import EmployeeAttendance from './pages/employee/EmployeeAttendance';
 import EmployeeQueries from './pages/employee/EmployeeQueries';
 import EmployeeExpenses from './pages/employee/EmployeeExpenses';
+import EmployeeDirectory from './pages/employee/EmployeeDirectory';
 import AdminExpenses from './pages/admin/AdminExpenses';
 import Branches from './pages/admin/Branches';
 import SubAdminDashboard from './pages/SubAdminDashboard';
@@ -112,6 +113,7 @@ function App() {
             <Route path="attendance" element={<EmployeeAttendance />} />
             <Route path="queries" element={<EmployeeQueries />} />
             <Route path="expenses" element={<EmployeeExpenses />} />
+            <Route path="team" element={<EmployeeDirectory />} />
             <Route path="jobs" element={<JobsTab />} />
             <Route path="resignation" element={<ResignationTab role="employee" />} />
           </Route>
@@ -132,6 +134,7 @@ function App() {
             <Route path="expenses" element={<AdminExpenses />} />
             <Route path="performance" element={<Performance />} />
             <Route path="documents" element={<Documents />} />
+            <Route path="my-documents" element={<EmployeeDocuments />} />
             <Route path="hr" element={<HR />} />
             <Route path="settings" element={<SubAdminSettings />} />
             <Route path="jobs" element={<JobsTab showAll />} />

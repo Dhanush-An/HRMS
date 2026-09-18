@@ -17,7 +17,8 @@ import {
     MoreVertical,
     UserMinus,
     UserCheck,
-    ShieldCheck
+    ShieldCheck,
+    Camera
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -32,6 +33,7 @@ interface Employee {
     status: string;
     joiningDate: string;
     phone?: string;
+    avatar?: string;
     branchId?: string;
     branchName?: string;
     responsibilities?: string;
@@ -99,11 +101,44 @@ const Employees = () => {
         probationaryPeriod: '3 Months',
         probationaryPeriodCondition: 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.',
         shiftWindow: '9:30 AM - 6:30 PM',
-        responsibilities: ''
+        responsibilities: '',
+        avatar: ''
     });
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isCustomRole, setIsCustomRole] = useState(false);
+
+    const getAvatarUrl = (avatar?: string) => {
+        if (!avatar) return null;
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        return avatar.startsWith('http') ? avatar : `${baseUrl}${avatar}`;
+    };
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingAvatar(true);
+        try {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', file);
+            const res = await api.postForm('/api/upload', uploadFormData);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.url) {
+                    setFormData(prev => ({ ...prev, avatar: data.url }));
+                }
+            } else {
+                alert('Failed to upload image.');
+            }
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            alert('Error uploading avatar image.');
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
 
     const PREDEFINED_ROLES = [
         'Employee', 'Human Resource', 'HR Recruiter', 'HR Recruiter (HR Access)',
@@ -185,7 +220,8 @@ const Employees = () => {
             probationaryPeriod: '3 Months',
             probationaryPeriodCondition: 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.',
             shiftWindow: '',
-            responsibilities: ''
+            responsibilities: '',
+            avatar: ''
         });
         setShowPassword(false);
         setIsModalOpen(true);
@@ -230,7 +266,8 @@ const Employees = () => {
             probationaryPeriod: (employee as any).probationaryPeriod || '3 Months',
             probationaryPeriodCondition: (employee as any).probationaryPeriodCondition || 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.',
             shiftWindow: employee.shiftWindow || '9:30 AM - 6:30 PM',
-            responsibilities: employee.responsibilities || ''
+            responsibilities: employee.responsibilities || '',
+            avatar: employee.avatar || ''
         });
         setIsModalOpen(true);
     };
@@ -430,8 +467,12 @@ const Employees = () => {
                         <tr key={emp.id} className="hover:bg-brand-bg transition-colors group cursor-pointer" onClick={() => openProfile(emp)}>
                             <td className="px-4 py-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black shadow-sm group-hover:scale-105 transition-transform">
-                                        {emp.name.charAt(0)}
+                                    <div className="w-10 h-10 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
+                                        {emp.avatar ? (
+                                            <img src={getAvatarUrl(emp.avatar) || ''} alt={emp.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            emp.name.charAt(0)
+                                        )}
                                     </div>
                                     <div>
                                         <div className="text-brand-text font-bold text-sm">{emp.name}</div>
@@ -566,8 +607,12 @@ const Employees = () => {
                     >
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black text-lg shadow-sm">
-                                    {emp.name.charAt(0)}
+                                <div className="w-12 h-12 rounded-xl bg-brand-primary-light flex items-center justify-center text-brand-primary font-black text-lg shadow-sm overflow-hidden">
+                                    {emp.avatar ? (
+                                        <img src={getAvatarUrl(emp.avatar) || ''} alt={emp.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        emp.name.charAt(0)
+                                    )}
                                 </div>
                                 <div>
                                     <div className="text-brand-text font-black text-base">{emp.name}</div>
@@ -636,6 +681,44 @@ const Employees = () => {
                             </button>
                         </div>
                         <form onSubmit={handleSubmit} className="space-y-6">
+                            {/* Photo / Avatar Upload */}
+                            <div className="flex flex-col items-center justify-center p-4 bg-brand-bg/50 rounded-2xl border border-dashed border-brand-border">
+                                <div className="relative group">
+                                    <div className="w-24 h-24 rounded-2xl p-1 bg-gradient-to-tr from-brand-primary to-blue-500 shadow-md">
+                                        <div className="w-full h-full rounded-[14px] bg-brand-surface overflow-hidden flex items-center justify-center">
+                                            {formData.avatar ? (
+                                                <img
+                                                    src={getAvatarUrl(formData.avatar) || ''}
+                                                    alt="Preview"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <span className="text-3xl font-black text-brand-primary uppercase">
+                                                    {formData.name ? formData.name.charAt(0) : <User className="w-8 h-8 text-brand-muted" />}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <label className="absolute bottom-0 right-0 p-2 bg-brand-primary text-white rounded-xl shadow-lg hover:scale-110 active:scale-90 transition-all cursor-pointer border-2 border-brand-surface">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleAvatarUpload}
+                                            disabled={uploadingAvatar}
+                                            className="hidden"
+                                        />
+                                        {uploadingAvatar ? (
+                                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        ) : (
+                                            <Camera className="w-3.5 h-3.5" />
+                                        )}
+                                    </label>
+                                </div>
+                                <span className="text-[10px] font-bold text-brand-muted uppercase tracking-wider mt-2">
+                                    {uploadingAvatar ? 'Uploading image...' : formData.avatar ? 'Click camera icon to change photo' : 'Upload Employee Photo'}
+                                </span>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-[10px] font-black uppercase text-brand-muted tracking-widest mb-2">Full Name</label>
@@ -1109,8 +1192,12 @@ const Employees = () => {
                     <div className="bg-brand-surface border border-brand-border rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
                         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 flex justify-between items-start">
                             <div className="flex items-center gap-6">
-                                <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-black text-3xl border-2 border-white/40 shadow-xl">
-                                    {selectedEmployee.name.charAt(0)}
+                                <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white font-black text-3xl border-2 border-white/40 shadow-xl overflow-hidden">
+                                    {selectedEmployee.avatar ? (
+                                        <img src={getAvatarUrl(selectedEmployee.avatar) || ''} alt={selectedEmployee.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        selectedEmployee.name.charAt(0)
+                                    )}
                                 </div>
                                 <div>
                                     <h2 className="text-3xl font-black text-white leading-tight">{selectedEmployee.name}</h2>
