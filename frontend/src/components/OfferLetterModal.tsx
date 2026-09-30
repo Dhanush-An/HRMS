@@ -35,6 +35,8 @@ interface EmployeeOfferData {
         conveyance?: number;
         pf?: number;
         esi?: number;
+        professionalTax?: number;
+        tax?: number;
         medical?: number;
         special?: number;
         other?: number;
@@ -119,7 +121,8 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
     const pfMonthly = employee.salary?.pf || 0;
     const esiMonthly = employee.salary?.esi || 0;
-    const totalDeductionMonthly = pfMonthly + esiMonthly;
+    const ptMonthly = employee.salary?.professionalTax ?? employee.salary?.tax ?? 0;
+    const totalDeductionMonthly = pfMonthly + esiMonthly + ptMonthly;
 
     const netMonthly = grossSalaryMonthly - totalDeductionMonthly;
 
@@ -130,6 +133,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
     const pfAnnual = pfMonthly * 12;
     const esiAnnual = esiMonthly * 12;
+    const ptAnnual = ptMonthly * 12;
 
     const netAnnual = (isTrainingMode ? (trainingSalary || netMonthly) : netMonthly) * 12;
 
@@ -667,6 +671,11 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                                     <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 border-r border-slate-200 text-right font-bold text-red-600">- {esiMonthly.toLocaleString('en-IN')}</td>
                                                     <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 text-right font-bold text-red-600">- {esiAnnual.toLocaleString('en-IN')}</td>
                                                 </tr>
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-2 border-r border-slate-200 font-medium text-red-600">Less: Professional Tax (PT Deduction)</td>
+                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 border-r border-slate-200 text-right font-bold text-red-600">- {ptMonthly.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 text-right font-bold text-red-600">- {ptAnnual.toLocaleString('en-IN')}</td>
+                                                </tr>
                                                 <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-black">
                                                     <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-2 border-r border-slate-700 uppercase">
                                                         {isTrainingMode ? 'NET STIPEND (TAKE HOME)' : 'NET SALARY (TAKE HOME)'}
@@ -691,7 +700,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                             </span>
                                         </p>
                                         <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
-                                            {isTrainingMode ? '(STIPEND AMOUNT DURING TRAINING PERIOD)' : '(AFTER STATUTORY DEDUCTIONS - PF & ESI)'}
+                                            {isTrainingMode ? '(STIPEND AMOUNT DURING TRAINING PERIOD)' : '(AFTER STATUTORY DEDUCTIONS - PF, ESI & PT)'}
                                         </p>
                                     </div>
                                 </div>

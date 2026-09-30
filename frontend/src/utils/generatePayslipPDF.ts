@@ -83,7 +83,7 @@ const numberToWords = (num: number): string => {
 export const computeFinancials = (employee: any, payroll: any): PayslipFinancials => {
     // 1. Get deductions from payroll or employee structure
     const pf = payroll.pf !== undefined && payroll.pf !== null ? payroll.pf : (employee?.salary?.pf || 0);
-    const profTax = payroll.tax !== undefined && payroll.tax !== null ? payroll.tax : (employee?.salary?.tax || 0);
+    const profTax = payroll.tax !== undefined && payroll.tax !== null ? payroll.tax : (employee?.salary?.professionalTax ?? employee?.salary?.tax ?? 0);
     const esi = payroll.esi !== undefined && payroll.esi !== null ? payroll.esi : (employee?.salary?.esi || 0);
     const loanDeduction = payroll.loanDeduction !== undefined && payroll.loanDeduction !== null ? payroll.loanDeduction : 0;
     const otherDeductions = payroll.otherDeductions !== undefined && payroll.otherDeductions !== null ? payroll.otherDeductions : 0;

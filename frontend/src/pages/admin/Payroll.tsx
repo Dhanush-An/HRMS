@@ -23,15 +23,21 @@ interface SalaryStructure {
     other: number;
     pf: number;
     tax: number;
+    esi?: number;
+    professionalTax?: number;
 }
 
 interface Employee {
     id: string;
+    employeeId?: string;
+    _id?: string;
     name: string;
     department: string;
     role: string;
     branchName?: string;
     joiningDate?: string;
+    email?: string;
+    username?: string;
     salary?: SalaryStructure;
 }
 
@@ -127,11 +133,13 @@ const Payroll = () => {
     const [processLoading, setProcessLoading] = useState(false);
     const [historyLoading, setHistoryLoading] = useState(false);
 
-    const [hasLoadedProcess, setHasLoadedProcess] = useState(false);
     const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
 
     // Process State
-    const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toLocaleString('default', { month: '2-digit' }));
+    const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+        const m = new Date().getMonth() + 1;
+        return m < 10 ? `0${m}` : `${m}`;
+    });
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [processData, setProcessData] = useState<{ [key: string]: { bonus: number, tax?: number, pf?: number } }>({});
     const [selectedBranch, setSelectedBranch] = useState<string>('All');
@@ -195,16 +203,23 @@ const Payroll = () => {
     const fetchProcessData = async () => {
         setProcessLoading(true);
         try {
+            const dateQuery = `${selectedYear}-${selectedMonth}`;
             const [attRes, leavesRes] = await Promise.all([
-                api.get('/api/attendance'),
+                api.get(`/api/attendance?date=${dateQuery}`),
                 api.get('/api/leaves')
             ]);
-            const attData = await attRes.json();
-            const leavesJson = await leavesRes.json();
+            let attData = attRes.ok ? await attRes.json() : [];
+            // If date filtered request returned empty, fallback to fetch without date filter
+            if (!Array.isArray(attData) || attData.length === 0) {
+                const fullAttRes = await api.get('/api/attendance');
+                if (fullAttRes.ok) {
+                    attData = await fullAttRes.json();
+                }
+            }
+            let leavesJson = leavesRes.ok ? await leavesRes.json() : [];
 
-            setAttendanceData(attData);
-            setLeavesData(leavesJson);
-            setHasLoadedProcess(true);
+            setAttendanceData(Array.isArray(attData) ? attData : []);
+            setLeavesData(Array.isArray(leavesJson) ? leavesJson : []);
         } catch (error) {
             console.error("Error fetching attendance/leaves:", error);
         } finally {
@@ -229,20 +244,19 @@ const Payroll = () => {
 
     useEffect(() => {
         fetchEmployees();
+        fetchProcessData();
     }, []);
 
     useEffect(() => {
-        if (activeTab === 'process' && !hasLoadedProcess) {
+        if (activeTab === 'process') {
             fetchProcessData();
         } else if (activeTab === 'history') {
             if (!hasLoadedHistory) {
                 fetchHistoryData();
             }
-            if (!hasLoadedProcess) {
-                fetchProcessData();
-            }
+            fetchProcessData();
         }
-    }, [activeTab]);
+    }, [activeTab, selectedMonth, selectedYear]);
 
     const handleSalaryUpdate = async (empId: string, field: keyof SalaryStructure, value: string) => {
         const emp = employees.find(e => e.id === empId);
@@ -264,13 +278,45 @@ const Payroll = () => {
     };
 
 
-    const calculateAttendanceStats = (empId: string) => {
-        const monthNum = parseInt(selectedMonth);
+    const calculateAttendanceStats = (emp: Employee) => {
+        const monthNum = parseInt(selectedMonth, 10);
         const prefix = `${selectedYear}-${selectedMonth}`;
-        const records = attendanceData.filter(r => 
-            (r.employeeId === empId || r.employeeName === empId) && 
-            r.date.startsWith(prefix)
-        );
+        const altPrefix = `${selectedYear}-${monthNum}-`;
+
+        const empId = emp.id;
+        const empCode = emp.employeeId || emp.id;
+        const empMongoId = emp._id ? String(emp._id) : '';
+        const empEmail = (emp.email || '').trim().toLowerCase();
+        const empUsername = (emp.username || '').trim().toLowerCase();
+        const empCleanName = (emp.name || '').trim().toLowerCase();
+
+        const records = attendanceData.filter(r => {
+            if (!r || !r.date || typeof r.date !== 'string') return false;
+
+            // Date match
+            const dateMatches = r.date.startsWith(prefix) || r.date.startsWith(altPrefix);
+            if (!dateMatches) return false;
+
+            // Match by ID, Employee Code, Mongo _id, Email, Username
+            const recEmpId = (r.employeeId || '').trim();
+            if (recEmpId && (
+                recEmpId === empId ||
+                recEmpId === empCode ||
+                (empMongoId && recEmpId === empMongoId) ||
+                (empEmail && recEmpId.toLowerCase() === empEmail) ||
+                (empUsername && recEmpId.toLowerCase() === empUsername)
+            )) {
+                return true;
+            }
+
+            // Match by Employee Name (case-insensitive & trimmed)
+            const recName = (r.employeeName || '').trim().toLowerCase();
+            if (recName && empCleanName && recName === empCleanName) {
+                return true;
+            }
+
+            return false;
+        });
 
         // Calculate Sundays
         let sundays = 0;
@@ -282,7 +328,7 @@ const Payroll = () => {
         // Total working days = admin override or (all days minus Sundays)
         const totalWorkingDays = effectiveTotalWorkingDays;
 
-        const override = attendanceOverrides[empId];
+        const override = attendanceOverrides[emp.id] || (empCode ? attendanceOverrides[empCode] : undefined);
 
         const present = override !== undefined ? override.present : records.filter(r => r.status === 'Present').length;
         const halfDay = override !== undefined ? override.halfDay : records.filter(r => r.status === 'Half Day').length;
@@ -316,12 +362,19 @@ const Payroll = () => {
         } else {
             const absents = records.filter(r => r.status === 'Absent');
             absents.forEach(abs => {
-                const hasApprovedLeave = leavesData.find(l => 
-                    l.employeeId === empId && 
-                    l.status === 'Approved' &&
-                    abs.date >= l.startDate && 
-                    abs.date <= l.endDate
-                );
+                const hasApprovedLeave = leavesData.find(l => {
+                    if (!l || l.status !== 'Approved') return false;
+                    const lEmpId = (l.employeeId || '').trim();
+                    const lEmpName = (l.employeeName || '').trim().toLowerCase();
+                    const matchesEmp = (
+                        lEmpId === empId ||
+                        lEmpId === empCode ||
+                        (empMongoId && lEmpId === empMongoId) ||
+                        (empEmail && lEmpId.toLowerCase() === empEmail) ||
+                        (lEmpName && empCleanName && lEmpName === empCleanName)
+                    );
+                    return matchesEmp && abs.date >= l.startDate && abs.date <= l.endDate;
+                });
                 if (!hasApprovedLeave) {
                     penalties++;
                 }
@@ -338,12 +391,14 @@ const Payroll = () => {
 
     const calculateNetSalary = (emp: Employee) => {
         const salary = emp.salary || { basic: 0, hra: 0, conveyance: 0, medical: 0, special: 0, other: 0, pf: 0, tax: 0 };
-        const stats = calculateAttendanceStats(emp.id);
+        const stats = calculateAttendanceStats(emp);
         const { present, halfDay, sundays, penalties, totalPayableDays, totalWorkingDays, effectivePresent, absentDays, remainingHalfDay } = stats;
         
         // Calculate Total Gross (Earnings minus Deductions)
         const grossEarnings = (salary.basic || 0) + (salary.hra || 0) + (salary.conveyance || 0) + (salary.medical || 0) + (salary.special || 0) + (salary.other || 0);
-        const deductions = (salary.pf || 0) + (salary.tax || 0);
+        const esi = salary.esi || 0;
+        const profTax = salary.professionalTax ?? salary.tax ?? 0;
+        const deductions = (salary.pf || 0) + profTax + esi;
         const totalGross = grossEarnings - deductions;
         
         // Pro-rate the Total Gross (assuming 30 days month)
@@ -352,7 +407,7 @@ const Payroll = () => {
         
         const bonus = processData[emp.id]?.bonus || 0;
         const pf = salary.pf || 0;
-        const tax = salary.tax || 0;
+        const tax = profTax;
 
         return {
             totalEarnings: earnedSalary + bonus,

@@ -92,6 +92,7 @@ const Employees = () => {
         convSalary: 0,
         pfSalary: 0,
         esiSalary: 0,
+        ptSalary: 0,
         trainingSalary: 0,
         reportsTo: '',
         workLocation: 'Bangalore (Onsite)',
@@ -211,6 +212,7 @@ const Employees = () => {
             convSalary: 0,
             pfSalary: 0,
             esiSalary: 0,
+            ptSalary: 0,
             trainingSalary: 0,
             reportsTo: '',
             workLocation: '',
@@ -257,6 +259,7 @@ const Employees = () => {
             convSalary: employee.salary?.conveyance ?? 0,
             pfSalary: employee.salary?.pf ?? 0,
             esiSalary: employee.salary?.esi ?? 0,
+            ptSalary: employee.salary?.professionalTax ?? employee.salary?.tax ?? 0,
             trainingSalary: employee.trainingSalary ?? 15000,
             reportsTo: employee.reportsTo || 'TL',
             workLocation: employee.workLocation || 'Bangalore (Onsite)',
@@ -335,10 +338,11 @@ const Employees = () => {
                     conveyance: Number(formData.convSalary) || 0,
                     pf: Number(formData.pfSalary) || 0,
                     esi: Number(formData.esiSalary) || 0,
+                    professionalTax: Number(formData.ptSalary) || 0,
+                    tax: Number(formData.ptSalary) || 0,
                     medical: 0,
                     special: 0,
-                    other: 0,
-                    tax: 0
+                    other: 0
                 }
             };
 
@@ -362,6 +366,7 @@ const Employees = () => {
                     // Show offer letter processing & preview modal!
                     setSelectedEmployeeForOffer({
                         ...savedEmployee,
+                        salary: payload.salary,
                         engagementType: formData.engagementType
                     });
                     setIsNewOfferProcess(true);
@@ -1136,6 +1141,17 @@ const Employees = () => {
                                             placeholder="0"
                                             onChange={(e) => setFormData({ ...formData, esiSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-emerald-500/50 text-emerald-400 rounded-xl p-3 font-bold text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-rose-400 mb-1">Professional Tax</label>
+                                        <input
+                                            type="number"
+                                            name="ptSalary"
+                                            value={formData.ptSalary || ''}
+                                            placeholder="0"
+                                            onChange={(e) => setFormData({ ...formData, ptSalary: Number(e.target.value) })}
+                                            className="w-full bg-brand-surface border border-rose-500/50 text-rose-400 rounded-xl p-3 font-bold text-sm"
                                         />
                                     </div>
                                     <div>
