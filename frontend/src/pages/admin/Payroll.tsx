@@ -361,16 +361,6 @@ const Payroll = () => {
         );
     };
 
-    // Employees chosen for payroll processing
-    const validSelectedEmployees = employees.filter(emp => 
-        selectedEmpIds.includes(emp.id) && !isEmployeeProcessed(emp)
-    );
-
-    const totalSelectedNetPayout = validSelectedEmployees.reduce((sum, emp) => {
-        const { netSalary } = calculateNetSalary(emp);
-        return sum + (netSalary || 0);
-    }, 0);
-
     const handleSalaryUpdate = async (empId: string, field: keyof SalaryStructure, value: string) => {
         const emp = employees.find(e => e.id === empId);
         if (!emp) return;
@@ -532,6 +522,20 @@ const Payroll = () => {
             netSalary: earnedSalary + bonus 
         };
     };
+
+    // Employees chosen for payroll processing
+    const validSelectedEmployees = (Array.isArray(employees) ? employees : []).filter(emp => 
+        emp && selectedEmpIds.includes(emp.id) && !isEmployeeProcessed(emp)
+    );
+
+    const totalSelectedNetPayout = validSelectedEmployees.reduce((sum, emp) => {
+        try {
+            const stats = calculateNetSalary(emp);
+            return sum + (stats?.netSalary || 0);
+        } catch {
+            return sum;
+        }
+    }, 0);
 
     const handleProcessUpdate = async (empId: string, field: 'bonus', value: number) => {
         // Update local process state
