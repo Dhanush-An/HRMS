@@ -1235,20 +1235,19 @@ app.post('/api/payroll/generate', authorizeRoles('admin', 'subadmin'), async (re
         let branchEmpIds: string[] = [];
 
         if (user.role !== 'admin') {
-            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId');
-            branchEmpIds = branchEmps.map((e: any) => e.employeeId);
-            validRecords = records.filter((r: any) => branchEmpIds.includes(r.employeeId));
+            const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId _id');
+            branchEmpIds = branchEmps.flatMap((e: any) => [e.employeeId, String(e._id)].filter(Boolean));
+            validRecords = records.filter((r: any) => branchEmpIds.includes(String(r.employeeId)));
         }
 
+        const incomingEmpIds = validRecords.map((r: any) => String(r.employeeId));
         let existingPayroll = await Payroll.findOne({ month, year });
         if (existingPayroll) {
-            if (user.role !== 'admin') {
-                // Keep records of other branches, replace only this branch's employees
-                const otherRecords = existingPayroll.records.filter((r: any) => !branchEmpIds.includes(r.employeeId));
-                existingPayroll.records = [...otherRecords, ...validRecords];
-            } else {
-                existingPayroll.records = validRecords;
-            }
+            // Retain any existing records that are not in the incoming batch
+            const remainingRecords = existingPayroll.records.filter(
+                (r: any) => !incomingEmpIds.includes(String(r.employeeId))
+            );
+            existingPayroll.records = [...remainingRecords, ...validRecords];
             existingPayroll.dateGenerated = new Date().toISOString();
             await existingPayroll.save();
             res.status(201).json(existingPayroll);

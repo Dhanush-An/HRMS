@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Calculator,
     History,
@@ -7,12 +7,31 @@ import {
     Pencil,
     Check,
     X,
-    RotateCcw
+    RotateCcw,
+    AlertCircle,
+    CheckCircle2,
+    Loader2,
+    Users
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
 import { generatePayslipPDF } from '../../utils/generatePayslipPDF';
 import EmployeePayroll from '../employee/EmployeePayroll';
+
+const MONTH_OPTIONS = [
+    { v: '01', l: 'January' },
+    { v: '02', l: 'February' },
+    { v: '03', l: 'March' },
+    { v: '04', l: 'April' },
+    { v: '05', l: 'May' },
+    { v: '06', l: 'June' },
+    { v: '07', l: 'July' },
+    { v: '08', l: 'August' },
+    { v: '09', l: 'September' },
+    { v: '10', l: 'October' },
+    { v: '11', l: 'November' },
+    { v: '12', l: 'December' }
+];
 
 interface SalaryStructure {
     basic: number;
@@ -145,9 +164,17 @@ const Payroll = () => {
     const [selectedBranch, setSelectedBranch] = useState<string>('All');
     const [adminTotalWorkingDays, setAdminTotalWorkingDays] = useState<number | null>(null);
 
+    // Selection & Processing State
+    const [selectedEmpIds, setSelectedEmpIds] = useState<string[]>([]);
+    const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+    const [isSubmittingPayroll, setIsSubmittingPayroll] = useState<boolean>(false);
+    const [payrollError, setPayrollError] = useState<string | null>(null);
+    const [payrollSuccess, setPayrollSuccess] = useState<string | null>(null);
+    const selectAllCheckboxRef = useRef<HTMLInputElement>(null);
+
     // Calculate default working days for the selected month/year
     const getDefaultWorkingDays = () => {
-        const monthNum = parseInt(selectedMonth);
+        const monthNum = parseInt(selectedMonth, 10);
         const totalDaysInMonth = new Date(selectedYear, monthNum, 0).getDate();
         let sundays = 0;
         const date = new Date(selectedYear, monthNum - 1, 1);
@@ -245,11 +272,13 @@ const Payroll = () => {
     useEffect(() => {
         fetchEmployees();
         fetchProcessData();
+        fetchHistoryData();
     }, []);
 
     useEffect(() => {
         if (activeTab === 'process') {
             fetchProcessData();
+            fetchHistoryData();
         } else if (activeTab === 'history') {
             if (!hasLoadedHistory) {
                 fetchHistoryData();
@@ -257,6 +286,90 @@ const Payroll = () => {
             fetchProcessData();
         }
     }, [activeTab, selectedMonth, selectedYear]);
+
+    // Reset selection and clear error when month or year changes
+    useEffect(() => {
+        setSelectedEmpIds([]);
+        setPayrollError(null);
+    }, [selectedMonth, selectedYear]);
+
+    // Keep only selected IDs that belong to the newly filtered branch
+    useEffect(() => {
+        setSelectedEmpIds(prev => {
+            const visibleIds = new Set(filteredEmployees.map(e => e.id));
+            return prev.filter(id => visibleIds.has(id));
+        });
+    }, [selectedBranch]);
+
+    // Identify if an employee's payroll for selectedMonth & selectedYear has already been processed
+    const currentMonthPayroll = payrollHistory.find(p => 
+        String(p.month).padStart(2, '0') === String(selectedMonth).padStart(2, '0') && 
+        Number(p.year) === Number(selectedYear)
+    );
+
+    const isEmployeeProcessed = (emp: Employee) => {
+        if (!currentMonthPayroll || !Array.isArray(currentMonthPayroll.records)) return false;
+        const empId = emp.id;
+        const empCode = emp.employeeId || emp.id;
+        const empMongoId = emp._id ? String(emp._id) : '';
+        const empName = (emp.name || '').trim().toLowerCase();
+
+        return currentMonthPayroll.records.some(r => {
+            const rId = String(r.employeeId || '').trim();
+            const rName = String(r.name || '').trim().toLowerCase();
+            return (
+                (rId && (rId === empId || rId === empCode || (empMongoId && rId === empMongoId))) ||
+                (rName && empName && rName === empName)
+            );
+        });
+    };
+
+    // Visible employees in table according to branch filter and joining date
+    const visibleEmployees = (Array.isArray(filteredEmployees) ? filteredEmployees : [])
+        .filter(emp => {
+            if (!emp.joiningDate) return true;
+            const joinDate = new Date(emp.joiningDate);
+            const limitDate = new Date(selectedYear, parseInt(selectedMonth, 10), 0);
+            return joinDate <= limitDate;
+        });
+
+    // Selectable visible employees (only those not yet processed)
+    const visibleSelectableEmployees = visibleEmployees.filter(emp => !isEmployeeProcessed(emp));
+    const visibleSelectedCount = visibleSelectableEmployees.filter(emp => selectedEmpIds.includes(emp.id)).length;
+    const isAllSelected = visibleSelectableEmployees.length > 0 && visibleSelectedCount === visibleSelectableEmployees.length;
+    const isIndeterminate = visibleSelectedCount > 0 && visibleSelectedCount < visibleSelectableEmployees.length;
+
+    useEffect(() => {
+        if (selectAllCheckboxRef.current) {
+            selectAllCheckboxRef.current.indeterminate = isIndeterminate;
+        }
+    }, [isIndeterminate]);
+
+    const handleToggleSelectAll = () => {
+        if (isAllSelected) {
+            const visibleIds = new Set(visibleSelectableEmployees.map(e => e.id));
+            setSelectedEmpIds(prev => prev.filter(id => !visibleIds.has(id)));
+        } else {
+            const newSelected = new Set([...selectedEmpIds, ...visibleSelectableEmployees.map(e => e.id)]);
+            setSelectedEmpIds(Array.from(newSelected));
+        }
+    };
+
+    const handleToggleEmployee = (empId: string) => {
+        setSelectedEmpIds(prev => 
+            prev.includes(empId) ? prev.filter(id => id !== empId) : [...prev, empId]
+        );
+    };
+
+    // Employees chosen for payroll processing
+    const validSelectedEmployees = employees.filter(emp => 
+        selectedEmpIds.includes(emp.id) && !isEmployeeProcessed(emp)
+    );
+
+    const totalSelectedNetPayout = validSelectedEmployees.reduce((sum, emp) => {
+        const { netSalary } = calculateNetSalary(emp);
+        return sum + (netSalary || 0);
+    }, 0);
 
     const handleSalaryUpdate = async (empId: string, field: keyof SalaryStructure, value: string) => {
         const emp = employees.find(e => e.id === empId);
@@ -513,25 +626,34 @@ const Payroll = () => {
         generatePayslipPDF(employee, mergedPayroll, attStats);
     };
 
-    const handleGeneratePayroll = async () => {
-        const records = employees
-            .filter(emp => {
-                if (!emp.joiningDate) return true;
-                const joinDate = new Date(emp.joiningDate);
-                const limitDate = new Date(selectedYear, parseInt(selectedMonth), 0);
-                return joinDate <= limitDate;
-            })
-            .map(emp => {
-                const { netSalary, tax, pf, actualBase, presentData } = calculateNetSalary(emp);
+    const handleConfirmProcessPayroll = async () => {
+        if (validSelectedEmployees.length === 0) return;
+        setIsSubmittingPayroll(true);
+        setPayrollError(null);
+
+        const records = validSelectedEmployees.map(emp => {
+            const { netSalary, tax, pf, actualBase, presentData } = calculateNetSalary(emp);
 
             const attendanceStats = {
                 totalWorkingDays: presentData.totalWorkingDays,
                 presentDays: presentData.effectivePresent,
-                leaveDays: leavesData.filter(l => 
-                    l.employeeId === emp.id && 
-                    l.status === 'Approved' &&
-                    new Date(l.startDate).getMonth() === (parseInt(selectedMonth) - 1)
-                ).length,
+                leaveDays: leavesData.filter(l => {
+                    if (!l || l.status !== 'Approved') return false;
+                    const lEmpId = (l.employeeId || '').trim();
+                    const lEmpName = (l.employeeName || '').trim().toLowerCase();
+                    const empCode = emp.employeeId || emp.id;
+                    const empMongoId = emp._id ? String(emp._id) : '';
+                    const empEmail = (emp.email || '').trim().toLowerCase();
+                    const empCleanName = (emp.name || '').trim().toLowerCase();
+                    const matchesEmp = (
+                        lEmpId === emp.id ||
+                        lEmpId === empCode ||
+                        (empMongoId && lEmpId === empMongoId) ||
+                        (empEmail && lEmpId.toLowerCase() === empEmail) ||
+                        (lEmpName && empCleanName && lEmpName === empCleanName)
+                    );
+                    return matchesEmp && new Date(l.startDate).getMonth() === (parseInt(selectedMonth, 10) - 1);
+                }).length,
                 lossOfPayDays: presentData.absentDays,
                 paidDays: presentData.totalPayableDays
             };
@@ -541,6 +663,7 @@ const Payroll = () => {
                 name: emp.name,
                 base: Number(actualBase.toFixed(2)),
                 bonus: processData[emp.id]?.bonus || 0,
+                deductions: (pf || 0) + (tax || 0),
                 tax,
                 pf,
                 netSalary: Number(netSalary.toFixed(2)),
@@ -556,21 +679,23 @@ const Payroll = () => {
             });
 
             if (response.ok) {
-                try {
-                    const historyRes = await api.get('/api/payroll');
-                    if (historyRes.ok) {
-                        const historyData = await historyRes.json();
-                        setPayrollHistory(historyData);
-                    }
-                } catch (e) {
-                    console.error("Error refreshing payroll history:", e);
-                }
-                setActiveTab('history');
+                await fetchHistoryData();
+                setShowConfirmModal(false);
+                setSelectedEmpIds([]);
+                const monthName = MONTH_OPTIONS.find(m => m.v === selectedMonth)?.l || selectedMonth;
+                setPayrollSuccess(`Successfully processed payroll for ${records.length} employee(s) for ${monthName} ${selectedYear}!`);
+                setTimeout(() => {
+                    setPayrollSuccess(null);
+                }, 6000);
             } else {
-                // Removed localhost notification
+                const errData = await response.json().catch(() => ({}));
+                setPayrollError(errData.message || "Failed to process payroll for selected employees.");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error generating payroll:", error);
+            setPayrollError(error.message || "An unexpected error occurred while processing payroll.");
+        } finally {
+            setIsSubmittingPayroll(false);
         }
     };
 
@@ -774,14 +899,56 @@ const Payroll = () => {
                                 </div>
                             </div>
                             <div className="flex-1"></div>
-                            <button
-                                onClick={handleGeneratePayroll}
-                                className="bg-status-approved hover:opacity-90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-status-approved/20"
-                            >
-                                <Calculator className="w-4 h-4" />
-                                Process Payroll
-                            </button>
+                            {validSelectedEmployees.length === 0 ? (
+                                <button
+                                    disabled
+                                    className="bg-brand-surface border border-brand-border text-brand-muted opacity-40 px-6 py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm cursor-not-allowed transition-all"
+                                    title="Select at least one employee using the checkboxes below to process payroll"
+                                >
+                                    <Calculator className="w-4 h-4" />
+                                    Process Payroll
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => {
+                                        setPayrollError(null);
+                                        setShowConfirmModal(true);
+                                    }}
+                                    className="bg-status-approved hover:opacity-90 text-white px-6 py-3 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-status-approved/20 cursor-pointer"
+                                >
+                                    <Calculator className="w-4 h-4" />
+                                    Process Payroll ({validSelectedEmployees.length === 1 ? '1 Selected' : `${validSelectedEmployees.length} Selected`})
+                                </button>
+                            )}
                         </div>
+
+                        {payrollSuccess && (
+                            <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-1.5 bg-emerald-500/20 rounded-lg">
+                                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold">{payrollSuccess}</p>
+                                        <p className="text-xs text-emerald-400/80">Only selected employees have been processed. All other workforce records remain unchanged.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setActiveTab('history')}
+                                        className="text-xs font-bold underline hover:opacity-80 transition-opacity cursor-pointer"
+                                    >
+                                        View History
+                                    </button>
+                                    <button
+                                        onClick={() => setPayrollSuccess(null)}
+                                        className="text-emerald-400/60 hover:text-emerald-400 p-1 cursor-pointer"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="bg-brand-surface border border-brand-border rounded-2xl overflow-x-auto no-scrollbar shadow-sm">
                             <div className="flex items-center gap-3 p-4 border-b border-brand-border">
@@ -802,6 +969,17 @@ const Payroll = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-table-header border-b border-brand-border text-[11px] font-black uppercase text-brand-muted tracking-widest">
+                                        <th className="px-3 py-4 w-12 text-center">
+                                            <input
+                                                ref={selectAllCheckboxRef}
+                                                type="checkbox"
+                                                checked={isAllSelected}
+                                                onChange={handleToggleSelectAll}
+                                                disabled={visibleSelectableEmployees.length === 0}
+                                                className="w-4 h-4 rounded border-brand-border bg-brand-surface text-brand-primary accent-brand-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-30 transition-all"
+                                                title={visibleSelectableEmployees.length === 0 ? "No eligible employees to select" : (isAllSelected ? "Deselect All Visible" : "Select All Visible")}
+                                            />
+                                        </th>
                                         <th className="px-2 py-4">Employee</th>
                                         <th className="px-2 py-4">Attendance</th>
                                         <th className="px-2 py-4">Gross (Earned)</th>
@@ -814,15 +992,50 @@ const Payroll = () => {
                                         .filter(emp => {
                                             if (!emp.joiningDate) return true;
                                             const joinDate = new Date(emp.joiningDate);
-                                            const limitDate = new Date(selectedYear, parseInt(selectedMonth), 0);
+                                            const limitDate = new Date(selectedYear, parseInt(selectedMonth, 10), 0);
                                             return joinDate <= limitDate;
                                         })
                                         .map((emp) => {
                                         const { netSalary, actualBase, presentData } = calculateNetSalary(emp);
+                                        const isProcessed = isEmployeeProcessed(emp);
+                                        const isSelected = selectedEmpIds.includes(emp.id);
+
                                         return (
-                                            <tr key={emp.id} className="hover:bg-brand-bg transition-colors group">
+                                            <tr 
+                                                key={emp.id} 
+                                                className={cn(
+                                                    "transition-colors group",
+                                                    isSelected ? "bg-brand-primary/10 hover:bg-brand-primary/15" : "hover:bg-brand-bg"
+                                                )}
+                                            >
+                                                <td className="px-3 py-4 w-12 text-center whitespace-nowrap">
+                                                    {isProcessed ? (
+                                                        <div className="flex items-center justify-center" title="Payroll already processed for this period">
+                                                            <input
+                                                                type="checkbox"
+                                                                disabled
+                                                                checked={false}
+                                                                className="w-4 h-4 rounded border-brand-border bg-brand-surface/40 opacity-30 cursor-not-allowed"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={isSelected}
+                                                            onChange={() => handleToggleEmployee(emp.id)}
+                                                            className="w-4 h-4 rounded border-brand-border bg-brand-surface text-brand-primary accent-brand-primary cursor-pointer transition-all"
+                                                        />
+                                                    )}
+                                                </td>
                                                 <td className="px-2 py-4 whitespace-nowrap">
-                                                    <div className="text-brand-text font-bold truncate max-w-[120px]">{emp.name}</div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="text-brand-text font-bold truncate max-w-[120px]">{emp.name}</div>
+                                                        {isProcessed && (
+                                                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                                <Check className="w-2.5 h-2.5" /> Done
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     {emp.branchName && <div className="text-[9px] font-bold text-brand-primary uppercase tracking-wider truncate max-w-[120px]">{emp.branchName}</div>}
                                                 </td>
                                                 <td className="px-2 py-4 whitespace-nowrap">
@@ -1028,6 +1241,142 @@ const Payroll = () => {
                         )}
                     </div>
                 )
+            )}
+
+            {/* Confirmation Modal for Selective Payroll Processing */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-brand-surface border border-brand-border rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-5 border-b border-brand-border bg-brand-bg/40">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-status-approved/15 text-status-approved rounded-xl border border-status-approved/30">
+                                    <Calculator className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-base font-black text-brand-text">Confirm Payroll Processing</h3>
+                                    <p className="text-xs text-brand-muted font-medium">
+                                        {MONTH_OPTIONS.find(m => m.v === selectedMonth)?.l || selectedMonth} {selectedYear} • {validSelectedEmployees.length} Employee{validSelectedEmployees.length > 1 ? 's' : ''} Selected
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    if (!isSubmittingPayroll) {
+                                        setShowConfirmModal(false);
+                                        setPayrollError(null);
+                                    }
+                                }}
+                                disabled={isSubmittingPayroll}
+                                className="p-1.5 text-brand-muted hover:text-brand-text rounded-lg hover:bg-brand-bg transition-all disabled:opacity-50 cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 space-y-4">
+                            {payrollError && (
+                                <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3.5 rounded-xl flex items-start gap-2.5 text-xs animate-in fade-in">
+                                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-bold">Processing Failed</p>
+                                        <p>{payrollError}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Summary stat cards */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="bg-brand-bg border border-brand-border p-3.5 rounded-xl">
+                                    <span className="text-[10px] font-black text-brand-muted uppercase tracking-wider">Total Selected</span>
+                                    <div className="text-xl font-black text-brand-text mt-1 flex items-center gap-1.5">
+                                        <Users className="w-4 h-4 text-brand-primary" />
+                                        {validSelectedEmployees.length}
+                                    </div>
+                                </div>
+                                <div className="bg-brand-bg border border-brand-border p-3.5 rounded-xl">
+                                    <span className="text-[10px] font-black text-brand-muted uppercase tracking-wider">Total Net Payout</span>
+                                    <div className="text-xl font-black text-status-approved mt-1">
+                                        ₹{totalSelectedNetPayout.toLocaleString()}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Selected employee list */}
+                            <div>
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-[10px] font-black text-brand-muted uppercase tracking-widest">
+                                        Selected Employees ({validSelectedEmployees.length})
+                                    </label>
+                                    <span className="text-[10px] font-bold text-brand-muted">Net Payable</span>
+                                </div>
+                                <div className="max-h-56 overflow-y-auto no-scrollbar rounded-xl border border-brand-border bg-brand-bg divide-y divide-brand-border">
+                                    {validSelectedEmployees.map(emp => {
+                                        const { netSalary, presentData } = calculateNetSalary(emp);
+                                        return (
+                                            <div key={emp.id} className="p-3 flex items-center justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <div className="font-bold text-sm text-brand-text truncate">{emp.name}</div>
+                                                    <div className="flex items-center gap-2 text-[10px] text-brand-muted mt-0.5">
+                                                        {emp.branchName && <span className="text-brand-primary font-bold">{emp.branchName}</span>}
+                                                        <span>•</span>
+                                                        <span>P: {presentData.effectivePresent} | Abs: {presentData.absentDays} | Paid: {presentData.totalPayableDays}d</span>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <div className="text-sm font-black text-status-approved">₹{netSalary.toLocaleString()}</div>
+                                                    <div className="text-[9px] font-bold text-brand-muted uppercase">Net Pay</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Informational Callout */}
+                            <div className="bg-brand-primary/10 border border-brand-primary/20 rounded-xl p-3.5 flex items-start gap-2.5">
+                                <AlertCircle className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
+                                <p className="text-xs text-brand-muted font-medium leading-relaxed">
+                                    Payroll and payslips will be generated <strong className="text-brand-text">ONLY</strong> for the {validSelectedEmployees.length} selected employee{validSelectedEmployees.length > 1 ? 's' : ''}. Unselected employees will remain unaffected.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-end gap-3 p-5 border-t border-brand-border bg-brand-bg/50">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowConfirmModal(false);
+                                    setPayrollError(null);
+                                }}
+                                disabled={isSubmittingPayroll}
+                                className="px-4 py-2.5 rounded-xl border border-brand-border text-brand-muted hover:text-brand-text hover:bg-brand-surface font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleConfirmProcessPayroll}
+                                disabled={isSubmittingPayroll}
+                                className="bg-status-approved hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg shadow-status-approved/20 transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                            >
+                                {isSubmittingPayroll ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Processing Payroll...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check className="w-4 h-4" />
+                                        Confirm & Process ({validSelectedEmployees.length})
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
