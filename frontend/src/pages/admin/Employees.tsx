@@ -91,7 +91,11 @@ const Employees = () => {
         hraSalary: 0,
         convSalary: 0,
         pfSalary: 0,
+        employeePfSalary: 0,
+        employerPfSalary: 0,
         esiSalary: 0,
+        employeeEsiSalary: 0,
+        employerEsiSalary: 0,
         ptSalary: 0,
         trainingSalary: 0,
         reportsTo: '',
@@ -211,7 +215,11 @@ const Employees = () => {
             hraSalary: 0,
             convSalary: 0,
             pfSalary: 0,
+            employeePfSalary: 0,
+            employerPfSalary: 0,
             esiSalary: 0,
+            employeeEsiSalary: 0,
+            employerEsiSalary: 0,
             ptSalary: 0,
             trainingSalary: 0,
             reportsTo: '',
@@ -258,7 +266,11 @@ const Employees = () => {
             hraSalary: employee.salary?.hra ?? 0,
             convSalary: employee.salary?.conveyance ?? 0,
             pfSalary: employee.salary?.pf ?? 0,
+            employeePfSalary: employee.salary?.employeePf ?? (employee.salary?.pf ? Math.round(employee.salary.pf / 2) : 0),
+            employerPfSalary: employee.salary?.employerPf ?? (employee.salary?.pf ? Math.round(employee.salary.pf / 2) : 0),
             esiSalary: employee.salary?.esi ?? 0,
+            employeeEsiSalary: employee.salary?.employeeEsi ?? employee.salary?.esi ?? 0,
+            employerEsiSalary: employee.salary?.employerEsi ?? 0,
             ptSalary: employee.salary?.professionalTax ?? employee.salary?.tax ?? 0,
             trainingSalary: employee.trainingSalary ?? 15000,
             reportsTo: employee.reportsTo || 'TL',
@@ -336,8 +348,12 @@ const Employees = () => {
                     basic: Number(formData.basicSalary) || 0,
                     hra: Number(formData.hraSalary) || 0,
                     conveyance: Number(formData.convSalary) || 0,
-                    pf: Number(formData.pfSalary) || 0,
-                    esi: Number(formData.esiSalary) || 0,
+                    employeePf: Number(formData.employeePfSalary) || 0,
+                    employerPf: Number(formData.employerPfSalary) || 0,
+                    pf: (Number(formData.employeePfSalary) || 0) + (Number(formData.employerPfSalary) || 0) || Number(formData.pfSalary) || 0,
+                    employeeEsi: Number(formData.employeeEsiSalary) || 0,
+                    employerEsi: Number(formData.employerEsiSalary) || 0,
+                    esi: (Number(formData.employeeEsiSalary) || 0) + (Number(formData.employerEsiSalary) || 0) || Number(formData.esiSalary) || 0,
                     professionalTax: Number(formData.ptSalary) || 0,
                     tax: Number(formData.ptSalary) || 0,
                     medical: 0,
@@ -1081,19 +1097,26 @@ const Employees = () => {
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {/* Row 1: Earnings */}
                                     <div>
                                         <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Basic (Monthly)</label>
                                         <input
                                             type="number"
                                             name="basicSalary"
                                             value={formData.basicSalary || ''}
-                                            placeholder="0"
+                                            placeholder="15000"
                                             onChange={(e) => {
                                                 const basic = Number(e.target.value) || 0;
+                                                const hra = Math.round(basic * 0.5);
+                                                const empPf = Math.round(basic * 0.12);
+                                                const empyrPf = Math.round(basic * 0.12);
                                                 setFormData({
                                                     ...formData,
                                                     basicSalary: basic,
-                                                    hraSalary: Math.round(basic * 0.5)
+                                                    hraSalary: hra,
+                                                    employeePfSalary: empPf,
+                                                    employerPfSalary: empyrPf,
+                                                    pfSalary: empPf + empyrPf
                                                 });
                                             }}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
@@ -1105,7 +1128,7 @@ const Employees = () => {
                                             type="number"
                                             name="hraSalary"
                                             value={formData.hraSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.5) : '')}
-                                            placeholder="0"
+                                            placeholder="7500"
                                             onChange={(e) => setFormData({ ...formData, hraSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
                                         />
@@ -1116,30 +1139,46 @@ const Employees = () => {
                                             type="number"
                                             name="convSalary"
                                             value={formData.convSalary || ''}
-                                            placeholder="0"
+                                            placeholder="700"
                                             onChange={(e) => setFormData({ ...formData, convSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
                                         />
                                     </div>
+
+                                    {/* Row 2: Employee Deductions */}
                                     <div>
-                                        <label className="block text-[9px] font-bold uppercase text-sky-400 mb-1">PF (Provident Fund)</label>
+                                        <label className="block text-[9px] font-bold uppercase text-sky-400 mb-1">Employee PF @ 12% of Basic</label>
                                         <input
                                             type="number"
-                                            name="pfSalary"
-                                            value={formData.pfSalary || ''}
-                                            placeholder="0"
-                                            onChange={(e) => setFormData({ ...formData, pfSalary: Number(e.target.value) })}
+                                            name="employeePfSalary"
+                                            value={formData.employeePfSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
+                                            placeholder="1800"
+                                            onChange={(e) => {
+                                                const empPf = Number(e.target.value) || 0;
+                                                setFormData({
+                                                    ...formData,
+                                                    employeePfSalary: empPf,
+                                                    pfSalary: empPf + (formData.employerPfSalary || 0)
+                                                });
+                                            }}
                                             className="w-full bg-brand-surface border border-sky-500/50 text-sky-400 rounded-xl p-3 font-bold text-sm"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-[9px] font-bold uppercase text-emerald-400 mb-1">ESI Contribution</label>
+                                        <label className="block text-[9px] font-bold uppercase text-emerald-400 mb-1">Employee ESI</label>
                                         <input
                                             type="number"
-                                            name="esiSalary"
-                                            value={formData.esiSalary || ''}
+                                            name="employeeEsiSalary"
+                                            value={formData.employeeEsiSalary ?? (formData.esiSalary || '')}
                                             placeholder="0"
-                                            onChange={(e) => setFormData({ ...formData, esiSalary: Number(e.target.value) })}
+                                            onChange={(e) => {
+                                                const empEsi = Number(e.target.value) || 0;
+                                                setFormData({
+                                                    ...formData,
+                                                    employeeEsiSalary: empEsi,
+                                                    esiSalary: empEsi + (formData.employerEsiSalary || 0)
+                                                });
+                                            }}
                                             className="w-full bg-brand-surface border border-emerald-500/50 text-emerald-400 rounded-xl p-3 font-bold text-sm"
                                         />
                                     </div>
@@ -1148,10 +1187,48 @@ const Employees = () => {
                                         <input
                                             type="number"
                                             name="ptSalary"
-                                            value={formData.ptSalary || ''}
+                                            value={formData.ptSalary !== undefined && formData.ptSalary !== null ? formData.ptSalary : ''}
                                             placeholder="0"
                                             onChange={(e) => setFormData({ ...formData, ptSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-rose-500/50 text-rose-400 rounded-xl p-3 font-bold text-sm"
+                                        />
+                                    </div>
+
+                                    {/* Row 3: Employer Contributions & Net */}
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-indigo-400 mb-1">Employer PF @ 12% of Basic</label>
+                                        <input
+                                            type="number"
+                                            name="employerPfSalary"
+                                            value={formData.employerPfSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
+                                            placeholder="1800"
+                                            onChange={(e) => {
+                                                const empyrPf = Number(e.target.value) || 0;
+                                                setFormData({
+                                                    ...formData,
+                                                    employerPfSalary: empyrPf,
+                                                    pfSalary: (formData.employeePfSalary || 0) + empyrPf
+                                                });
+                                            }}
+                                            className="w-full bg-brand-surface border border-indigo-500/50 text-indigo-400 rounded-xl p-3 font-bold text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[9px] font-bold uppercase text-teal-400 mb-1">Employer ESI</label>
+                                        <input
+                                            type="number"
+                                            name="employerEsiSalary"
+                                            value={formData.employerEsiSalary !== undefined && formData.employerEsiSalary !== null ? formData.employerEsiSalary : ''}
+                                            placeholder="0"
+                                            onChange={(e) => {
+                                                const empyrEsi = Number(e.target.value) || 0;
+                                                setFormData({
+                                                    ...formData,
+                                                    employerEsiSalary: empyrEsi,
+                                                    esiSalary: (formData.employeeEsiSalary || 0) + empyrEsi
+                                                });
+                                            }}
+                                            className="w-full bg-brand-surface border border-teal-500/50 text-teal-400 rounded-xl p-3 font-bold text-sm"
                                         />
                                     </div>
                                     <div>
@@ -1162,7 +1239,7 @@ const Employees = () => {
                                             type="number"
                                             name="trainingSalary"
                                             value={formData.trainingSalary || ''}
-                                            placeholder="0"
+                                            placeholder="15000"
                                             onChange={(e) => setFormData({ ...formData, trainingSalary: Number(e.target.value) })}
                                             className="w-full bg-brand-surface border border-amber-500/50 text-amber-400 rounded-xl p-3 font-black text-sm"
                                         />

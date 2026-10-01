@@ -26,6 +26,10 @@ export interface IEmployee extends Document {
         tax: number;
         esi?: number;
         professionalTax?: number;
+        employeePf?: number;
+        employerPf?: number;
+        employeeEsi?: number;
+        employerEsi?: number;
     };
     leaveBalance: {
         sick: number;
@@ -97,6 +101,10 @@ const EmployeeSchema: Schema = new Schema({
         other: { type: Number, default: 0 },
         pf: { type: Number, default: 0 },
         esi: { type: Number, default: 0 },
+        employeePf: { type: Number, default: 0 },
+        employerPf: { type: Number, default: 0 },
+        employeeEsi: { type: Number, default: 0 },
+        employerEsi: { type: Number, default: 0 },
         tax: { type: Number, default: 0 },
         professionalTax: { type: Number, default: 0 },
     },
