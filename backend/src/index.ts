@@ -486,7 +486,7 @@ app.post('/api/employees', authorizeRoles('admin', 'subadmin', 'hr'), async (req
             phone: phone || '',
             branchId: finalBranchId || 'BR002',
             branchName: finalBranchName || 'Bangalore Branch',
-            salary: req.body.salary || { basic: 7500, hra: 3750, conveyance: 3750, medical: 0, special: 0, other: 0, pf: 0, esi: 0, employeePf: 0, employerPf: 0, employeeEsi: 0, employerEsi: 0, tax: 0, professionalTax: 0 },
+            salary: req.body.salary || { ctc: 0, basic: 7500, hra: 3750, conveyance: 3750, medical: 0, special: 0, other: 0, pf: 0, esi: 0, employeePf: 0, employerPf: 0, employeeEsi: 0, employerEsi: 0, tax: 0, professionalTax: 0 },
             leaveBalance: req.body.leaveBalance || { sick: 12, casual: 12, earned: 15, wfh: 10 },
             responsibilities: responsibilities || offerResponsibilities || '',
             avatar: req.body.avatar || '',

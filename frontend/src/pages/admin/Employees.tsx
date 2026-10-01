@@ -87,9 +87,11 @@ const Employees = () => {
         address: '',
         aadharNo: '',
         engagementType: 'Training' as 'Training' | 'Employment',
+        ctcSalary: 0,
         basicSalary: 0,
         hraSalary: 0,
         convSalary: 0,
+        incentiveSalary: 0,
         pfSalary: 0,
         employeePfSalary: 0,
         employerPfSalary: 0,
@@ -211,9 +213,11 @@ const Employees = () => {
             address: '',
             aadharNo: '',
             engagementType: 'Training' as 'Training' | 'Employment',
+            ctcSalary: 0,
             basicSalary: 0,
             hraSalary: 0,
             convSalary: 0,
+            incentiveSalary: 0,
             pfSalary: 0,
             employeePfSalary: 0,
             employerPfSalary: 0,
@@ -262,9 +266,11 @@ const Employees = () => {
             address: employee.address || '',
             aadharNo: employee.aadharNo || '',
             engagementType: (employee.engagementType || 'Training') as 'Training' | 'Employment',
+            ctcSalary: employee.salary?.ctc ?? ((employee.salary?.basic || 0) + (employee.salary?.hra || 0) + (employee.salary?.conveyance || 0) + (employee.salary?.special || employee.salary?.other || 0)),
             basicSalary: employee.salary?.basic ?? 0,
             hraSalary: employee.salary?.hra ?? 0,
             convSalary: employee.salary?.conveyance ?? 0,
+            incentiveSalary: employee.salary?.special ?? employee.salary?.other ?? 0,
             pfSalary: employee.salary?.pf ?? 0,
             employeePfSalary: employee.salary?.employeePf ?? (employee.salary?.pf ? Math.round(employee.salary.pf / 2) : 0),
             employerPfSalary: employee.salary?.employerPf ?? (employee.salary?.pf ? Math.round(employee.salary.pf / 2) : 0),
@@ -342,23 +348,36 @@ const Employees = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            const basicVal = Number(formData.basicSalary) || 0;
+            const hraVal = Number(formData.hraSalary) || 0;
+            const convVal = Number(formData.convSalary) || 0;
+            const incentiveVal = Number(formData.incentiveSalary) || 0;
+            const empPfVal = Number(formData.employeePfSalary) || 0;
+            const empyrPfVal = Number(formData.employerPfSalary) || 0;
+            const empEsiVal = Number(formData.employeeEsiSalary) || 0;
+            const empyrEsiVal = Number(formData.employerEsiSalary) || 0;
+            const ptVal = Number(formData.ptSalary) || 0;
+            const ctcVal = Number(formData.ctcSalary) || (basicVal + hraVal + convVal + incentiveVal);
+
             const payload: any = {
                 ...formData,
+                trainingSalary: Number(formData.trainingSalary) || 0,
                 salary: {
-                    basic: Number(formData.basicSalary) || 0,
-                    hra: Number(formData.hraSalary) || 0,
-                    conveyance: Number(formData.convSalary) || 0,
-                    employeePf: Number(formData.employeePfSalary) || 0,
-                    employerPf: Number(formData.employerPfSalary) || 0,
-                    pf: (Number(formData.employeePfSalary) || 0) + (Number(formData.employerPfSalary) || 0) || Number(formData.pfSalary) || 0,
-                    employeeEsi: Number(formData.employeeEsiSalary) || 0,
-                    employerEsi: Number(formData.employerEsiSalary) || 0,
-                    esi: (Number(formData.employeeEsiSalary) || 0) + (Number(formData.employerEsiSalary) || 0) || Number(formData.esiSalary) || 0,
-                    professionalTax: Number(formData.ptSalary) || 0,
-                    tax: Number(formData.ptSalary) || 0,
+                    ctc: ctcVal,
+                    basic: basicVal,
+                    hra: hraVal,
+                    conveyance: convVal,
+                    special: incentiveVal,
+                    other: incentiveVal,
                     medical: 0,
-                    special: 0,
-                    other: 0
+                    employeePf: empPfVal,
+                    employerPf: empyrPfVal,
+                    pf: empPfVal + empyrPfVal,
+                    employeeEsi: empEsiVal,
+                    employerEsi: empyrEsiVal,
+                    esi: empEsiVal + empyrEsiVal,
+                    professionalTax: ptVal,
+                    tax: ptVal
                 }
             };
 
@@ -432,6 +451,36 @@ const Employees = () => {
             emp.email.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
+    // Dynamic salary calculation values for form modal
+    const formBasic = Number(formData.basicSalary) || 0;
+    const formHra = Number(formData.hraSalary) > 0
+        ? Number(formData.hraSalary)
+        : (formBasic ? Math.round(formBasic * 0.5) : 0);
+    const formConv = Number(formData.convSalary) || 0;
+    const formIncentive = Number(formData.incentiveSalary) || 0;
+    const formEmployerPf = Number(formData.employerPfSalary) > 0
+        ? Number(formData.employerPfSalary)
+        : (formBasic ? Math.round(formBasic * 0.12) : 0);
+    const formEmployerEsi = Number(formData.employerEsiSalary) || 0;
+    const formEmployeePf = Number(formData.employeePfSalary) > 0
+        ? Number(formData.employeePfSalary)
+        : (formBasic ? Math.round(formBasic * 0.12) : 0);
+    const formEmployeeEsi = Number(formData.employeeEsiSalary) || 0;
+    const formPt = Number(formData.ptSalary) || 0;
+
+    // CTC
+    const formCtc = (formData.ctcSalary !== undefined && formData.ctcSalary !== null && Number(formData.ctcSalary) > 0)
+        ? Number(formData.ctcSalary)
+        : (formBasic + formHra + formConv + formIncentive);
+
+    // Gross Salary (calculate ctc - employer PF and esi)
+    const formGross = Math.max(0, formCtc - formEmployerPf - formEmployerEsi);
+
+    // Total Deduction (add Employer PF & ESI and Employee PF & ESI + PT)
+    const formTotalDeductions = formEmployerPf + formEmployerEsi + formEmployeePf + formEmployeeEsi + formPt;
+
+    // Net Salary / Take Home
+    const formNetTakeHome = Math.max(0, formCtc - formTotalDeductions);
 
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1065,9 +1114,13 @@ const Employees = () => {
                             </div>
 
                             {/* Salary Structure Section */}
-                            <div className="p-4 bg-brand-bg/50 border border-brand-border rounded-2xl space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-xs font-black uppercase tracking-wider text-brand-primary">Salary Structure & Stipend</h3>
+                            <div className="p-5 bg-brand-bg/70 border border-brand-border rounded-2xl space-y-4">
+                                {/* Header with Title and Offer Mode */}
+                                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-brand-border pb-3">
+                                    <div>
+                                        <h3 className="text-xs font-black uppercase tracking-wider text-brand-primary">Salary Structure & Stipend</h3>
+                                        <p className="text-[10px] text-slate-400">Statutory breakdown conforming to employment offer and payroll rules</p>
+                                    </div>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] font-bold text-slate-400 uppercase">Offer Mode:</span>
                                         <div className="flex bg-slate-900 border border-amber-500/40 p-1 rounded-xl gap-1">
@@ -1096,153 +1149,308 @@ const Employees = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {/* Row 1: Earnings */}
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Basic (Monthly)</label>
-                                        <input
-                                            type="number"
-                                            name="basicSalary"
-                                            value={formData.basicSalary || ''}
-                                            placeholder="15000"
-                                            onChange={(e) => {
-                                                const basic = Number(e.target.value) || 0;
-                                                const hra = Math.round(basic * 0.5);
-                                                const empPf = Math.round(basic * 0.12);
-                                                const empyrPf = Math.round(basic * 0.12);
-                                                setFormData({
-                                                    ...formData,
-                                                    basicSalary: basic,
-                                                    hraSalary: hra,
-                                                    employeePfSalary: empPf,
-                                                    employerPfSalary: empyrPf,
-                                                    pfSalary: empPf + empyrPf
-                                                });
-                                            }}
-                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">HRA (50% of Basic)</label>
-                                        <input
-                                            type="number"
-                                            name="hraSalary"
-                                            value={formData.hraSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.5) : '')}
-                                            placeholder="7500"
-                                            onChange={(e) => setFormData({ ...formData, hraSalary: Number(e.target.value) })}
-                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Statutory Allowance (Manual)</label>
-                                        <input
-                                            type="number"
-                                            name="convSalary"
-                                            value={formData.convSalary || ''}
-                                            placeholder="700"
-                                            onChange={(e) => setFormData({ ...formData, convSalary: Number(e.target.value) })}
-                                            className="w-full bg-brand-surface border border-brand-border rounded-xl p-3 text-brand-text font-bold text-sm"
-                                        />
-                                    </div>
 
-                                    {/* Row 2: Employee Deductions */}
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-sky-400 mb-1">Employee PF @ 12% of Basic</label>
-                                        <input
-                                            type="number"
-                                            name="employeePfSalary"
-                                            value={formData.employeePfSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
-                                            placeholder="1800"
-                                            onChange={(e) => {
-                                                const empPf = Number(e.target.value) || 0;
-                                                setFormData({
-                                                    ...formData,
-                                                    employeePfSalary: empPf,
-                                                    pfSalary: empPf + (formData.employerPfSalary || 0)
-                                                });
-                                            }}
-                                            className="w-full bg-brand-surface border border-sky-500/50 text-sky-400 rounded-xl p-3 font-bold text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-emerald-400 mb-1">Employee ESI</label>
-                                        <input
-                                            type="number"
-                                            name="employeeEsiSalary"
-                                            value={formData.employeeEsiSalary ?? (formData.esiSalary || '')}
-                                            placeholder="0"
-                                            onChange={(e) => {
-                                                const empEsi = Number(e.target.value) || 0;
-                                                setFormData({
-                                                    ...formData,
-                                                    employeeEsiSalary: empEsi,
-                                                    esiSalary: empEsi + (formData.employerEsiSalary || 0)
-                                                });
-                                            }}
-                                            className="w-full bg-brand-surface border border-emerald-500/50 text-emerald-400 rounded-xl p-3 font-bold text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-rose-400 mb-1">Professional Tax</label>
-                                        <input
-                                            type="number"
-                                            name="ptSalary"
-                                            value={formData.ptSalary !== undefined && formData.ptSalary !== null ? formData.ptSalary : ''}
-                                            placeholder="0"
-                                            onChange={(e) => setFormData({ ...formData, ptSalary: Number(e.target.value) })}
-                                            className="w-full bg-brand-surface border border-rose-500/50 text-rose-400 rounded-xl p-3 font-bold text-sm"
-                                        />
-                                    </div>
-
-                                    {/* Row 3: Employer Contributions & Net */}
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-indigo-400 mb-1">Employer PF @ 12% of Basic</label>
-                                        <input
-                                            type="number"
-                                            name="employerPfSalary"
-                                            value={formData.employerPfSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
-                                            placeholder="1800"
-                                            onChange={(e) => {
-                                                const empyrPf = Number(e.target.value) || 0;
-                                                setFormData({
-                                                    ...formData,
-                                                    employerPfSalary: empyrPf,
-                                                    pfSalary: (formData.employeePfSalary || 0) + empyrPf
-                                                });
-                                            }}
-                                            className="w-full bg-brand-surface border border-indigo-500/50 text-indigo-400 rounded-xl p-3 font-bold text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-teal-400 mb-1">Employer ESI</label>
-                                        <input
-                                            type="number"
-                                            name="employerEsiSalary"
-                                            value={formData.employerEsiSalary !== undefined && formData.employerEsiSalary !== null ? formData.employerEsiSalary : ''}
-                                            placeholder="0"
-                                            onChange={(e) => {
-                                                const empyrEsi = Number(e.target.value) || 0;
-                                                setFormData({
-                                                    ...formData,
-                                                    employerEsiSalary: empyrEsi,
-                                                    esiSalary: (formData.employeeEsiSalary || 0) + empyrEsi
-                                                });
-                                            }}
-                                            className="w-full bg-brand-surface border border-teal-500/50 text-teal-400 rounded-xl p-3 font-bold text-sm"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-[9px] font-bold uppercase text-amber-500 mb-1">
-                                            {formData.engagementType === 'Employment' ? 'Monthly Salary (INR)' : 'Training Stipend (INR)'}
+                                {/* 1. COST TO COMPANY (CTC) */}
+                                <div className="bg-slate-900/80 border border-indigo-500/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex-1 min-w-[200px]">
+                                        <label className="block text-[10px] font-black uppercase tracking-wider text-indigo-400 mb-1">
+                                            COST TO COMPANY (CTC)
                                         </label>
-                                        <input
-                                            type="number"
-                                            name="trainingSalary"
-                                            value={formData.trainingSalary || ''}
-                                            placeholder="15000"
-                                            onChange={(e) => setFormData({ ...formData, trainingSalary: Number(e.target.value) })}
-                                            className="w-full bg-brand-surface border border-amber-500/50 text-amber-400 rounded-xl p-3 font-black text-sm"
-                                        />
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-300 font-bold text-sm">₹</span>
+                                            <input
+                                                type="number"
+                                                name="ctcSalary"
+                                                value={formData.ctcSalary || formCtc || ''}
+                                                placeholder="25000"
+                                                onChange={(e) => {
+                                                    const newCtc = Number(e.target.value) || 0;
+                                                    const totalDed = formEmployerPf + formEmployerEsi + formEmployeePf + formEmployeeEsi + formPt;
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        ctcSalary: newCtc,
+                                                        trainingSalary: Math.max(0, newCtc - totalDed)
+                                                    }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-indigo-500/50 rounded-xl pl-8 pr-3 py-2.5 text-white font-black text-base focus:border-indigo-400 focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Annual CTC</span>
+                                        <span className="text-base font-black text-indigo-300">₹{((formData.ctcSalary || formCtc || 0) * 12).toLocaleString('en-IN')} / yr</span>
+                                    </div>
+                                </div>
+
+                                {/* 2 to 5: Earnings & Allowances */}
+                                <div>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 block">Earnings & Allowances</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                                        {/* 2. Basic Salary */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Basic Salary</label>
+                                            <input
+                                                type="number"
+                                                name="basicSalary"
+                                                value={formData.basicSalary || ''}
+                                                placeholder="15000"
+                                                onChange={(e) => {
+                                                    const basic = Number(e.target.value) || 0;
+                                                    const hra = Math.round(basic * 0.5);
+                                                    const empPf = Math.round(basic * 0.12);
+                                                    const empyrPf = Math.round(basic * 0.12);
+                                                    const conv = formData.convSalary || 2500;
+                                                    const incentive = formData.incentiveSalary || 0;
+                                                    const ctc = basic + hra + conv + incentive;
+                                                    const totalDed = empyrPf + formEmployerEsi + empPf + formEmployeeEsi + formPt;
+                                                    const net = Math.max(0, ctc - totalDed);
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        basicSalary: basic,
+                                                        hraSalary: hra,
+                                                        employeePfSalary: empPf,
+                                                        employerPfSalary: empyrPf,
+                                                        pfSalary: empPf + empyrPf,
+                                                        convSalary: conv,
+                                                        ctcSalary: ctc,
+                                                        trainingSalary: net
+                                                    }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-brand-border rounded-xl p-2.5 text-brand-text font-bold text-sm"
+                                            />
+                                        </div>
+
+                                        {/* 3. HRA @ 50% of Basic */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">HRA @ 50% of Basic</label>
+                                            <input
+                                                type="number"
+                                                name="hraSalary"
+                                                value={formData.hraSalary ?? (formData.basicSalary ? Math.round(formData.basicSalary * 0.5) : '')}
+                                                placeholder="7500"
+                                                onChange={(e) => {
+                                                    const hra = Number(e.target.value) || 0;
+                                                    const ctc = formBasic + hra + formConv + formIncentive;
+                                                    const net = Math.max(0, ctc - formTotalDeductions);
+                                                    setFormData(prev => ({ ...prev, hraSalary: hra, ctcSalary: ctc, trainingSalary: net }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-brand-border rounded-xl p-2.5 text-brand-text font-bold text-sm"
+                                            />
+                                        </div>
+
+                                        {/* 4. Conveyance Allowance */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Conveyance Allowance</label>
+                                            <input
+                                                type="number"
+                                                name="convSalary"
+                                                value={formData.convSalary ?? ''}
+                                                placeholder="2500"
+                                                onChange={(e) => {
+                                                    const conv = Number(e.target.value) || 0;
+                                                    const ctc = formBasic + formHra + conv + formIncentive;
+                                                    const net = Math.max(0, ctc - formTotalDeductions);
+                                                    setFormData(prev => ({ ...prev, convSalary: conv, ctcSalary: ctc, trainingSalary: net }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-brand-border rounded-xl p-2.5 text-brand-text font-bold text-sm"
+                                            />
+                                        </div>
+
+                                        {/* 5. Incentive / Other Allowance */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-brand-muted mb-1">Incentive / Other Allowance</label>
+                                            <input
+                                                type="number"
+                                                name="incentiveSalary"
+                                                value={formData.incentiveSalary ?? ''}
+                                                placeholder="0"
+                                                onChange={(e) => {
+                                                    const incentive = Number(e.target.value) || 0;
+                                                    const ctc = formBasic + formHra + formConv + incentive;
+                                                    const net = Math.max(0, ctc - formTotalDeductions);
+                                                    setFormData(prev => ({ ...prev, incentiveSalary: incentive, ctcSalary: ctc, trainingSalary: net }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-brand-border rounded-xl p-2.5 text-brand-text font-bold text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 6. Gross Salary (calculate ctc-employer PF and esi) */}
+                                <div className="bg-emerald-950/30 border border-emerald-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                                        <div>
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Gross Salary</span>
+                                            <p className="text-[9px] text-emerald-300/70">Calculated as: CTC - (Employer PF + Employer ESI)</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-sm font-black text-emerald-300">₹{formGross.toLocaleString('en-IN')} / mo</span>
+                                        <span className="text-[10px] text-slate-400 block">(Annual: ₹{(formGross * 12).toLocaleString('en-IN')})</span>
+                                    </div>
+                                </div>
+
+                                {/* 7 & 8: Less Employer Contributions */}
+                                <div>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 mb-2 block">Employer Contributions (Deducted from CTC to get Gross)</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        {/* 7. Less: Employer PF @ 12% of Basic */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-indigo-400 mb-1">Less: Employer PF @ 12% of Basic</label>
+                                            <input
+                                                type="number"
+                                                name="employerPfSalary"
+                                                value={formData.employerPfSalary ?? (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
+                                                placeholder="1800"
+                                                onChange={(e) => {
+                                                    const empyrPf = Number(e.target.value) || 0;
+                                                    const totalDed = empyrPf + formEmployerEsi + formEmployeePf + formEmployeeEsi + formPt;
+                                                    const net = Math.max(0, formCtc - totalDed);
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        employerPfSalary: empyrPf,
+                                                        pfSalary: (prev.employeePfSalary || 0) + empyrPf,
+                                                        trainingSalary: net
+                                                    }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-indigo-500/50 text-indigo-400 rounded-xl p-2.5 font-bold text-sm"
+                                            />
+                                        </div>
+
+                                        {/* 8. Less: Employer ESI */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-teal-400 mb-1">Less: Employer ESI</label>
+                                            <input
+                                                type="number"
+                                                name="employerEsiSalary"
+                                                value={formData.employerEsiSalary !== undefined && formData.employerEsiSalary !== null ? formData.employerEsiSalary : ''}
+                                                placeholder="0"
+                                                onChange={(e) => {
+                                                    const empyrEsi = Number(e.target.value) || 0;
+                                                    const totalDed = formEmployerPf + empyrEsi + formEmployeePf + formEmployeeEsi + formPt;
+                                                    const net = Math.max(0, formCtc - totalDed);
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        employerEsiSalary: empyrEsi,
+                                                        esiSalary: (prev.employeeEsiSalary || 0) + empyrEsi,
+                                                        trainingSalary: net
+                                                    }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-teal-500/50 text-teal-400 rounded-xl p-2.5 font-bold text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 9 to 11: Less Employee Deductions */}
+                                <div>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 mb-2 block">Employee Deductions</span>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        {/* 9. Less: Employee PF @ 12% of Basic */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-sky-400 mb-1">Less: Employee PF @ 12% of Basic</label>
+                                            <input
+                                                type="number"
+                                                name="employeePfSalary"
+                                                value={formData.employeePfSalary ?? (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
+                                                placeholder="1800"
+                                                onChange={(e) => {
+                                                    const empPf = Number(e.target.value) || 0;
+                                                    const totalDed = formEmployerPf + formEmployerEsi + empPf + formEmployeeEsi + formPt;
+                                                    const net = Math.max(0, formCtc - totalDed);
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        employeePfSalary: empPf,
+                                                        pfSalary: empPf + (prev.employerPfSalary || 0),
+                                                        trainingSalary: net
+                                                    }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-sky-500/50 text-sky-400 rounded-xl p-2.5 font-bold text-sm"
+                                            />
+                                        </div>
+
+                                        {/* 10. Less: Employee ESI */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-emerald-400 mb-1">Less: Employee ESI</label>
+                                            <input
+                                                type="number"
+                                                name="employeeEsiSalary"
+                                                value={formData.employeeEsiSalary !== undefined && formData.employeeEsiSalary !== null ? formData.employeeEsiSalary : (formData.esiSalary || '')}
+                                                placeholder="0"
+                                                onChange={(e) => {
+                                                    const empEsi = Number(e.target.value) || 0;
+                                                    const totalDed = formEmployerPf + formEmployerEsi + formEmployeePf + empEsi + formPt;
+                                                    const net = Math.max(0, formCtc - totalDed);
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        employeeEsiSalary: empEsi,
+                                                        esiSalary: empEsi + (prev.employerEsiSalary || 0),
+                                                        trainingSalary: net
+                                                    }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-emerald-500/50 text-emerald-400 rounded-xl p-2.5 font-bold text-sm"
+                                            />
+                                        </div>
+
+                                        {/* 11. Less: Professional Tax */}
+                                        <div>
+                                            <label className="block text-[9px] font-bold uppercase text-rose-400 mb-1">Less: Professional Tax</label>
+                                            <input
+                                                type="number"
+                                                name="ptSalary"
+                                                value={formData.ptSalary !== undefined && formData.ptSalary !== null ? formData.ptSalary : ''}
+                                                placeholder="200"
+                                                onChange={(e) => {
+                                                    const pt = Number(e.target.value) || 0;
+                                                    const totalDed = formEmployerPf + formEmployerEsi + formEmployeePf + formEmployeeEsi + pt;
+                                                    const net = Math.max(0, formCtc - totalDed);
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        ptSalary: pt,
+                                                        trainingSalary: net
+                                                    }));
+                                                }}
+                                                className="w-full bg-brand-surface border border-rose-500/50 text-rose-400 rounded-xl p-2.5 font-bold text-sm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 12 & 13: TOTAL DEDUCTION and NET SALARY / TAKE HOME */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                                    {/* 12. TOTAL DEDUCTION */}
+                                    <div className="bg-rose-950/30 border border-rose-500/40 rounded-xl p-3 flex items-center justify-between">
+                                        <div>
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 block">TOTAL DEDUCTION</span>
+                                            <span className="text-[9px] text-rose-300/70">Employer (PF+ESI) + Employee (PF+ESI+PT)</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-base font-black text-rose-400">-₹{formTotalDeductions.toLocaleString('en-IN')}</span>
+                                            <span className="text-[9px] text-slate-400 block">(Annual: -₹{(formTotalDeductions * 12).toLocaleString('en-IN')})</span>
+                                        </div>
+                                    </div>
+
+                                    {/* 13. NET SALARY / TAKE HOME */}
+                                    <div className="bg-amber-950/30 border border-amber-500/50 rounded-xl p-3 flex items-center justify-between">
+                                        <div className="flex-1 mr-3">
+                                            <label className="block text-[10px] font-black uppercase tracking-wider text-amber-400 mb-0.5">
+                                                {formData.engagementType === 'Employment' ? 'NET SALARY / TAKE HOME (INR)' : 'TRAINING STIPEND (INR)'}
+                                            </label>
+                                            <span className="text-[9px] text-amber-300/70 block">
+                                                Gross salary - Employee deductions = CTC - Total deductions
+                                            </span>
+                                        </div>
+                                        <div className="w-[140px]">
+                                            <input
+                                                type="number"
+                                                name="trainingSalary"
+                                                value={formData.trainingSalary || formNetTakeHome || ''}
+                                                placeholder="21200"
+                                                onChange={(e) => setFormData(prev => ({ ...prev, trainingSalary: Number(e.target.value) }))}
+                                                className="w-full bg-brand-surface border border-amber-500 text-amber-400 rounded-xl p-2.5 text-right font-black text-base focus:border-amber-300 focus:outline-none"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -16,6 +16,7 @@ export interface IEmployee extends Document {
     branchName: string;
     responsibilities?: string;
     salary: {
+        ctc?: number;
         basic: number;
         hra: number;
         conveyance: number;
@@ -93,6 +94,7 @@ const EmployeeSchema: Schema = new Schema({
     offerIssueDate: { type: String, default: '' },
     offerLetterUrl: { type: String, default: '' },
     salary: {
+        ctc: { type: Number, default: 0 },
         basic: { type: Number, default: 0 },
         hra: { type: Number, default: 0 },
         conveyance: { type: Number, default: 0 },

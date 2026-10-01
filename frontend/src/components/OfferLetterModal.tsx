@@ -30,6 +30,7 @@ interface EmployeeOfferData {
     trainingSalary?: number;
     engagementType?: 'Training' | 'Employment';
     salary?: {
+        ctc?: number;
         basic?: number;
         hra?: number;
         conveyance?: number;
@@ -126,7 +127,10 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ? Number(employee.salary.conveyance)
         : 700;
     const incentiveMonthly = Number(employee.salary?.special ?? employee.salary?.other ?? employee.salary?.medical ?? 0);
-    const grossSalaryMonthly = basicMonthly + hraMonthly + convMonthly + incentiveMonthly;
+    // Cost to Company (CTC)
+    const ctcMonthly = (employee.salary?.ctc !== undefined && employee.salary?.ctc !== null && Number(employee.salary.ctc) > 0)
+        ? Number(employee.salary.ctc)
+        : (basicMonthly + hraMonthly + convMonthly + incentiveMonthly);
 
     // Employer Contributions
     let employerPfMonthly = 0;
@@ -147,8 +151,8 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ? Number(employee.salary.employerEsi)
         : 0;
 
-    // Cost to Company (CTC)
-    const ctcMonthly = grossSalaryMonthly + employerPfMonthly + employerEsiMonthly;
+    // Gross salary (calculate ctc - employer PF and esi)
+    const grossSalaryMonthly = Math.max(0, ctcMonthly - employerPfMonthly - employerEsiMonthly);
 
     // Employee Deductions
     let employeePfMonthly = 0;
@@ -169,7 +173,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ? Number(employee.salary.employeeEsi)
         : Number(employee.salary?.esi) || 0;
 
-    // Professional Tax (defaults to 0 as in image, or user-configured)
+    // Professional Tax
     let ptMonthly = 0;
     if (employee.salary?.professionalTax !== undefined && employee.salary?.professionalTax !== null) {
         ptMonthly = Number(employee.salary.professionalTax);
@@ -177,21 +181,21 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
         ptMonthly = Number(employee.salary.tax);
     }
 
-    // Total Deductions
-    const totalDeductionsMonthly = employeePfMonthly + employeeEsiMonthly + ptMonthly;
+    // TOTAL DEDUCTION (add Employer PF & ESI and Employee PF & ESI + PT)
+    const totalDeductionsMonthly = employerPfMonthly + employerEsiMonthly + employeePfMonthly + employeeEsiMonthly + ptMonthly;
 
-    // Net Salary
-    const netSalaryMonthly = grossSalaryMonthly - totalDeductionsMonthly;
+    // NET SALARY / TAKE HOME (gross salary - Less: Employer PF & ESI -- Less: Employee PF & ESI)
+    const netSalaryMonthly = Math.max(0, ctcMonthly - totalDeductionsMonthly);
 
     // Annual figures
     const ctcAnnual = ctcMonthly * 12;
-    const employerPfAnnual = employerPfMonthly * 12;
-    const employerEsiAnnual = employerEsiMonthly * 12;
-    const grossSalaryAnnual = grossSalaryMonthly * 12;
     const basicAnnual = basicMonthly * 12;
     const hraAnnual = hraMonthly * 12;
     const convAnnual = convMonthly * 12;
     const incentiveAnnual = incentiveMonthly * 12;
+    const grossSalaryAnnual = grossSalaryMonthly * 12;
+    const employerPfAnnual = employerPfMonthly * 12;
+    const employerEsiAnnual = employerEsiMonthly * 12;
     const employeePfAnnual = employeePfMonthly * 12;
     const employeeEsiAnnual = employeeEsiMonthly * 12;
     const ptAnnual = ptMonthly * 12;
@@ -712,100 +716,93 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                             <tbody>
                                                 {/* 1. COST TO COMPANY (CTC) */}
                                                 <tr style={{ fontWeight: 700, color: '#ffffff' }}>
-                                                    <td style={{ padding: '5px 0 3px 0' }}>COST TO COMPANY (CTC)</td>
-                                                    <td style={{ padding: '5px 0 3px 0', textAlign: 'right' }}>{formatInr(ctcMonthly)}</td>
-                                                    <td style={{ padding: '5px 0 3px 0', textAlign: 'right' }}>{formatInr(ctcAnnual)}</td>
+                                                    <td style={{ padding: '4px 0 2px 0' }}>COST TO COMPANY (CTC)</td>
+                                                    <td style={{ padding: '4px 0 2px 0', textAlign: 'right' }}>{formatInr(ctcMonthly)}</td>
+                                                    <td style={{ padding: '4px 0 2px 0', textAlign: 'right' }}>{formatInr(ctcAnnual)}</td>
                                                 </tr>
 
-                                                {/* 2. Less: Employer PF @ 12% of Basic */}
+                                                {/* 2. Basic Salary */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2.5px 0' }}>Less: Employer PF @ 12% of Basic</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>-{formatInr(employerPfMonthly)}</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>-{formatInr(employerPfAnnual)}</td>
+                                                    <td style={{ padding: '2px 0' }}>Basic Salary</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(basicMonthly)}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(basicAnnual)}</td>
                                                 </tr>
 
-                                                {/* 3. Less: Employer ESI */}
+                                                {/* 3. HRA @ 50% of Basic */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2.5px 0' }}>Less: Employer ESI</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>-{formatInr(employerEsiMonthly)}</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>-{formatInr(employerEsiAnnual)}</td>
+                                                    <td style={{ padding: '2px 0' }}>HRA @ 50% of Basic</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(hraMonthly)}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(hraAnnual)}</td>
                                                 </tr>
 
-                                                {/* 4. GROSS SALARY / TOTAL EARNINGS */}
-                                                <tr style={{ fontWeight: 700, color: '#ffffff', borderBottom: '1px solid #27272a' }}>
-                                                    <td style={{ padding: '3px 0 6px 0' }}>GROSS SALARY / TOTAL EARNINGS</td>
-                                                    <td style={{ padding: '3px 0 6px 0', textAlign: 'right' }}>{formatInr(grossSalaryMonthly)}</td>
-                                                    <td style={{ padding: '3px 0 6px 0', textAlign: 'right' }}>{formatInr(grossSalaryAnnual)}</td>
-                                                </tr>
-
-                                                {/* 5. Basic Salary */}
+                                                {/* 4. Conveyance Allowance */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '6px 0 2.5px 0' }}>Basic Salary</td>
-                                                    <td style={{ padding: '6px 0 2.5px 0', textAlign: 'right' }}>{formatInr(basicMonthly)}</td>
-                                                    <td style={{ padding: '6px 0 2.5px 0', textAlign: 'right' }}>{formatInr(basicAnnual)}</td>
+                                                    <td style={{ padding: '2px 0' }}>Conveyance Allowance</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(convMonthly)}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(convAnnual)}</td>
                                                 </tr>
 
-                                                {/* 6. HRA @ 50% of Basic */}
+                                                {/* 5. Incentive / Other Allowance */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2.5px 0' }}>HRA @ 50% of Basic</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>{formatInr(hraMonthly)}</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>{formatInr(hraAnnual)}</td>
+                                                    <td style={{ padding: '2px 0' }}>Incentive / Other Allowance</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(incentiveMonthly)}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(incentiveAnnual)}</td>
                                                 </tr>
 
-                                                {/* 7. Conveyance Allowance */}
+                                                {/* 6. Gross salary (calculate ctc-employer PF and esi) */}
+                                                <tr style={{ fontWeight: 700, color: '#ffffff', borderTop: '1px solid #27272a', borderBottom: '1px solid #27272a' }}>
+                                                    <td style={{ padding: '3px 0' }}>Gross salary</td>
+                                                    <td style={{ padding: '3px 0', textAlign: 'right' }}>{formatInr(grossSalaryMonthly)}</td>
+                                                    <td style={{ padding: '3px 0', textAlign: 'right' }}>{formatInr(grossSalaryAnnual)}</td>
+                                                </tr>
+
+                                                {/* 7. Less: Employer PF @ 12% of Basic */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2.5px 0' }}>Conveyance Allowance</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>{formatInr(convMonthly)}</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>{formatInr(convAnnual)}</td>
+                                                    <td style={{ padding: '2px 0' }}>Less: Employer PF @ 12% of Basic</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employerPfMonthly)}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employerPfAnnual)}</td>
                                                 </tr>
 
-                                                {/* 8. Incentive / Other Allowance */}
+                                                {/* 8. Less: Employer ESI */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2.5px 0' }}>Incentive / Other Allowance</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>{formatInr(incentiveMonthly)}</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>{formatInr(incentiveAnnual)}</td>
+                                                    <td style={{ padding: '2px 0' }}>Less: Employer ESI</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employerEsiMonthly)}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employerEsiAnnual)}</td>
                                                 </tr>
 
-                                                {/* 9. Total Gross Salary */}
-                                                <tr style={{ fontWeight: 700, color: '#ffffff', borderBottom: '1px solid #27272a' }}>
-                                                    <td style={{ padding: '3px 0 6px 0' }}>Total Gross Salary</td>
-                                                    <td style={{ padding: '3px 0 6px 0', textAlign: 'right' }}>{formatInr(grossSalaryMonthly)}</td>
-                                                    <td style={{ padding: '3px 0 6px 0', textAlign: 'right' }}>{formatInr(grossSalaryAnnual)}</td>
-                                                </tr>
-
-                                                {/* 10. Less: Employee PF @ 12% of Basic */}
+                                                {/* 9. Less: Employee PF @ 12% of Basic */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '6px 0 2.5px 0' }}>Less: Employee PF @ 12% of Basic</td>
-                                                    <td style={{ padding: '6px 0 2.5px 0', textAlign: 'right' }}>-{formatInr(employeePfMonthly)}</td>
-                                                    <td style={{ padding: '6px 0 2.5px 0', textAlign: 'right' }}>-{formatInr(employeePfAnnual)}</td>
+                                                    <td style={{ padding: '2px 0' }}>Less: Employee PF @ 12% of Basic</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employeePfMonthly)}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employeePfAnnual)}</td>
                                                 </tr>
 
-                                                {/* 11. Less: Employee ESI */}
+                                                {/* 10. Less: Employee ESI */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2.5px 0' }}>Less: Employee ESI</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>-{formatInr(employeeEsiMonthly)}</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>-{formatInr(employeeEsiAnnual)}</td>
+                                                    <td style={{ padding: '2px 0' }}>Less: Employee ESI</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employeeEsiMonthly)}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employeeEsiAnnual)}</td>
                                                 </tr>
 
-                                                {/* 12. Less: Professional Tax */}
+                                                {/* 11. Less: Professional Tax */}
                                                 <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2.5px 0' }}>Less: Professional Tax</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>{ptMonthly > 0 ? `-${formatInr(ptMonthly)}` : '-0*'}</td>
-                                                    <td style={{ padding: '2.5px 0', textAlign: 'right' }}>{ptAnnual > 0 ? `-${formatInr(ptAnnual)}` : '-0*'}</td>
+                                                    <td style={{ padding: '2px 0' }}>Less: Professional Tax</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{ptMonthly > 0 ? `-${formatInr(ptMonthly)}` : '-0*'}</td>
+                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{ptAnnual > 0 ? `-${formatInr(ptAnnual)}` : '-0*'}</td>
                                                 </tr>
 
-                                                {/* 13. TOTAL DEDUCTIONS */}
-                                                <tr style={{ fontWeight: 700, color: '#ffffff', borderBottom: '1px solid #27272a' }}>
-                                                    <td style={{ padding: '3px 0 6px 0' }}>TOTAL DEDUCTIONS</td>
-                                                    <td style={{ padding: '3px 0 6px 0', textAlign: 'right' }}>-{formatInr(totalDeductionsMonthly)}</td>
-                                                    <td style={{ padding: '3px 0 6px 0', textAlign: 'right' }}>-{formatInr(totalDeductionsAnnual)}</td>
+                                                {/* 12. TOTAL DEDUCTION */}
+                                                <tr style={{ fontWeight: 700, color: '#ffffff', borderTop: '1px solid #27272a', borderBottom: '1px solid #27272a' }}>
+                                                    <td style={{ padding: '3px 0' }}>TOTAL DEDUCTION</td>
+                                                    <td style={{ padding: '3px 0', textAlign: 'right' }}>-{formatInr(totalDeductionsMonthly)}</td>
+                                                    <td style={{ padding: '3px 0', textAlign: 'right' }}>-{formatInr(totalDeductionsAnnual)}</td>
                                                 </tr>
 
-                                                {/* 14. NET SALARY / TAKE HOME */}
+                                                {/* 13. NET SALARY / TAKE HOME */}
                                                 <tr style={{ fontWeight: 700, color: '#ffffff' }}>
-                                                    <td style={{ padding: '6px 0 2px 0' }}>NET SALARY / TAKE HOME</td>
-                                                    <td style={{ padding: '6px 0 2px 0', textAlign: 'right' }}>₹{formatInr(netSalaryMonthly)}</td>
-                                                    <td style={{ padding: '6px 0 2px 0', textAlign: 'right' }}>₹{formatInr(netSalaryAnnual)}</td>
+                                                    <td style={{ padding: '5px 0 2px 0' }}>NET SALARY / TAKE HOME</td>
+                                                    <td style={{ padding: '5px 0 2px 0', textAlign: 'right' }}>₹{formatInr(netSalaryMonthly)}</td>
+                                                    <td style={{ padding: '5px 0 2px 0', textAlign: 'right' }}>₹{formatInr(netSalaryAnnual)}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
