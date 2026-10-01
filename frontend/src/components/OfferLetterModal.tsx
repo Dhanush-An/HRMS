@@ -134,51 +134,62 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
 
     // Employer Contributions
     let employerPfMonthly = 0;
-    if (employee.salary?.employerPf !== undefined && employee.salary?.employerPf !== null) {
+    if (employee.salary?.employerPf !== undefined && employee.salary?.employerPf !== null && Number(employee.salary.employerPf) > 0) {
         employerPfMonthly = Number(employee.salary.employerPf);
-    } else if (employee.salary?.pf !== undefined && employee.salary?.pf !== null) {
+    } else if (employee.salary?.pf !== undefined && employee.salary?.pf !== null && Number(employee.salary.pf) > 0) {
         const pfVal = Number(employee.salary.pf);
         if (pfVal > Math.round(basicMonthly * 0.15)) {
             employerPfMonthly = Math.round(pfVal / 2);
         } else {
             employerPfMonthly = pfVal;
         }
-    } else {
+    } else if (basicMonthly > 0) {
         employerPfMonthly = Math.round(basicMonthly * 0.12);
     }
 
-    const employerEsiMonthly = employee.salary?.employerEsi !== undefined && employee.salary?.employerEsi !== null
-        ? Number(employee.salary.employerEsi)
-        : 0;
+    const grossCandidate = Math.max(0, ctcMonthly - employerPfMonthly);
+    let employerEsiMonthly = 0;
+    if (employee.salary?.employerEsi !== undefined && employee.salary?.employerEsi !== null && Number(employee.salary.employerEsi) > 0) {
+        employerEsiMonthly = Number(employee.salary.employerEsi);
+    } else if (grossCandidate > 0 && grossCandidate <= 21000) {
+        employerEsiMonthly = Math.round(grossCandidate * 0.0325);
+    }
 
     // Gross salary (calculate ctc - employer PF and esi)
     const grossSalaryMonthly = Math.max(0, ctcMonthly - employerPfMonthly - employerEsiMonthly);
 
     // Employee Deductions
     let employeePfMonthly = 0;
-    if (employee.salary?.employeePf !== undefined && employee.salary?.employeePf !== null) {
+    if (employee.salary?.employeePf !== undefined && employee.salary?.employeePf !== null && Number(employee.salary.employeePf) > 0) {
         employeePfMonthly = Number(employee.salary.employeePf);
-    } else if (employee.salary?.pf !== undefined && employee.salary?.pf !== null) {
+    } else if (employee.salary?.pf !== undefined && employee.salary?.pf !== null && Number(employee.salary.pf) > 0) {
         const pfVal = Number(employee.salary.pf);
         if (pfVal > Math.round(basicMonthly * 0.15)) {
             employeePfMonthly = Math.round(pfVal / 2);
         } else {
             employeePfMonthly = pfVal;
         }
-    } else {
+    } else if (basicMonthly > 0) {
         employeePfMonthly = Math.round(basicMonthly * 0.12);
     }
 
-    const employeeEsiMonthly = employee.salary?.employeeEsi !== undefined && employee.salary?.employeeEsi !== null
-        ? Number(employee.salary.employeeEsi)
-        : Number(employee.salary?.esi) || 0;
+    let employeeEsiMonthly = 0;
+    if (employee.salary?.employeeEsi !== undefined && employee.salary?.employeeEsi !== null && Number(employee.salary.employeeEsi) > 0) {
+        employeeEsiMonthly = Number(employee.salary.employeeEsi);
+    } else if (employee.salary?.esi !== undefined && employee.salary?.esi !== null && Number(employee.salary.esi) > 0) {
+        employeeEsiMonthly = Number(employee.salary.esi);
+    } else if (grossSalaryMonthly > 0 && grossSalaryMonthly <= 21000) {
+        employeeEsiMonthly = Math.round(grossSalaryMonthly * 0.0075);
+    }
 
     // Professional Tax
     let ptMonthly = 0;
-    if (employee.salary?.professionalTax !== undefined && employee.salary?.professionalTax !== null) {
+    if (employee.salary?.professionalTax !== undefined && employee.salary?.professionalTax !== null && Number(employee.salary.professionalTax) > 0) {
         ptMonthly = Number(employee.salary.professionalTax);
-    } else if (employee.salary?.tax !== undefined && employee.salary?.tax !== null) {
+    } else if (employee.salary?.tax !== undefined && employee.salary?.tax !== null && Number(employee.salary.tax) > 0) {
         ptMonthly = Number(employee.salary.tax);
+    } else if (basicMonthly > 0) {
+        ptMonthly = 200;
     }
 
     // TOTAL DEDUCTION (add Employer PF & ESI and Employee PF & ESI + PT)

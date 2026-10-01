@@ -271,13 +271,27 @@ const Employees = () => {
             hraSalary: employee.salary?.hra ?? 0,
             convSalary: employee.salary?.conveyance ?? 0,
             incentiveSalary: employee.salary?.special ?? employee.salary?.other ?? 0,
-            pfSalary: employee.salary?.pf ?? 0,
-            employeePfSalary: employee.salary?.employeePf ?? (employee.salary?.pf ? Math.round(employee.salary.pf / 2) : 0),
-            employerPfSalary: employee.salary?.employerPf ?? (employee.salary?.pf ? Math.round(employee.salary.pf / 2) : 0),
+            pfSalary: (employee.salary?.employeePf && employee.salary?.employerPf)
+                ? (Number(employee.salary.employeePf) + Number(employee.salary.employerPf))
+                : (employee.salary?.pf ?? (employee.salary?.basic ? Math.round(Number(employee.salary.basic) * 0.24) : 0)),
+            employeePfSalary: (employee.salary?.employeePf !== undefined && employee.salary?.employeePf !== null && Number(employee.salary.employeePf) > 0)
+                ? Number(employee.salary.employeePf)
+                : ((employee.salary?.pf && Number(employee.salary.pf) > 0)
+                    ? (Number(employee.salary.pf) > Math.round(Number(employee.salary.basic || 0) * 0.15) ? Math.round(Number(employee.salary.pf) / 2) : Number(employee.salary.pf))
+                    : (employee.salary?.basic ? Math.round(Number(employee.salary.basic) * 0.12) : 0)),
+            employerPfSalary: (employee.salary?.employerPf !== undefined && employee.salary?.employerPf !== null && Number(employee.salary.employerPf) > 0)
+                ? Number(employee.salary.employerPf)
+                : ((employee.salary?.pf && Number(employee.salary.pf) > 0)
+                    ? (Number(employee.salary.pf) > Math.round(Number(employee.salary.basic || 0) * 0.15) ? Math.round(Number(employee.salary.pf) / 2) : Number(employee.salary.pf))
+                    : (employee.salary?.basic ? Math.round(Number(employee.salary.basic) * 0.12) : 0)),
             esiSalary: employee.salary?.esi ?? 0,
-            employeeEsiSalary: employee.salary?.employeeEsi ?? employee.salary?.esi ?? 0,
-            employerEsiSalary: employee.salary?.employerEsi ?? 0,
-            ptSalary: employee.salary?.professionalTax ?? employee.salary?.tax ?? 0,
+            employeeEsiSalary: (employee.salary?.employeeEsi !== undefined && employee.salary?.employeeEsi !== null && Number(employee.salary.employeeEsi) > 0)
+                ? Number(employee.salary.employeeEsi)
+                : (Number(employee.salary?.esi) || 0),
+            employerEsiSalary: (employee.salary?.employerEsi !== undefined && employee.salary?.employerEsi !== null && Number(employee.salary.employerEsi) > 0)
+                ? Number(employee.salary.employerEsi)
+                : 0,
+            ptSalary: employee.salary?.professionalTax ?? employee.salary?.tax ?? (employee.salary?.basic ? 200 : 0),
             trainingSalary: employee.trainingSalary ?? 15000,
             reportsTo: employee.reportsTo || 'TL',
             workLocation: employee.workLocation || 'Bangalore (Onsite)',
@@ -305,9 +319,80 @@ const Employees = () => {
             employee.role.toLowerCase().includes('training')
         ) : false;
 
+        const bSalary = Number(employee.salary?.basic) || 15000;
+        const hSalary = (employee.salary?.hra !== undefined && employee.salary?.hra !== null && Number(employee.salary.hra) > 0)
+            ? Number(employee.salary.hra)
+            : Math.round(bSalary * 0.5);
+        const cSalary = (employee.salary?.conveyance !== undefined && employee.salary?.conveyance !== null)
+            ? Number(employee.salary.conveyance)
+            : 2500;
+        const incSalary = Number(employee.salary?.special ?? employee.salary?.other ?? employee.salary?.medical ?? 0);
+        const ctcSal = (employee.salary?.ctc !== undefined && employee.salary?.ctc !== null && Number(employee.salary.ctc) > 0)
+            ? Number(employee.salary.ctc)
+            : (bSalary + hSalary + cSalary + incSalary);
+
+        let empyrPf = 0;
+        if (employee.salary?.employerPf !== undefined && employee.salary?.employerPf !== null && Number(employee.salary.employerPf) > 0) {
+            empyrPf = Number(employee.salary.employerPf);
+        } else if (employee.salary?.pf !== undefined && employee.salary?.pf !== null && Number(employee.salary.pf) > 0) {
+            const pfVal = Number(employee.salary.pf);
+            empyrPf = pfVal > Math.round(bSalary * 0.15) ? Math.round(pfVal / 2) : pfVal;
+        } else if (bSalary > 0) {
+            empyrPf = Math.round(bSalary * 0.12);
+        }
+
+        let empPf = 0;
+        if (employee.salary?.employeePf !== undefined && employee.salary?.employeePf !== null && Number(employee.salary.employeePf) > 0) {
+            empPf = Number(employee.salary.employeePf);
+        } else if (employee.salary?.pf !== undefined && employee.salary?.pf !== null && Number(employee.salary.pf) > 0) {
+            const pfVal = Number(employee.salary.pf);
+            empPf = pfVal > Math.round(bSalary * 0.15) ? Math.round(pfVal / 2) : pfVal;
+        } else if (bSalary > 0) {
+            empPf = Math.round(bSalary * 0.12);
+        }
+
+        const grossCandidate = Math.max(0, ctcSal - empyrPf);
+        let empyrEsi = 0;
+        if (employee.salary?.employerEsi !== undefined && employee.salary?.employerEsi !== null && Number(employee.salary.employerEsi) > 0) {
+            empyrEsi = Number(employee.salary.employerEsi);
+        } else if (grossCandidate > 0 && grossCandidate <= 21000) {
+            empyrEsi = Math.round(grossCandidate * 0.0325);
+        }
+
+        let empEsi = 0;
+        if (employee.salary?.employeeEsi !== undefined && employee.salary?.employeeEsi !== null && Number(employee.salary.employeeEsi) > 0) {
+            empEsi = Number(employee.salary.employeeEsi);
+        } else if (employee.salary?.esi !== undefined && employee.salary?.esi !== null && Number(employee.salary.esi) > 0) {
+            empEsi = Number(employee.salary.esi);
+        } else if (grossCandidate > 0 && grossCandidate <= 21000) {
+            empEsi = Math.round(grossCandidate * 0.0075);
+        }
+
+        const ptVal = (employee.salary?.professionalTax !== undefined && employee.salary?.professionalTax !== null && Number(employee.salary.professionalTax) > 0)
+            ? Number(employee.salary.professionalTax)
+            : ((employee.salary?.tax !== undefined && employee.salary?.tax !== null && Number(employee.salary.tax) > 0)
+                ? Number(employee.salary.tax)
+                : 200);
+
         setSelectedEmployeeForOffer({
             ...employee,
-            engagementType: employee.engagementType || (isTrainingRole ? 'Training' : 'Employment')
+            engagementType: employee.engagementType || (isTrainingRole ? 'Training' : 'Employment'),
+            salary: {
+                ...employee.salary,
+                ctc: ctcSal,
+                basic: bSalary,
+                hra: hSalary,
+                conveyance: cSalary,
+                special: incSalary,
+                employerPf: empyrPf,
+                employeePf: empPf,
+                employerEsi: empyrEsi,
+                employeeEsi: empEsi,
+                pf: empPf + empyrPf,
+                esi: empEsi + empyrEsi,
+                professionalTax: ptVal,
+                tax: ptVal
+            }
         });
         setIsNewOfferProcess(false);
         setIsOfferModalOpen(true);
@@ -349,15 +434,31 @@ const Employees = () => {
         e.preventDefault();
         try {
             const basicVal = Number(formData.basicSalary) || 0;
-            const hraVal = Number(formData.hraSalary) || 0;
-            const convVal = Number(formData.convSalary) || 0;
+            const hraVal = Number(formData.hraSalary) > 0 ? Number(formData.hraSalary) : (basicVal ? Math.round(basicVal * 0.5) : 0);
+            const convVal = (formData.convSalary !== undefined && formData.convSalary !== null && Number(formData.convSalary) > 0)
+                ? Number(formData.convSalary)
+                : (basicVal ? 2500 : 0);
             const incentiveVal = Number(formData.incentiveSalary) || 0;
-            const empPfVal = Number(formData.employeePfSalary) || 0;
-            const empyrPfVal = Number(formData.employerPfSalary) || 0;
-            const empEsiVal = Number(formData.employeeEsiSalary) || 0;
-            const empyrEsiVal = Number(formData.employerEsiSalary) || 0;
-            const ptVal = Number(formData.ptSalary) || 0;
             const ctcVal = Number(formData.ctcSalary) || (basicVal + hraVal + convVal + incentiveVal);
+
+            const empyrPfVal = Number(formData.employerPfSalary) > 0
+                ? Number(formData.employerPfSalary)
+                : (basicVal > 0 ? Math.round(basicVal * 0.12) : 0);
+
+            const empPfVal = Number(formData.employeePfSalary) > 0
+                ? Number(formData.employeePfSalary)
+                : (basicVal > 0 ? Math.round(basicVal * 0.12) : 0);
+
+            const grossCandidate = Math.max(0, ctcVal - empyrPfVal);
+            const empyrEsiVal = Number(formData.employerEsiSalary) > 0
+                ? Number(formData.employerEsiSalary)
+                : (grossCandidate > 0 && grossCandidate <= 21000 ? Math.round(grossCandidate * 0.0325) : 0);
+
+            const empEsiVal = Number(formData.employeeEsiSalary) > 0
+                ? Number(formData.employeeEsiSalary)
+                : (Number(formData.esiSalary) > 0 ? Number(formData.esiSalary) : (grossCandidate > 0 && grossCandidate <= 21000 ? Math.round(grossCandidate * 0.0075) : 0));
+
+            const ptVal = Number(formData.ptSalary) > 0 ? Number(formData.ptSalary) : (basicVal ? 200 : 0);
 
             const payload: any = {
                 ...formData,
@@ -456,22 +557,35 @@ const Employees = () => {
     const formHra = Number(formData.hraSalary) > 0
         ? Number(formData.hraSalary)
         : (formBasic ? Math.round(formBasic * 0.5) : 0);
-    const formConv = Number(formData.convSalary) || 0;
+    const formConv = (formData.convSalary !== undefined && formData.convSalary !== null && Number(formData.convSalary) > 0)
+        ? Number(formData.convSalary)
+        : (formBasic ? 2500 : 0);
     const formIncentive = Number(formData.incentiveSalary) || 0;
-    const formEmployerPf = Number(formData.employerPfSalary) > 0
-        ? Number(formData.employerPfSalary)
-        : (formBasic ? Math.round(formBasic * 0.12) : 0);
-    const formEmployerEsi = Number(formData.employerEsiSalary) || 0;
-    const formEmployeePf = Number(formData.employeePfSalary) > 0
-        ? Number(formData.employeePfSalary)
-        : (formBasic ? Math.round(formBasic * 0.12) : 0);
-    const formEmployeeEsi = Number(formData.employeeEsiSalary) || 0;
-    const formPt = Number(formData.ptSalary) || 0;
 
     // CTC
     const formCtc = (formData.ctcSalary !== undefined && formData.ctcSalary !== null && Number(formData.ctcSalary) > 0)
         ? Number(formData.ctcSalary)
         : (formBasic + formHra + formConv + formIncentive);
+
+    const formEmployerPf = Number(formData.employerPfSalary) > 0
+        ? Number(formData.employerPfSalary)
+        : (formBasic ? Math.round(formBasic * 0.12) : 0);
+
+    const grossCandidateForEsi = Math.max(0, formCtc - formEmployerPf);
+
+    const formEmployerEsi = Number(formData.employerEsiSalary) > 0
+        ? Number(formData.employerEsiSalary)
+        : (grossCandidateForEsi > 0 && grossCandidateForEsi <= 21000 ? Math.round(grossCandidateForEsi * 0.0325) : 0);
+
+    const formEmployeePf = Number(formData.employeePfSalary) > 0
+        ? Number(formData.employeePfSalary)
+        : (formBasic ? Math.round(formBasic * 0.12) : 0);
+
+    const formEmployeeEsi = Number(formData.employeeEsiSalary) > 0
+        ? Number(formData.employeeEsiSalary)
+        : (Number(formData.esiSalary) > 0 ? Number(formData.esiSalary) : (grossCandidateForEsi > 0 && grossCandidateForEsi <= 21000 ? Math.round(grossCandidateForEsi * 0.0075) : 0));
+
+    const formPt = Number(formData.ptSalary) > 0 ? Number(formData.ptSalary) : (formBasic > 0 ? 200 : 0);
 
     // Gross Salary (calculate ctc - employer PF and esi)
     const formGross = Math.max(0, formCtc - formEmployerPf - formEmployerEsi);
@@ -1199,10 +1313,14 @@ const Employees = () => {
                                                     const hra = Math.round(basic * 0.5);
                                                     const empPf = Math.round(basic * 0.12);
                                                     const empyrPf = Math.round(basic * 0.12);
-                                                    const conv = formData.convSalary || 2500;
+                                                    const conv = formData.convSalary || (basic ? 2500 : 0);
                                                     const incentive = formData.incentiveSalary || 0;
                                                     const ctc = basic + hra + conv + incentive;
-                                                    const totalDed = empyrPf + formEmployerEsi + empPf + formEmployeeEsi + formPt;
+                                                    const grossCand = Math.max(0, ctc - empyrPf);
+                                                    const empyrEsi = (grossCand > 0 && grossCand <= 21000) ? Math.round(grossCand * 0.0325) : 0;
+                                                    const empEsi = (grossCand > 0 && grossCand <= 21000) ? Math.round(grossCand * 0.0075) : 0;
+                                                    const pt = formData.ptSalary || (basic ? 200 : 0);
+                                                    const totalDed = empyrPf + empyrEsi + empPf + empEsi + pt;
                                                     const net = Math.max(0, ctc - totalDed);
                                                     setFormData(prev => ({
                                                         ...prev,
@@ -1211,6 +1329,10 @@ const Employees = () => {
                                                         employeePfSalary: empPf,
                                                         employerPfSalary: empyrPf,
                                                         pfSalary: empPf + empyrPf,
+                                                        employeeEsiSalary: empEsi,
+                                                        employerEsiSalary: empyrEsi,
+                                                        esiSalary: empEsi + empyrEsi,
+                                                        ptSalary: pt,
                                                         convSalary: conv,
                                                         ctcSalary: ctc,
                                                         trainingSalary: net
@@ -1286,7 +1408,7 @@ const Employees = () => {
                                             <input
                                                 type="number"
                                                 name="employerPfSalary"
-                                                value={formData.employerPfSalary ?? (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
+                                                value={formData.employerPfSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
                                                 placeholder="1800"
                                                 onChange={(e) => {
                                                     const empyrPf = Number(e.target.value) || 0;
@@ -1309,7 +1431,7 @@ const Employees = () => {
                                             <input
                                                 type="number"
                                                 name="employerEsiSalary"
-                                                value={formData.employerEsiSalary !== undefined && formData.employerEsiSalary !== null ? formData.employerEsiSalary : ''}
+                                                value={formData.employerEsiSalary !== undefined && formData.employerEsiSalary !== null && formData.employerEsiSalary !== 0 ? formData.employerEsiSalary : (formEmployerEsi || '')}
                                                 placeholder="0"
                                                 onChange={(e) => {
                                                     const empyrEsi = Number(e.target.value) || 0;
@@ -1353,7 +1475,7 @@ const Employees = () => {
                                             <input
                                                 type="number"
                                                 name="employeePfSalary"
-                                                value={formData.employeePfSalary ?? (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
+                                                value={formData.employeePfSalary || (formData.basicSalary ? Math.round(formData.basicSalary * 0.12) : '')}
                                                 placeholder="1800"
                                                 onChange={(e) => {
                                                     const empPf = Number(e.target.value) || 0;
@@ -1376,7 +1498,7 @@ const Employees = () => {
                                             <input
                                                 type="number"
                                                 name="employeeEsiSalary"
-                                                value={formData.employeeEsiSalary !== undefined && formData.employeeEsiSalary !== null ? formData.employeeEsiSalary : (formData.esiSalary || '')}
+                                                value={formData.employeeEsiSalary !== undefined && formData.employeeEsiSalary !== null && formData.employeeEsiSalary !== 0 ? formData.employeeEsiSalary : (formEmployeeEsi || '')}
                                                 placeholder="0"
                                                 onChange={(e) => {
                                                     const empEsi = Number(e.target.value) || 0;
