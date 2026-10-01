@@ -1276,26 +1276,11 @@ const Employees = () => {
                                     </div>
                                 </div>
 
-                                {/* 6. Gross Salary (calculate ctc-employer PF and esi) */}
-                                <div className="bg-emerald-950/30 border border-emerald-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2.5">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
-                                        <div>
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Gross Salary</span>
-                                            <p className="text-[9px] text-emerald-300/70">Calculated as: CTC - (Employer PF + Employer ESI)</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-sm font-black text-emerald-300">₹{formGross.toLocaleString('en-IN')} / mo</span>
-                                        <span className="text-[10px] text-slate-400 block">(Annual: ₹{(formGross * 12).toLocaleString('en-IN')})</span>
-                                    </div>
-                                </div>
-
-                                {/* 7 & 8: Less Employer Contributions */}
+                                {/* 6 & 7: Less Employer Contributions */}
                                 <div>
                                     <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 mb-2 block">Employer Contributions (Deducted from CTC to get Gross)</span>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {/* 7. Less: Employer PF @ 12% of Basic */}
+                                        {/* 6. Less: Employer PF @ 12% of Basic */}
                                         <div>
                                             <label className="block text-[9px] font-bold uppercase text-indigo-400 mb-1">Less: Employer PF @ 12% of Basic</label>
                                             <input
@@ -1318,7 +1303,7 @@ const Employees = () => {
                                             />
                                         </div>
 
-                                        {/* 8. Less: Employer ESI */}
+                                        {/* 7. Less: Employer ESI */}
                                         <div>
                                             <label className="block text-[9px] font-bold uppercase text-teal-400 mb-1">Less: Employer ESI</label>
                                             <input
@@ -1340,6 +1325,21 @@ const Employees = () => {
                                                 className="w-full bg-brand-surface border border-teal-500/50 text-teal-400 rounded-xl p-2.5 font-bold text-sm"
                                             />
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* 8. GROSS SALARY (CTC − Employer PF − Employer ESI) */}
+                                <div className="bg-emerald-950/30 border border-emerald-500/40 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                                        <div>
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">GROSS SALARY (CTC − Employer PF − Employer ESI)</span>
+                                            <p className="text-[9px] text-emerald-300/70">Calculated as: CTC - (Employer PF + Employer ESI)</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="text-sm font-black text-emerald-300">₹{formGross.toLocaleString('en-IN')} / mo</span>
+                                        <span className="text-[10px] text-slate-400 block">(Annual: ₹{(formGross * 12).toLocaleString('en-IN')})</span>
                                     </div>
                                 </div>
 

@@ -700,109 +700,105 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 3. COMPENSATION & STRUCTURE
                                     </h3>
 
-                                    <div style={{ backgroundColor: '#000000', color: '#ffffff', borderRadius: '10px', padding: '12px 16px', fontSize: '11px', marginBottom: '8px', fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="rounded-xl overflow-hidden bg-black text-white p-4">
-                                        <h4 style={{ color: '#ffffff', fontSize: '13px', fontWeight: 700, margin: '0 0 10px 0', letterSpacing: '0.01em' }}>
-                                            Compensation & Salary Structure
-                                        </h4>
-
-                                        <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }} className="w-full text-left border-collapse">
+                                    <div style={{ borderRadius: '8px', overflow: 'hidden', border: '2px solid #0b1329', marginBottom: '8px', backgroundColor: '#ffffff', fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif", WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                        <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '11px', lineHeight: 1.35 }} className="w-full text-left border-collapse">
                                             <thead>
-                                                <tr style={{ color: '#ffffff', fontWeight: 700, fontSize: '11px', borderBottom: '1px solid #27272a' }}>
-                                                    <th style={{ padding: '4px 0', textAlign: 'left', width: '56%' }}>Components</th>
-                                                    <th style={{ padding: '4px 0', textAlign: 'right', width: '22%' }}>Monthly (₹)</th>
-                                                    <th style={{ padding: '4px 0', textAlign: 'right', width: '22%' }}>Annual (₹)</th>
+                                                <tr style={{ backgroundColor: '#0b1329', color: '#ffffff', fontWeight: 800, fontSize: '11px', letterSpacing: '0.03em', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                                    <th style={{ padding: '6px 12px', textAlign: 'left', width: '52%', borderRight: '1px solid rgba(255, 255, 255, 0.2)' }}>COMPONENTS</th>
+                                                    <th style={{ padding: '6px 12px', textAlign: 'right', width: '24%', borderRight: '1px solid rgba(255, 255, 255, 0.2)' }}>MONTHLY (INR)</th>
+                                                    <th style={{ padding: '6px 12px', textAlign: 'right', width: '24%' }}>ANNUAL (INR)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {/* 1. COST TO COMPANY (CTC) */}
-                                                <tr style={{ fontWeight: 700, color: '#ffffff' }}>
-                                                    <td style={{ padding: '4px 0 2px 0' }}>COST TO COMPANY (CTC)</td>
-                                                    <td style={{ padding: '4px 0 2px 0', textAlign: 'right' }}>{formatInr(ctcMonthly)}</td>
-                                                    <td style={{ padding: '4px 0 2px 0', textAlign: 'right' }}>{formatInr(ctcAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#ffffff', fontWeight: 800, color: '#0b1329', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0' }}>COST TO COMPANY (CTC)</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0' }}>{formatInr(ctcMonthly)}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right' }}>{formatInr(ctcAnnual)}</td>
                                                 </tr>
 
                                                 {/* 2. Basic Salary */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>Basic Salary</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(basicMonthly)}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(basicAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>Basic Salary</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{formatInr(basicMonthly)}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>{formatInr(basicAnnual)}</td>
                                                 </tr>
 
                                                 {/* 3. HRA @ 50% of Basic */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>HRA @ 50% of Basic</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(hraMonthly)}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(hraAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>HRA @ 50% of Basic</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{formatInr(hraMonthly)}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>{formatInr(hraAnnual)}</td>
                                                 </tr>
 
                                                 {/* 4. Conveyance Allowance */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>Conveyance Allowance</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(convMonthly)}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(convAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>Conveyance Allowance</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{formatInr(convMonthly)}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>{formatInr(convAnnual)}</td>
                                                 </tr>
 
                                                 {/* 5. Incentive / Other Allowance */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>Incentive / Other Allowance</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(incentiveMonthly)}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{formatInr(incentiveAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#1e293b', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>Incentive / Other Allowance</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{formatInr(incentiveMonthly)}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>{formatInr(incentiveAnnual)}</td>
                                                 </tr>
 
-                                                {/* 6. Gross salary (calculate ctc-employer PF and esi) */}
-                                                <tr style={{ fontWeight: 700, color: '#ffffff', borderTop: '1px solid #27272a', borderBottom: '1px solid #27272a' }}>
-                                                    <td style={{ padding: '3px 0' }}>Gross salary</td>
-                                                    <td style={{ padding: '3px 0', textAlign: 'right' }}>{formatInr(grossSalaryMonthly)}</td>
-                                                    <td style={{ padding: '3px 0', textAlign: 'right' }}>{formatInr(grossSalaryAnnual)}</td>
+                                                {/* 6. Less: Employer PF @ 12% of Basic */}
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#dc2626', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>Less: Employer PF @ 12% of Basic</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700 }}>{employerPfMonthly > 0 ? `- ${formatInr(employerPfMonthly)}` : '- 0'}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700 }}>{employerPfAnnual > 0 ? `- ${formatInr(employerPfAnnual)}` : '- 0'}</td>
                                                 </tr>
 
-                                                {/* 7. Less: Employer PF @ 12% of Basic */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>Less: Employer PF @ 12% of Basic</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employerPfMonthly)}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employerPfAnnual)}</td>
+                                                {/* 7. Less: Employer ESI */}
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#dc2626', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>Less: Employer ESI</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700 }}>{employerEsiMonthly > 0 ? `- ${formatInr(employerEsiMonthly)}` : '- 0'}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700 }}>{employerEsiAnnual > 0 ? `- ${formatInr(employerEsiAnnual)}` : '- 0'}</td>
                                                 </tr>
 
-                                                {/* 8. Less: Employer ESI */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>Less: Employer ESI</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employerEsiMonthly)}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employerEsiAnnual)}</td>
+                                                {/* 8. GROSS SALARY (CTC − Employer PF − Employer ESI) */}
+                                                <tr style={{ backgroundColor: '#f8fafc', fontWeight: 800, color: '#0b1329', borderTop: '2px solid #0b1329', borderBottom: '2px solid #0b1329', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                                    <td style={{ padding: '5.5px 12px', borderRight: '1px solid #cbd5e1' }}>GROSS SALARY (CTC − Employer PF − Employer ESI)</td>
+                                                    <td style={{ padding: '5.5px 12px', textAlign: 'right', borderRight: '1px solid #cbd5e1' }}>INR {formatInr(grossSalaryMonthly)}</td>
+                                                    <td style={{ padding: '5.5px 12px', textAlign: 'right' }}>INR {formatInr(grossSalaryAnnual)}</td>
                                                 </tr>
 
                                                 {/* 9. Less: Employee PF @ 12% of Basic */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>Less: Employee PF @ 12% of Basic</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employeePfMonthly)}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employeePfAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#dc2626', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>Less: Employee PF @ 12% of Basic</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700 }}>{employeePfMonthly > 0 ? `- ${formatInr(employeePfMonthly)}` : '- 0'}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700 }}>{employeePfAnnual > 0 ? `- ${formatInr(employeePfAnnual)}` : '- 0'}</td>
                                                 </tr>
 
                                                 {/* 10. Less: Employee ESI */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>Less: Employee ESI</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employeeEsiMonthly)}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>-{formatInr(employeeEsiAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#dc2626', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>Less: Employee ESI</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700 }}>{employeeEsiMonthly > 0 ? `- ${formatInr(employeeEsiMonthly)}` : '- 0'}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700 }}>{employeeEsiAnnual > 0 ? `- ${formatInr(employeeEsiAnnual)}` : '- 0'}</td>
                                                 </tr>
 
                                                 {/* 11. Less: Professional Tax */}
-                                                <tr style={{ color: '#e2e8f0' }}>
-                                                    <td style={{ padding: '2px 0' }}>Less: Professional Tax</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{ptMonthly > 0 ? `-${formatInr(ptMonthly)}` : '-0*'}</td>
-                                                    <td style={{ padding: '2px 0', textAlign: 'right' }}>{ptAnnual > 0 ? `-${formatInr(ptAnnual)}` : '-0*'}</td>
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#dc2626', borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4.5px 12px', borderRight: '1px solid #e2e8f0', fontWeight: 500 }}>Less: Professional Tax</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', borderRight: '1px solid #e2e8f0', fontWeight: 700 }}>{ptMonthly > 0 ? `- ${formatInr(ptMonthly)}` : '- 0'}</td>
+                                                    <td style={{ padding: '4.5px 12px', textAlign: 'right', fontWeight: 700 }}>{ptAnnual > 0 ? `- ${formatInr(ptAnnual)}` : '- 0'}</td>
                                                 </tr>
 
                                                 {/* 12. TOTAL DEDUCTION */}
-                                                <tr style={{ fontWeight: 700, color: '#ffffff', borderTop: '1px solid #27272a', borderBottom: '1px solid #27272a' }}>
-                                                    <td style={{ padding: '3px 0' }}>TOTAL DEDUCTION</td>
-                                                    <td style={{ padding: '3px 0', textAlign: 'right' }}>-{formatInr(totalDeductionsMonthly)}</td>
-                                                    <td style={{ padding: '3px 0', textAlign: 'right' }}>-{formatInr(totalDeductionsAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#fef2f2', fontWeight: 800, color: '#dc2626', borderTop: '1px solid #cbd5e1', borderBottom: '2px solid #0b1329', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                                    <td style={{ padding: '5px 12px', borderRight: '1px solid #fca5a5' }}>TOTAL DEDUCTION</td>
+                                                    <td style={{ padding: '5px 12px', textAlign: 'right', borderRight: '1px solid #fca5a5' }}>{totalDeductionsMonthly > 0 ? `- ${formatInr(totalDeductionsMonthly)}` : '- 0'}</td>
+                                                    <td style={{ padding: '5px 12px', textAlign: 'right' }}>{totalDeductionsAnnual > 0 ? `- ${formatInr(totalDeductionsAnnual)}` : '- 0'}</td>
                                                 </tr>
 
                                                 {/* 13. NET SALARY / TAKE HOME */}
-                                                <tr style={{ fontWeight: 700, color: '#ffffff' }}>
-                                                    <td style={{ padding: '5px 0 2px 0' }}>NET SALARY / TAKE HOME</td>
-                                                    <td style={{ padding: '5px 0 2px 0', textAlign: 'right' }}>₹{formatInr(netSalaryMonthly)}</td>
-                                                    <td style={{ padding: '5px 0 2px 0', textAlign: 'right' }}>₹{formatInr(netSalaryAnnual)}</td>
+                                                <tr style={{ backgroundColor: '#0b1329', color: '#ffffff', fontWeight: 900, fontSize: '11.5px', letterSpacing: '0.02em', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
+                                                    <td style={{ padding: '6px 12px', borderRight: '1px solid rgba(255, 255, 255, 0.2)' }}>NET SALARY / TAKE HOME</td>
+                                                    <td style={{ padding: '6px 12px', textAlign: 'right', borderRight: '1px solid rgba(255, 255, 255, 0.2)' }}>INR {formatInr(netSalaryMonthly)}</td>
+                                                    <td style={{ padding: '6px 12px', textAlign: 'right' }}>INR {formatInr(netSalaryAnnual)}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
