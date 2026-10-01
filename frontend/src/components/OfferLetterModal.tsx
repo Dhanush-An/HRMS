@@ -104,7 +104,7 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
     const probationaryPeriod = employee.probationaryPeriod || '3 Months';
     const probationaryPeriodCondition = employee.probationaryPeriodCondition || 'You will undergo a Probation for three months. Confirmation is performance-contingent. Management may extend probation if performance goals are not explicitly met.';
     const shiftWindow = employee.shiftWindow || '9:30 AM - 6:30 PM';
-    const trainingSalary = employee.trainingSalary ?? 15000;
+    const trainingSalary = employee.trainingSalary;
 
     const isTrainingMode = employee.engagementType === 'Training' ||
         (Boolean(empRole) && (
@@ -113,29 +113,77 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
             empRole.toLowerCase().includes('training')
         ));
 
-    // Salary breakdown
-    const basicMonthly = employee.salary?.basic || 7500;
-    const hraMonthly = employee.salary?.hra || 3750;
-    const convMonthly = employee.salary?.conveyance || 3750;
-    const grossSalaryMonthly = basicMonthly + hraMonthly + convMonthly;
+    // Salary breakdown conforming to statutory structure (Image 2)
+    const basicMonthly = Number(employee.salary?.basic) || 15000;
+    const hraMonthly = employee.salary?.hra !== undefined && employee.salary?.hra !== null && Number(employee.salary.hra) > 0
+        ? Number(employee.salary.hra)
+        : Math.round(basicMonthly * 0.5);
+    const convMonthly = employee.salary?.conveyance !== undefined && employee.salary?.conveyance !== null
+        ? Number(employee.salary.conveyance)
+        : 700;
+    const incentivesMonthly = Number(employee.salary?.special ?? employee.salary?.other ?? employee.salary?.medical ?? 0);
+    const grossTotalMonthly = basicMonthly + hraMonthly + convMonthly + incentivesMonthly;
 
-    const pfMonthly = employee.salary?.pf || 0;
-    const esiMonthly = employee.salary?.esi || 0;
-    const ptMonthly = employee.salary?.professionalTax ?? employee.salary?.tax ?? 0;
-    const totalDeductionMonthly = pfMonthly + esiMonthly + ptMonthly;
+    // PF Employee contribution (12% of basic, or split if combined pf was saved)
+    let pfEmployeeMonthly = 0;
+    if (employee.salary?.pf !== undefined && employee.salary?.pf !== null) {
+        const pfVal = Number(employee.salary.pf);
+        if (pfVal > 0) {
+            if (pfVal > Math.round(basicMonthly * 0.15)) {
+                // If combined employee + employer was entered (e.g. 3600 for 15000 basic)
+                pfEmployeeMonthly = Math.round(pfVal / 2);
+            } else {
+                pfEmployeeMonthly = pfVal;
+            }
+        } else {
+            pfEmployeeMonthly = 0;
+        }
+    } else {
+        pfEmployeeMonthly = Math.round(basicMonthly * 0.12);
+    }
 
-    const netMonthly = grossSalaryMonthly - totalDeductionMonthly;
+    // ESI Employee contribution
+    const esiEmployeeMonthly = Number(employee.salary?.esi) || 0;
 
+    // Professional Tax (defaults to 200 standard, or employee-configured tax)
+    let ptMonthly = 200;
+    if (employee.salary?.professionalTax !== undefined && employee.salary?.professionalTax !== null) {
+        ptMonthly = Number(employee.salary.professionalTax);
+    } else if (employee.salary?.tax !== undefined && employee.salary?.tax !== null) {
+        ptMonthly = Number(employee.salary.tax);
+    }
+
+    // Total Deductions
+    const totalDeductionsMonthly = pfEmployeeMonthly + esiEmployeeMonthly + ptMonthly;
+
+    // Net Salary
+    const netSalaryMonthly = grossTotalMonthly - totalDeductionsMonthly;
+
+    // Employer Contributions
+    const pfEmployerMonthly = pfEmployeeMonthly; // 12% of basic employer match
+    const esiEmployerMonthly = esiEmployeeMonthly > 0 ? Math.round(grossTotalMonthly * 0.0325) : 0;
+
+    // Cost to The Company (CTC)
+    const ctcMonthly = grossTotalMonthly + pfEmployerMonthly + esiEmployerMonthly;
+
+    // Annual figures
     const basicAnnual = basicMonthly * 12;
     const hraAnnual = hraMonthly * 12;
     const convAnnual = convMonthly * 12;
-    const grossSalaryAnnual = grossSalaryMonthly * 12;
-
-    const pfAnnual = pfMonthly * 12;
-    const esiAnnual = esiMonthly * 12;
+    const incentivesAnnual = incentivesMonthly * 12;
+    const grossTotalAnnual = grossTotalMonthly * 12;
+    const pfEmployeeAnnual = pfEmployeeMonthly * 12;
+    const esiEmployeeAnnual = esiEmployeeMonthly * 12;
     const ptAnnual = ptMonthly * 12;
+    const totalDeductionsAnnual = totalDeductionsMonthly * 12;
+    const netSalaryAnnual = netSalaryMonthly * 12;
+    const pfEmployerAnnual = pfEmployerMonthly * 12;
+    const esiEmployerAnnual = esiEmployerMonthly * 12;
+    const ctcAnnual = ctcMonthly * 12;
 
-    const netAnnual = (isTrainingMode ? (trainingSalary || netMonthly) : netMonthly) * 12;
+    const displayMonthlyTakeHome = isTrainingMode && trainingSalary ? trainingSalary : netSalaryMonthly;
+
+    const formatNum = (val: number | undefined | null) => (val || 0).toLocaleString('en-US');
 
     // Parse responsibilities
     const defaultResponsibilities = [
@@ -631,76 +679,120 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                                         <span style={{ width: '8px', height: '16px', backgroundColor: '#f59e0b', display: 'inline-block' }} className="w-2 h-4 bg-amber-500 inline-block"></span> 3. COMPENSATION & STRUCTURE
                                     </h3>
 
-                                    <div style={{ border: '1px solid #0f172a', borderRadius: '12px', overflow: 'hidden', fontSize: '11px', marginBottom: '10px' }} className="border border-slate-900 rounded-xl overflow-hidden text-xs">
+                                    <div style={{ border: '1px solid #cbd5e1', borderRadius: '8px', overflow: 'hidden', fontSize: '11px', marginBottom: '8px', backgroundColor: '#ffffff', fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }} className="border border-slate-300 rounded-lg overflow-hidden text-xs bg-white">
                                         <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }} className="w-full text-left border-collapse">
                                             <thead>
-                                                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 700, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider">
-                                                    <th style={{ padding: '6px 10px', borderRight: '1px solid #334155' }} className="p-2 border-r border-slate-700">Remuneration Component</th>
-                                                    <th style={{ padding: '6px 10px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-2 border-r border-slate-700 text-right">Monthly (INR)</th>
-                                                    <th style={{ padding: '6px 10px', textAlign: 'right' }} className="p-2 text-right">Annual (INR)</th>
+                                                <tr style={{ backgroundColor: '#ffffff', color: '#0f172a', fontWeight: 700, fontSize: '11px', borderBottom: '1px solid #cbd5e1' }}>
+                                                    <th style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', width: '56%' }}>Components</th>
+                                                    <th style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', width: '22%' }}>Monthly</th>
+                                                    <th style={{ padding: '5px 10px', textAlign: 'right', width: '22%' }}>Annual</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                {/* 1. Basic */}
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-2 border-r border-slate-200 font-medium">Primary Basic Salary</td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-2 border-r border-slate-200 text-right font-bold">{basicMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }} className="p-2 text-right font-bold">{basicAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>Basic</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(basicMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(basicAnnual)}</td>
                                                 </tr>
+
+                                                {/* 2. HRA @ 50% of Basic */}
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-2 border-r border-slate-200 font-medium">House Rent Allowance (HRA)</td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-2 border-r border-slate-200 text-right font-bold">{hraMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }} className="p-2 text-right font-bold">{hraAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>HRA @ 50% of Basic</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(hraMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(hraAnnual)}</td>
                                                 </tr>
+
+                                                {/* 3. Conveyance Allowance */}
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500 }} className="p-2 border-r border-slate-200 font-medium">Statutory Allowances (Med/Conv)</td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700 }} className="p-2 border-r border-slate-200 text-right font-bold">{convMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700 }} className="p-2 text-right font-bold">{convAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>Conveyance Allowance</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(convMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(convAnnual)}</td>
                                                 </tr>
-                                                <tr style={{ borderBottom: '2px solid #0f172a', backgroundColor: '#f8fafc', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', color: '#0f172a', textTransform: 'uppercase' }} className="p-2 border-r border-slate-300 uppercase font-black">GROSS SALARY (TOTAL EARNINGS)</td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', color: '#0f172a' }} className="p-2 border-r border-slate-300 text-right font-black">INR {grossSalaryMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right', color: '#0f172a' }} className="p-2 text-right font-black">INR {grossSalaryAnnual.toLocaleString('en-IN')}</td>
-                                                </tr>
+
+                                                {/* 4. Incentives */}
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-2 border-r border-slate-200 font-medium text-red-600">Less: Provident Fund (PF Deduction)</td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 border-r border-slate-200 text-right font-bold text-red-600">- {pfMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 text-right font-bold text-red-600">- {pfAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>Incentives</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(incentivesMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(incentivesAnnual)}</td>
                                                 </tr>
+
+                                                {/* 5. Gross Total (A) */}
+                                                <tr style={{ borderBottom: '1px solid #cbd5e1', fontWeight: 700 }}>
+                                                    <td style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>Gross Total (A)</td>
+                                                    <td style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(grossTotalMonthly)}</td>
+                                                    <td style={{ padding: '5px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(grossTotalAnnual)}</td>
+                                                </tr>
+
+                                                {/* 6. PF (Employee Contribution) @ 12% of Basic */}
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-2 border-r border-slate-200 font-medium text-red-600">Less: Employee State Insurance (ESI)</td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 border-r border-slate-200 text-right font-bold text-red-600">- {esiMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 text-right font-bold text-red-600">- {esiAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>PF (Employee Contribution) @ 12% of Basic</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(pfEmployeeMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(pfEmployeeAnnual)}</td>
                                                 </tr>
+
+                                                {/* 7. ESI (Employee Contribution) */}
                                                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', fontWeight: 500, color: '#dc2626' }} className="p-2 border-r border-slate-200 font-medium text-red-600">Less: Professional Tax (PT Deduction)</td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 border-r border-slate-200 text-right font-bold text-red-600">- {ptMonthly.toLocaleString('en-IN')}</td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 700, color: '#dc2626' }} className="p-2 text-right font-bold text-red-600">- {ptAnnual.toLocaleString('en-IN')}</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>ESI (Employee Contribution)</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(esiEmployeeMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(esiEmployeeAnnual)}</td>
                                                 </tr>
-                                                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', fontWeight: 900, WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-slate-900 text-white font-black">
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textTransform: 'uppercase' }} className="p-2 border-r border-slate-700 uppercase">
-                                                        {isTrainingMode ? 'NET STIPEND (TAKE HOME)' : 'NET SALARY (TAKE HOME)'}
-                                                    </td>
-                                                    <td style={{ padding: '6px 10px', borderRight: '1px solid #334155', textAlign: 'right' }} className="p-2 border-r border-slate-700 text-right">
-                                                        INR {(isTrainingMode ? (trainingSalary || netMonthly) : netMonthly).toLocaleString('en-IN')}
-                                                    </td>
-                                                    <td style={{ padding: '6px 10px', textAlign: 'right' }} className="p-2 text-right">
-                                                        INR {netAnnual.toLocaleString('en-IN')}
-                                                    </td>
+
+                                                {/* 8. Professional Tax */}
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>Professional Tax</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(ptMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(ptAnnual)}</td>
+                                                </tr>
+
+                                                {/* 9. Total Deductions */}
+                                                <tr style={{ borderBottom: '1px solid #cbd5e1', fontWeight: 700 }}>
+                                                    <td style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>Total Deductions</td>
+                                                    <td style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(totalDeductionsMonthly)}</td>
+                                                    <td style={{ padding: '5px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(totalDeductionsAnnual)}</td>
+                                                </tr>
+
+                                                {/* 10. Net Salary (Gross Salary - Total Deductions) */}
+                                                <tr style={{ borderBottom: '1px solid #cbd5e1', fontWeight: 700 }}>
+                                                    <td style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>Net Salary (Gross Salary - Total Deductions)</td>
+                                                    <td style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(netSalaryMonthly)}</td>
+                                                    <td style={{ padding: '5px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(netSalaryAnnual)}</td>
+                                                </tr>
+
+                                                {/* 11. PF (Employer Contribution) @ 12% of Basic */}
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>PF (Employer Contribution) @ 12% of Basic</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(pfEmployerMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(pfEmployerAnnual)}</td>
+                                                </tr>
+
+                                                {/* 12. ESI (Employer Contribution) */}
+                                                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>ESI (Employer Contribution)</td>
+                                                    <td style={{ padding: '4px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(esiEmployerMonthly)}</td>
+                                                    <td style={{ padding: '4px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(esiEmployerAnnual)}</td>
+                                                </tr>
+
+                                                {/* 13. Cost to The Company (CTC) */}
+                                                <tr style={{ fontWeight: 700 }}>
+                                                    <td style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', color: '#0f172a' }}>Cost to The Company (CTC)</td>
+                                                    <td style={{ padding: '5px 10px', borderRight: '1px solid #e2e8f0', textAlign: 'right', color: '#0f172a' }}>{formatNum(ctcMonthly)}</td>
+                                                    <td style={{ padding: '5px 10px', textAlign: 'right', color: '#0f172a' }}>{formatNum(ctcAnnual)}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
 
                                     {/* Monthly Training or Employment Salary Highlight Box */}
-                                    <div style={{ backgroundColor: '#fffbeb', border: '2px solid #f59e0b', borderRadius: '14px', padding: '10px 16px', textAlign: 'center', marginTop: '10px', marginBottom: '10px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-3 text-center my-2">
-                                        <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '14px', margin: 0 }} className="text-slate-800 font-black text-sm">
-                                            {isTrainingMode ? 'Monthly Training Period Stipend: ' : 'Monthly Net Take-Home Salary: '}
-                                            <span style={{ color: '#030712', fontWeight: 900, fontSize: '18px' }} className="text-slate-950 font-black text-lg">
-                                                INR {(isTrainingMode ? (trainingSalary || netMonthly) : netMonthly).toLocaleString('en-IN')}
+                                    <div style={{ backgroundColor: '#fffbeb', border: '1.5px solid #f59e0b', borderRadius: '10px', padding: '6px 14px', textAlign: 'center', marginTop: '6px', marginBottom: '8px', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} className="bg-amber-500/10 border-2 border-amber-500/40 rounded-xl p-2.5 text-center my-2">
+                                        <p style={{ color: '#1e293b', fontWeight: 900, fontSize: '13px', margin: 0 }} className="text-slate-800 font-black text-sm">
+                                            {isTrainingMode && trainingSalary ? 'Monthly Training Period Stipend: ' : 'Monthly Net Take-Home Salary: '}
+                                            <span style={{ color: '#030712', fontWeight: 900, fontSize: '16px' }} className="text-slate-950 font-black text-base">
+                                                INR {formatNum(displayMonthlyTakeHome)}
                                             </span>
                                         </p>
-                                        <p style={{ fontSize: '9px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px' }} className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
-                                            {isTrainingMode ? '(STIPEND AMOUNT DURING TRAINING PERIOD)' : '(AFTER STATUTORY DEDUCTIONS - PF, ESI & PT)'}
+                                        <p style={{ fontSize: '8.5px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '2px', margin: 0 }} className="text-[8.5px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+                                            {isTrainingMode && trainingSalary ? '(STIPEND AMOUNT DURING TRAINING PERIOD)' : '(AFTER STATUTORY DEDUCTIONS - PF, ESI & PT)'}
                                         </p>
                                     </div>
                                 </div>
