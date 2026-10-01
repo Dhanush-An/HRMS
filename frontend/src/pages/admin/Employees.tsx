@@ -1402,9 +1402,9 @@ const Employees = () => {
                                 <div>
                                     <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 mb-2 block">Employer Contributions (Deducted from CTC to get Gross)</span>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                        {/* 6. Less: Employer PF @ 12% of Basic */}
+                                        {/* 6. Employer PF @ 12% of Basic */}
                                         <div>
-                                            <label className="block text-[9px] font-bold uppercase text-indigo-400 mb-1">Less: Employer PF @ 12% of Basic</label>
+                                            <label className="block text-[9px] font-bold uppercase text-indigo-400 mb-1">Employer PF @ 12% of Basic</label>
                                             <input
                                                 type="number"
                                                 name="employerPfSalary"
@@ -1425,9 +1425,9 @@ const Employees = () => {
                                             />
                                         </div>
 
-                                        {/* 7. Less: Employer ESI */}
+                                        {/* 7. Employer ESI */}
                                         <div>
-                                            <label className="block text-[9px] font-bold uppercase text-teal-400 mb-1">Less: Employer ESI</label>
+                                            <label className="block text-[9px] font-bold uppercase text-teal-400 mb-1">Employer ESI</label>
                                             <input
                                                 type="number"
                                                 name="employerEsiSalary"
@@ -1465,13 +1465,13 @@ const Employees = () => {
                                     </div>
                                 </div>
 
-                                {/* 9 to 11: Less Employee Deductions */}
+                                {/* 9 to 11: Employee Deductions */}
                                 <div>
                                     <span className="text-[10px] font-black uppercase tracking-wider text-rose-400 mb-2 block">Employee Deductions</span>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                        {/* 9. Less: Employee PF @ 12% of Basic */}
+                                        {/* 9. Employee PF @ 12% of Basic */}
                                         <div>
-                                            <label className="block text-[9px] font-bold uppercase text-sky-400 mb-1">Less: Employee PF @ 12% of Basic</label>
+                                            <label className="block text-[9px] font-bold uppercase text-sky-400 mb-1">Employee PF @ 12% of Basic</label>
                                             <input
                                                 type="number"
                                                 name="employeePfSalary"
@@ -1492,9 +1492,9 @@ const Employees = () => {
                                             />
                                         </div>
 
-                                        {/* 10. Less: Employee ESI */}
+                                        {/* 10. Employee ESI */}
                                         <div>
-                                            <label className="block text-[9px] font-bold uppercase text-emerald-400 mb-1">Less: Employee ESI</label>
+                                            <label className="block text-[9px] font-bold uppercase text-emerald-400 mb-1">Employee ESI</label>
                                             <input
                                                 type="number"
                                                 name="employeeEsiSalary"
@@ -1515,9 +1515,9 @@ const Employees = () => {
                                             />
                                         </div>
 
-                                        {/* 11. Less: Professional Tax */}
+                                        {/* 11. Professional Tax */}
                                         <div>
-                                            <label className="block text-[9px] font-bold uppercase text-rose-400 mb-1">Less: Professional Tax</label>
+                                            <label className="block text-[9px] font-bold uppercase text-rose-400 mb-1">Professional Tax</label>
                                             <input
                                                 type="number"
                                                 name="ptSalary"
