@@ -690,10 +690,15 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             </div>
 
                             {/* Footer Page 1 */}
-                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
-                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
-                                <span>1st Floor, #962, above SBI Bank, near Deepa Complex, Papreddy Palya, 2nd Stage, Nagarbhavi, Bengaluru - 560072</span>
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '8px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '8.5px', color: '#64748b', marginTop: '16px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-2 flex justify-between items-center text-[8.5px] text-slate-500 mt-4">
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
+                                    <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
+                                    <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
+                                </div>
+                                <div style={{ textAlign: 'right', fontSize: '8px', lineHeight: 1.35, color: '#64748b' }} className="text-right text-[8px] leading-tight text-slate-500">
+                                    <p style={{ margin: 0 }}>1st Floor, #962, above SBI Bank, near Deepa Complex,</p>
+                                    <p style={{ margin: 0 }}>Papreddy Palya, 2nd Stage, Nagarbhavi, Bengaluru, Karnataka 560072</p>
+                                </div>
                             </div>
                         </div>
 
@@ -866,10 +871,15 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             </div>
 
                             {/* Footer Page 2 */}
-                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
-                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
-                                <span>1st Floor, #962, above SBI Bank, near Deepa Complex, Papreddy Palya, 2nd Stage, Nagarbhavi, Bengaluru - 560072</span>
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '8px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '8.5px', color: '#64748b', marginTop: '16px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-2 flex justify-between items-center text-[8.5px] text-slate-500 mt-4">
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
+                                    <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
+                                    <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
+                                </div>
+                                <div style={{ textAlign: 'right', fontSize: '8px', lineHeight: 1.35, color: '#64748b' }} className="text-right text-[8px] leading-tight text-slate-500">
+                                    <p style={{ margin: 0 }}>1st Floor, #962, above SBI Bank, near Deepa Complex,</p>
+                                    <p style={{ margin: 0 }}>Papreddy Palya, 2nd Stage, Nagarbhavi, Bengaluru, Karnataka 560072</p>
+                                </div>
                             </div>
                         </div>
 
@@ -967,10 +977,15 @@ export const OfferLetterModal: React.FC<OfferLetterModalProps> = ({
                             </div>
 
                             {/* Footer Page 3 */}
-                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '9px', color: '#64748b', marginTop: '24px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-3 flex justify-between items-center text-[9px] text-slate-500 mt-6">
-                                <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
-                                <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
-                                <span>1st Floor, #962, above SBI Bank, near Deepa Complex, Papreddy Palya, 2nd Stage, Nagarbhavi, Bengaluru - 560072</span>
+                            <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '8px', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', fontSize: '8.5px', color: '#64748b', marginTop: '16px', position: 'relative', zIndex: 1 }} className="border-t border-slate-300 pt-2 flex justify-between items-center text-[8.5px] text-slate-500 mt-4">
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
+                                    <a href="mailto:infoblr@forgeindiaconnect.com" style={{ fontWeight: 700, color: '#4338ca', textDecoration: 'none' }} className="hover:underline font-bold text-indigo-700">infoblr@forgeindiaconnect.com</a>
+                                    <a href="http://www.forgeindiaconnect.com" target="_blank" rel="noreferrer" style={{ color: '#64748b', textDecoration: 'none' }} className="hover:underline">www.forgeindiaconnect.com</a>
+                                </div>
+                                <div style={{ textAlign: 'right', fontSize: '8px', lineHeight: 1.35, color: '#64748b' }} className="text-right text-[8px] leading-tight text-slate-500">
+                                    <p style={{ margin: 0 }}>1st Floor, #962, above SBI Bank, near Deepa Complex,</p>
+                                    <p style={{ margin: 0 }}>Papreddy Palya, 2nd Stage, Nagarbhavi, Bengaluru, Karnataka 560072</p>
+                                </div>
                             </div>
                         </div>
                     </div>
