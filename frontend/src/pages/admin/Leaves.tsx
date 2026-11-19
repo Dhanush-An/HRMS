@@ -30,6 +30,7 @@ interface Employee {
     id: string;
     name: string;
     department: string;
+    status?: string;
     leaveBalance?: {
         sick: number;
         casual: number;
@@ -42,6 +43,7 @@ const Leaves = () => {
     const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [showApplyModal, setShowApplyModal] = useState(false);
+    const [includeInactive, setIncludeInactive] = useState(false);
 
     const [activeTab, setActiveTab] = useState<'dashboard' | 'requests' | 'balances'>(() => {
         const storedUser = localStorage.getItem('user');
@@ -150,19 +152,35 @@ const Leaves = () => {
         }
     };
 
+    const getEmployeeStatus = (empId: string) => {
+        const emp = employees.find(e => e.id === empId || (e as any).employeeId === empId);
+        return emp?.status || 'Active';
+    };
+
+    const isRequestFromActiveEmployee = (leave: LeaveRequest) => {
+        const status = getEmployeeStatus(leave.employeeId);
+        return status !== 'Inactive' && status !== 'Suspended';
+    };
+
     // Filter leaves based on user role
     const visibleLeaves = isAdmin
         ? (Array.isArray(leaves) ? leaves : [])
         : (Array.isArray(leaves) ? leaves.filter((l: LeaveRequest) => l.employeeId === user?.id) : []);
 
     // Derived Data
-    const pendingRequests = Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === 'Pending').length : 0;
+    const pendingRequests = Array.isArray(visibleLeaves)
+        ? visibleLeaves.filter((l: LeaveRequest) => l.status === 'Pending' && isRequestFromActiveEmployee(l)).length
+        : 0;
     const approvedToday = Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === 'Approved' &&
         new Date(l.startDate) <= new Date() && new Date(l.endDate) >= new Date()).length : 0;
 
     const filteredLeaves = (statusFilter === 'All'
-        ? visibleLeaves
-        : (Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => l.status === statusFilter) : [])
+        ? (includeInactive ? visibleLeaves : visibleLeaves.filter(isRequestFromActiveEmployee))
+        : (Array.isArray(visibleLeaves) ? visibleLeaves.filter((l: LeaveRequest) => {
+            if (l.status !== statusFilter) return false;
+            if (statusFilter === 'Pending' && !includeInactive && !isRequestFromActiveEmployee(l)) return false;
+            return true;
+        }) : [])
     ).filter((l: LeaveRequest) => {
         const empName = l.employeeName || l.name || '';
         const reqReason = l.reason || '';
@@ -170,9 +188,10 @@ const Leaves = () => {
             reqReason.toLowerCase().includes(searchQuery.toLowerCase());
     });
 
+    const activeEmployees = (Array.isArray(employees) ? employees : []).filter(e => e.status !== 'Inactive' && e.status !== 'Suspended');
     const visibleEmployees = isAdmin
-        ? (Array.isArray(employees) ? employees : [])
-        : (Array.isArray(employees) ? employees.filter((e: Employee) => e.id === user?.id) : []);
+        ? activeEmployees
+        : activeEmployees.filter((e: Employee) => e.id === user?.id);
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -303,6 +322,17 @@ const Leaves = () => {
                                         {status}
                                     </button>
                                 ))}
+                                {isAdmin && (
+                                    <label className="flex items-center gap-2 text-[10px] font-black uppercase text-brand-muted tracking-widest cursor-pointer ml-auto pl-2">
+                                        <input
+                                            type="checkbox"
+                                            checked={includeInactive}
+                                            onChange={(e) => setIncludeInactive(e.target.checked)}
+                                            className="rounded border-brand-border text-brand-primary focus:ring-0 cursor-pointer"
+                                        />
+                                        Include Inactive
+                                    </label>
+                                )}
                             </div>
 
                             {/* Content Table */}
@@ -523,7 +553,7 @@ const Leaves = () => {
                                                 required
                                             >
                                                 <option value="" className="bg-brand-surface text-brand-text">Select Target Employee</option>
-                                                {employees.map(emp => (
+                                                {employees.filter(emp => emp.status !== 'Inactive' && emp.status !== 'Suspended').map(emp => (
                                                     <option key={emp.id} value={emp.id} className="bg-brand-surface text-brand-text">{emp.name}</option>
                                                 ))}
                                             </select>

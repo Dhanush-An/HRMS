@@ -8,7 +8,7 @@ export interface IEmployee extends Document {
     password?: string;
     role: string;
     department: string;
-    status: 'Active' | 'Inactive' | 'On Leave';
+    status: 'Active' | 'Inactive' | 'On Leave' | 'Suspended';
     joiningDate: string;
     phone: string;
     avatar?: string;
@@ -71,7 +71,7 @@ const EmployeeSchema: Schema = new Schema({
     password: { type: String, required: true },
     role: { type: String, default: 'employee' },
     department: { type: String, required: true },
-    status: { type: String, enum: ['Active', 'Inactive', 'On Leave'], default: 'Active' },
+    status: { type: String, enum: ['Active', 'Inactive', 'On Leave', 'Suspended'], default: 'Active' },
     joiningDate: { type: String, required: true },
     phone: { type: String, default: '' },
     avatar: { type: String, default: '' },

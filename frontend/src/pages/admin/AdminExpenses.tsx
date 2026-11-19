@@ -25,7 +25,9 @@ interface ExpenseClaim {
 
 const AdminExpenses = () => {
     const [expenses, setExpenses] = useState<ExpenseClaim[]>([]);
+    const [employees, setEmployees] = useState<any[]>([]);
     const [statusFilter, setStatusFilter] = useState('All');
+    const [includeInactive, setIncludeInactive] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [expenseTypeFilter, setExpenseTypeFilter] = useState<'All' | 'Employee' | 'Branch'>('All');
     const [showModal, setShowModal] = useState(false);
@@ -105,14 +107,19 @@ const AdminExpenses = () => {
 
     const fetchExpenses = async () => {
         try {
-            const res = await api.get('/api/expenses');
+            const [res, empRes] = await Promise.all([
+                api.get('/api/expenses'),
+                api.get('/api/employees')
+            ]);
             const data = await res.json();
+            const emps = await empRes.json();
+            const empsList = Array.isArray(emps) ? emps : [];
+            setEmployees(empsList);
+
             let expensesList = Array.isArray(data) ? data : [];
 
             if (user?.role === 'subadmin') {
-                const empRes = await api.get('/api/employees');
-                const emps = await empRes.json();
-                const branchEmpIds = (Array.isArray(emps) ? emps : [])
+                const branchEmpIds = empsList
                     .filter((e: any) => e.branchName === user.branchName)
                     .map((e: any) => e.id || e.employeeId || e._id);
                 expensesList = expensesList.filter((exp: any) => branchEmpIds.includes(exp.employeeId));
@@ -122,6 +129,16 @@ const AdminExpenses = () => {
         } catch (error) {
             console.error("Error fetching expenses:", error);
         }
+    };
+
+    const getEmployeeStatus = (empId: string) => {
+        const emp = employees.find((e: any) => e.id === empId || e.employeeId === empId || e._id === empId);
+        return emp?.status || 'Active';
+    };
+
+    const isClaimFromActiveEmployee = (claim: ExpenseClaim) => {
+        const status = getEmployeeStatus(claim.employeeId);
+        return status !== 'Inactive' && status !== 'Suspended';
     };
 
     useEffect(() => {
@@ -169,11 +186,20 @@ const AdminExpenses = () => {
     // Derived statistics from typeFilteredExpenses
     const totalClaimed = typeFilteredExpenses.reduce((acc, e) => acc + e.amount, 0);
     const approvedAmount = typeFilteredExpenses.filter(e => e.status === 'Approved').reduce((acc, e) => acc + e.amount, 0);
-    const pendingAmount = typeFilteredExpenses.filter(e => e.status === 'Pending').reduce((acc, e) => acc + e.amount, 0);
+    const pendingAmount = typeFilteredExpenses.filter(e => e.status === 'Pending' && isClaimFromActiveEmployee(e)).reduce((acc, e) => acc + e.amount, 0);
 
-    // Final filtered list
+    // Final filtered list: only newly submitted requests from active employees appear by default
     const filteredExpenses = typeFilteredExpenses
-        .filter((e) => statusFilter === 'All' || e.status === statusFilter)
+        .filter((e) => {
+            if (statusFilter === 'All') {
+                return includeInactive ? true : isClaimFromActiveEmployee(e);
+            }
+            if (e.status !== statusFilter) return false;
+            if (statusFilter === 'Pending' && !includeInactive && !isClaimFromActiveEmployee(e)) {
+                return false;
+            }
+            return true;
+        })
         .filter((e) => {
             const name = e.employeeName || '';
             const desc = e.description || '';
@@ -278,6 +304,15 @@ const AdminExpenses = () => {
                                 {status}
                             </button>
                         ))}
+                        <label className="flex items-center gap-2 text-[10px] font-black uppercase text-brand-muted tracking-widest cursor-pointer pl-2">
+                            <input
+                                type="checkbox"
+                                checked={includeInactive}
+                                onChange={(e) => setIncludeInactive(e.target.checked)}
+                                className="rounded border-brand-border text-brand-primary focus:ring-0 cursor-pointer"
+                            />
+                            Include Inactive
+                        </label>
                     </div>
                     <div className="relative w-full md:w-80">
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />

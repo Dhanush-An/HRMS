@@ -30,12 +30,14 @@ interface Employee {
     name: string;
     department: string;
     branchId: string;
+    status?: string;
 }
 
 const Permissions = () => {
     const [permissions, setPermissions] = useState<PermissionRequest[]>([]);
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [showApplyModal, setShowApplyModal] = useState(false);
+    const [includeInactive, setIncludeInactive] = useState(false);
 
     // Filter State
     const [statusFilter, setStatusFilter] = useState('All');
@@ -161,13 +163,27 @@ const Permissions = () => {
         }
     };
 
-    const pendingRequests = Array.isArray(permissions) ? permissions.filter(p => p.status === 'Pending').length : 0;
+    const getEmployeeStatus = (empId: string) => {
+        const emp = employees.find(e => e.id === empId || (e as any).employeeId === empId);
+        return emp?.status || 'Active';
+    };
+
+    const isRequestFromActiveEmployee = (perm: PermissionRequest) => {
+        const status = getEmployeeStatus(perm.employeeId);
+        return status !== 'Inactive' && status !== 'Suspended';
+    };
+
+    const pendingRequests = Array.isArray(permissions) ? permissions.filter(p => p.status === 'Pending' && isRequestFromActiveEmployee(p)).length : 0;
     const approvedRequests = Array.isArray(permissions) ? permissions.filter(p => p.status === 'Approved').length : 0;
     const declinedRequests = Array.isArray(permissions) ? permissions.filter(p => p.status === 'Declined').length : 0;
 
     const filteredPermissions = (statusFilter === 'All'
-        ? permissions
-        : (Array.isArray(permissions) ? permissions.filter(p => p.status === statusFilter) : [])
+        ? (includeInactive ? permissions : permissions.filter(isRequestFromActiveEmployee))
+        : (Array.isArray(permissions) ? permissions.filter(p => {
+            if (p.status !== statusFilter) return false;
+            if (statusFilter === 'Pending' && !includeInactive && !isRequestFromActiveEmployee(p)) return false;
+            return true;
+        }) : [])
     ).filter(p => {
         const empName = p.employeeName || '';
         const reqReason = p.reason || '';
@@ -249,6 +265,17 @@ const Permissions = () => {
                                     {status}
                                 </button>
                             ))}
+                            {isAdmin && (
+                                <label className="flex items-center gap-2 text-[10px] font-black uppercase text-brand-muted tracking-widest cursor-pointer ml-auto pl-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={includeInactive}
+                                        onChange={(e) => setIncludeInactive(e.target.checked)}
+                                        className="rounded border-brand-border text-brand-primary focus:ring-0 cursor-pointer"
+                                    />
+                                    Include Inactive
+                                </label>
+                            )}
                         </div>
                         <div className="relative w-full md:w-72">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted" />
@@ -377,7 +404,7 @@ const Permissions = () => {
                                         required
                                     >
                                         <option value="" className="bg-brand-surface text-brand-text">Select Target Employee</option>
-                                        {employees.map(emp => (
+                                        {employees.filter(emp => emp.status !== 'Inactive' && emp.status !== 'Suspended').map(emp => (
                                             <option key={emp.id} value={emp.id} className="bg-brand-surface text-brand-text">{emp.name}</option>
                                         ))}
                                     </select>

@@ -53,6 +53,7 @@ interface Employee {
     name: string;
     department: string;
     role: string;
+    status?: string;
     branchName?: string;
     joiningDate?: string;
     email?: string;
@@ -91,6 +92,7 @@ const Payroll = () => {
 
     const [activeTab, setActiveTab] = useState<'structure' | 'process' | 'history'>('structure');
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const [allEmployees, setAllEmployees] = useState<Employee[]>([]);
     const [payrollHistory, setPayrollHistory] = useState<PayrollRecord[]>([]);
     const [attendanceData, setAttendanceData] = useState<any[]>([]);
     const [leavesData, setLeavesData] = useState<any[]>([]);
@@ -203,20 +205,23 @@ const Payroll = () => {
         try {
             const empRes = await api.get('/api/employees');
             const employeesData = await empRes.json();
+            const rawList: Employee[] = Array.isArray(employeesData) ? employeesData : [];
+            setAllEmployees(rawList);
 
             const userStr = localStorage.getItem('user');
             const user = userStr ? JSON.parse(userStr) : null;
             
-            let filteredEmployees = employeesData;
+            // Inactive and Suspended employees must not appear in the active Salary Tab employee list
+            let filteredEmployees = rawList.filter((e: any) => e.status !== 'Inactive' && e.status !== 'Suspended');
             if (user?.role === 'hr') {
-                filteredEmployees = Array.isArray(employeesData) ? employeesData.filter((e: any) => e.role !== 'admin' && e.role !== 'subadmin') : [];
+                filteredEmployees = filteredEmployees.filter((e: any) => e.role !== 'admin' && e.role !== 'subadmin');
             }
 
             setEmployees(filteredEmployees);
 
             // Initialize process data
             const initialProcessData: any = {};
-            employeesData.forEach((emp: Employee) => {
+            filteredEmployees.forEach((emp: Employee) => {
                 initialProcessData[emp.id] = { bonus: 0 };
             });
             setProcessData(initialProcessData);
@@ -611,8 +616,16 @@ const Payroll = () => {
     };
 
     const handleDownloadPayslip = (payroll: PayrollRecord, record: any) => {
-        const employee = employees.find(e => e.id === record.employeeId);
-        if (!employee) return;
+        let employee = allEmployees.find(e => e.id === record.employeeId || e.employeeId === record.employeeId) ||
+            employees.find(e => e.id === record.employeeId || e.employeeId === record.employeeId);
+        if (!employee) {
+            employee = {
+                id: record.employeeId,
+                name: record.name || 'Employee',
+                department: record.department || 'General',
+                role: record.role || 'Employee'
+            };
+        }
 
         const mergedPayroll = {
             month: payroll.month,

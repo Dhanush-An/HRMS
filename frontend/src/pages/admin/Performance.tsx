@@ -17,6 +17,7 @@ interface Employee {
     name: string;
     department: string;
     role: string;
+    status?: string;
 }
 
 const Performance = () => {
@@ -24,6 +25,7 @@ const Performance = () => {
     const [records, setRecords] = useState<PerformanceRecord[]>([]);
     const [showModal, setShowModal] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+    const [viewTab, setViewTab] = useState<'active' | 'history'>('active');
 
     // Form State
     const [formData, setFormData] = useState({
@@ -51,6 +53,10 @@ const Performance = () => {
     }, []);
 
     const handleReviewClick = (emp: Employee) => {
+        if (emp.status === 'Inactive' || emp.status === 'Suspended') {
+            alert(`Cannot add performance review for ${emp.status.toLowerCase()} employee.`);
+            return;
+        }
         setSelectedEmployee(emp);
         setFormData({ type: 'Review', title: '', description: '', rating: 5 });
         setShowModal(true);
@@ -87,56 +93,128 @@ const Performance = () => {
         return empRecords[empRecords.length - 1].rating + ' / 5';
     };
 
+    const activeEmployees = (Array.isArray(employees) ? employees : []).filter(e => e.status !== 'Inactive' && e.status !== 'Suspended');
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
                 <div>
                     <h1 className="text-3xl font-black text-brand-text tracking-tight">Performance Management</h1>
-                    <p className="text-brand-muted font-medium">Evaluate employee performance and provide feedback</p>
+                    <p className="text-brand-muted font-medium">Evaluate employee performance and review historical records</p>
+                </div>
+                <div className="flex bg-brand-surface border border-brand-border rounded-2xl p-1 shadow-sm">
+                    <button
+                        onClick={() => setViewTab('active')}
+                        className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                            viewTab === 'active'
+                                ? 'bg-brand-primary text-white shadow-md'
+                                : 'text-brand-muted hover:text-brand-text'
+                        }`}
+                    >
+                        Active Workforce ({activeEmployees.length})
+                    </button>
+                    <button
+                        onClick={() => setViewTab('history')}
+                        className={`px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                            viewTab === 'history'
+                                ? 'bg-brand-primary text-white shadow-md'
+                                : 'text-brand-muted hover:text-brand-text'
+                        }`}
+                    >
+                        Performance History ({records.length})
+                    </button>
                 </div>
             </div>
 
-            <div className="space-y-4">
-                {Array.isArray(employees) && employees.map((emp) => (
-                    <div key={emp.id} className="bg-brand-surface border border-brand-border rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between hover:shadow-lg hover:shadow-brand-primary/5 transition-all group">
-                        <div className="flex items-center gap-5 w-full md:w-auto mb-4 md:mb-0">
-                            <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-brand-primary to-blue-400 p-[2px] shadow-lg">
-                                <div className="w-full h-full rounded-[14px] bg-brand-surface flex items-center justify-center text-brand-primary font-black text-2xl">
-                                    {emp.name.charAt(0)}
+            {viewTab === 'active' ? (
+                <div className="space-y-4">
+                    {activeEmployees.length === 0 ? (
+                        <div className="p-8 text-center text-brand-muted bg-brand-surface border border-brand-border rounded-2xl font-bold">
+                            No active employees found.
+                        </div>
+                    ) : (
+                        activeEmployees.map((emp) => (
+                            <div key={emp.id} className="bg-brand-surface border border-brand-border rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between hover:shadow-lg hover:shadow-brand-primary/5 transition-all group">
+                                <div className="flex items-center gap-5 w-full md:w-auto mb-4 md:mb-0">
+                                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-brand-primary to-blue-400 p-[2px] shadow-lg">
+                                        <div className="w-full h-full rounded-[14px] bg-brand-surface flex items-center justify-center text-brand-primary font-black text-2xl">
+                                            {emp.name.charAt(0)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-brand-text font-black text-lg">{emp.name}</h3>
+                                        <p className="text-brand-muted text-xs font-bold uppercase tracking-widest mt-1">{emp.department} • {emp.role}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between md:justify-end gap-6 md:gap-12 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-brand-border border-dashed">
+                                    <div className="text-right">
+                                        <span className="block text-[10px] text-brand-muted uppercase font-black tracking-[0.2em] mb-1">Last Rating</span>
+                                        <span className="text-brand-text font-black flex items-center gap-1.5 justify-end">
+                                            <span className="text-lg">{getLatestRating(emp.id).split(' ')[0]}</span>
+                                            <span className="text-[10px] text-brand-muted">/ 5</span>
+                                            <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                                        </span>
+                                    </div>
+                                    <div className="text-right border-l border-brand-border border-dashed pl-6 md:pl-8">
+                                        <span className="block text-[10px] text-brand-muted uppercase font-black tracking-[0.2em] mb-1">Reviews</span>
+                                        <span className="text-brand-text font-black text-lg">
+                                            {Array.isArray(records) ? records.filter(r => r.employeeId === emp.id).length : 0}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => handleReviewClick(emp)}
+                                        className="bg-brand-primary text-white px-5 md:px-6 py-2.5 md:py-3 rounded-2xl flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-brand-primary/20 text-[10px] md:text-xs font-black uppercase tracking-widest ml-0 md:ml-4"
+                                    >
+                                        <MessageSquare className="w-4 h-4" />
+                                        Review
+                                    </button>
                                 </div>
                             </div>
-                            <div>
-                                <h3 className="text-brand-text font-black text-lg">{emp.name}</h3>
-                                <p className="text-brand-muted text-xs font-bold uppercase tracking-widest mt-1">{emp.department} • {emp.role}</p>
-                            </div>
+                        ))
+                    )}
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    {records.length === 0 ? (
+                        <div className="p-8 text-center text-brand-muted bg-brand-surface border border-brand-border rounded-2xl font-bold">
+                            No performance history records found.
                         </div>
-
-                        <div className="flex items-center justify-between md:justify-end gap-6 md:gap-12 w-full md:w-auto pt-4 md:pt-0 border-t md:border-t-0 border-brand-border border-dashed">
-                            <div className="text-right">
-                                <span className="block text-[10px] text-brand-muted uppercase font-black tracking-[0.2em] mb-1">Last Rating</span>
-                                <span className="text-brand-text font-black flex items-center gap-1.5 justify-end">
-                                    <span className="text-lg">{getLatestRating(emp.id).split(' ')[0]}</span>
-                                    <span className="text-[10px] text-brand-muted">/ 5</span>
-                                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                                </span>
-                            </div>
-                            <div className="text-right border-l border-brand-border border-dashed pl-6 md:pl-8">
-                                <span className="block text-[10px] text-brand-muted uppercase font-black tracking-[0.2em] mb-1">Reviews</span>
-                                <span className="text-brand-text font-black text-lg">
-                                    {Array.isArray(records) ? records.filter(r => r.employeeId === emp.id).length : 0}
-                                </span>
-                            </div>
-                            <button
-                                onClick={() => handleReviewClick(emp)}
-                                className="bg-brand-primary text-white px-5 md:px-6 py-2.5 md:py-3 rounded-2xl flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-brand-primary/20 text-[10px] md:text-xs font-black uppercase tracking-widest ml-0 md:ml-4"
-                            >
-                                <MessageSquare className="w-4 h-4" />
-                                Review
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ) : (
+                        records.map((rec) => {
+                            const emp = employees.find(e => e.id === rec.employeeId);
+                            return (
+                                <div key={rec.id} className="bg-brand-surface border border-brand-border rounded-2xl p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-md transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-xl bg-brand-primary/10 flex items-center justify-center text-brand-primary font-black text-lg">
+                                            {emp?.name ? emp.name.charAt(0) : 'E'}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="text-brand-text font-black text-base">{emp?.name || rec.employeeId}</h4>
+                                                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-md bg-brand-bg text-brand-muted border border-brand-border">
+                                                    {rec.type}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs font-bold text-brand-primary mt-0.5">{rec.title}</p>
+                                            <p className="text-xs text-brand-muted mt-1 max-w-xl">{rec.description}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        {rec.type === 'Review' && rec.rating && (
+                                            <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-500 px-3 py-1.5 rounded-xl text-xs font-black border border-amber-500/20">
+                                                <span>{rec.rating} / 5</span>
+                                                <Star className="w-3.5 h-3.5 fill-current" />
+                                            </div>
+                                        )}
+                                        <span className="text-xs font-bold text-brand-muted">{rec.date}</span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            )}
 
             {showModal && selectedEmployee && (
                 <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowModal(false)}>

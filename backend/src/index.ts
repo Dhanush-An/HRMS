@@ -378,8 +378,8 @@ app.post('/api/login', async (req, res) => {
             }
 
             if (isMatch) {
-                if (user.status === 'Inactive') {
-                    return res.status(403).json({ success: false, message: 'Your account is inactive. Please contact HR.' });
+                if (user.status === 'Inactive' || user.status === 'Suspended') {
+                    return res.status(403).json({ success: false, message: `Your account is ${user.status.toLowerCase()}. Please contact HR.` });
                 }
                 const empUser = {
                     id: user.employeeId,
@@ -413,6 +413,11 @@ app.get('/api/employees', async (req, res) => {
         const showAll = req.query.all === 'true';
         if (!showAll && user.role !== 'admin' && user.branchId) {
             query.branchId = user.branchId;
+        }
+        if (req.query.status) {
+            query.status = req.query.status;
+        } else if (req.query.activeOnly === 'true') {
+            query.status = { $nin: ['Inactive', 'Suspended'] };
         }
         const employees = await Employee.find(query);
         res.json(employees);
@@ -937,7 +942,7 @@ app.put('/api/admin/credentials', authorizeRoles('admin'), async (req, res) => {
 app.get('/api/admin/stats', authorizeRoles('admin'), async (req, res) => {
     try {
         const [totalEmployees, pendingRequests, payrollData, tasks] = await Promise.all([
-            Employee.countDocuments(),
+            Employee.countDocuments({ status: { $nin: ['Inactive', 'Suspended'] } }),
             Leave.countDocuments({ status: 'Pending' }),
             Payroll.aggregate([
                 { $unwind: '$records' },
@@ -969,11 +974,11 @@ app.get('/api/subadmin/stats', authorizeRoles('subadmin'), async (req, res) => {
         }
 
         const [totalEmployees] = await Promise.all([
-            Employee.countDocuments({ branchId })
+            Employee.countDocuments({ branchId, status: { $nin: ['Inactive', 'Suspended'] } })
         ]);
 
         // Fetch employees in this branch to filter leaves and payroll
-        const branchEmployees = await Employee.find({ branchId }).select('employeeId');
+        const branchEmployees = await Employee.find({ branchId, status: { $nin: ['Inactive', 'Suspended'] } }).select('employeeId');
         const empIds = branchEmployees.map(e => e.employeeId);
 
         const [actualPendingRequests, actualPayrollData, actualTasks] = await Promise.all([
@@ -1085,6 +1090,21 @@ app.get('/api/attendance', async (req, res) => {
 app.post('/api/attendance', async (req, res) => {
     try {
         const { employeeId, date, checkIn, checkOut } = req.body;
+
+        if (employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(employeeId) ? [{ _id: employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot record attendance for ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
 
         // Check for existing record for this employee and date
         const existingRecord = await Attendance.findOne({ employeeId, date });
@@ -1234,10 +1254,17 @@ app.post('/api/payroll/generate', authorizeRoles('admin', 'subadmin'), async (re
         let validRecords = records;
         let branchEmpIds: string[] = [];
 
+        // Exclude inactive and suspended employees from payroll generation
+        const inactiveEmployees = await Employee.find({
+            status: { $in: ['Inactive', 'Suspended'] }
+        }).select('employeeId _id');
+        const inactiveIds = new Set(inactiveEmployees.flatMap((e: any) => [e.employeeId, String(e._id)]));
+        validRecords = (validRecords || []).filter((r: any) => !inactiveIds.has(String(r.employeeId)));
+
         if (user.role !== 'admin') {
             const branchEmps = await Employee.find({ branchId: user.branchId }).select('employeeId _id');
             branchEmpIds = branchEmps.flatMap((e: any) => [e.employeeId, String(e._id)].filter(Boolean));
-            validRecords = records.filter((r: any) => branchEmpIds.includes(String(r.employeeId)));
+            validRecords = validRecords.filter((r: any) => branchEmpIds.includes(String(r.employeeId)));
         }
 
         const incomingEmpIds = validRecords.map((r: any) => String(r.employeeId));
@@ -1345,6 +1372,22 @@ app.get('/api/leaves', async (req, res) => {
 // POST new leave request
 app.post('/api/leaves', async (req, res) => {
     try {
+        const { employeeId } = req.body;
+        if (employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(employeeId) ? [{ _id: employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot submit leave request for ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
+
         const newLeave = new Leave({
             status: 'Pending',
             appliedOn: new Date().toISOString().split('T')[0],
@@ -1445,6 +1488,22 @@ app.get('/api/expenses', async (req, res) => {
 app.post('/api/expenses', upload.single('receipt'), async (req, res) => {
     try {
         const { employeeId, employeeName, employeeRole, category, amount, date, description } = req.body;
+
+        if (employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(employeeId) ? [{ _id: employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot submit expense claim for ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
+
         const isCloudinary = process.env.CLOUDINARY_CLOUD_NAME ? true : false;
         const newExpense = new Expense({
             employeeId,
@@ -1540,6 +1599,22 @@ app.get('/api/permissions/employee/:employeeId', async (req, res) => {
 
 app.post('/api/permissions', async (req, res) => {
     try {
+        const { employeeId } = req.body;
+        if (employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(employeeId) ? [{ _id: employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot submit permission request for ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
+
         const newPermission = new Permission(req.body);
         await newPermission.save();
         res.status(201).json(newPermission);
@@ -1596,6 +1671,22 @@ app.get('/api/performance', async (req, res) => {
 
 app.post('/api/performance', async (req, res) => {
     try {
+        const { employeeId } = req.body;
+        if (employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(employeeId) ? [{ _id: employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot create performance record for ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
+
         const newRecord = new Performance({
             date: new Date().toISOString().split('T')[0],
             ...req.body
@@ -1656,6 +1747,21 @@ app.get('/api/documents', async (req, res) => {
 app.post('/api/documents', upload.single('file'), async (req, res) => {
     try {
         const { title, type, employeeId, uploadedBy } = req.body;
+
+        if (employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(employeeId) ? [{ _id: employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot upload documents for ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
 
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'No file uploaded' });
@@ -1818,6 +1924,21 @@ app.get('/api/tasks', async (req, res) => {
 
 app.post('/api/tasks', async (req, res) => {
     try {
+        if (req.body.employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId: req.body.employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(req.body.employeeId) ? [{ _id: req.body.employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot assign task to ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
+
         const newTask = new Task({
             ...req.body
         });
@@ -1879,6 +2000,21 @@ app.get('/api/queries', async (req, res) => {
 
 app.post('/api/queries', async (req, res) => {
     try {
+        if (req.body.employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId: req.body.employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(req.body.employeeId) ? [{ _id: req.body.employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot submit query for ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
+
         const newQuery = new Query({
             ...req.body,
             status: 'Pending',
@@ -2107,26 +2243,30 @@ app.put('/api/resignations/:id', authorizeRoles('admin', 'subadmin', 'hr'), asyn
 // --- EMPLOYEE STATUS UPDATE ROUTE ---
 app.put('/api/employees/:id/status', authorizeRoles('admin', 'subadmin', 'hr'), async (req, res) => {
     try {
+        const { status } = req.body;
+        if (!['Active', 'Inactive', 'On Leave', 'Suspended'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Invalid employee status' });
+        }
+        const user = (req as any).user;
+        const paramId = String(req.params.id);
+        const query: any = {
+            $or: [
+                { employeeId: paramId },
+                ...(mongoose.Types.ObjectId.isValid(paramId) ? [{ _id: paramId }] : [])
+            ]
+        };
+        if (user.role !== 'admin' && user.branchId) {
+            query.branchId = user.branchId;
+        }
         const updatedEmployee = await Employee.findOneAndUpdate(
-            { id: req.params.id }, // Wait, id or _id? Let me check how ID is handled... employeeId
-            { status: req.body.status },
+            query,
+            { status },
             { new: true }
         );
-        
-        // Try fallback to employeeId
         if (!updatedEmployee) {
-             const fallbackUpdate = await Employee.findOneAndUpdate(
-                { employeeId: req.params.id },
-                { status: req.body.status },
-                { new: true }
-            );
-            if (!fallbackUpdate) {
-                return res.status(404).json({ message: 'Employee not found' });
-            }
-            res.json(fallbackUpdate);
-        } else {
-            res.json(updatedEmployee);
+            return res.status(404).json({ success: false, message: 'Employee not found or access denied' });
         }
+        res.json(updatedEmployee);
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -2162,6 +2302,22 @@ app.get('/api/permissions/branch/:branchId', authMiddleware, async (req, res) =>
 
 app.post('/api/permissions', authMiddleware, async (req, res) => {
     try {
+        const { employeeId } = req.body;
+        if (employeeId) {
+            const emp = await Employee.findOne({
+                $or: [
+                    { employeeId },
+                    ...(mongoose.Types.ObjectId.isValid(employeeId) ? [{ _id: employeeId }] : [])
+                ]
+            });
+            if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Cannot submit permission request for ${emp.status.toLowerCase()} employee`
+                });
+            }
+        }
+
         const permission = new Permission(req.body);
         await permission.save();
         res.status(201).json(permission);

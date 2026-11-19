@@ -24,6 +24,7 @@ const Documents: React.FC<DocumentsProps> = ({ defaultTab = 'employees' }) => {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [includeInactive, setIncludeInactive] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -152,15 +153,26 @@ const Documents: React.FC<DocumentsProps> = ({ defaultTab = 'employees' }) => {
                                 className="w-full bg-brand-surface border border-brand-border rounded-2xl py-3.5 pl-12 pr-4 text-brand-text placeholder-brand-muted text-sm font-medium focus:ring-2 focus:ring-brand-primary/50 outline-none transition-all shadow-inner"
                             />
                         </div>
+                        <label className="flex items-center gap-2 text-xs font-bold text-brand-muted cursor-pointer whitespace-nowrap">
+                            <input
+                                type="checkbox"
+                                checked={includeInactive}
+                                onChange={(e) => setIncludeInactive(e.target.checked)}
+                                className="rounded border-brand-border text-brand-primary focus:ring-0 cursor-pointer"
+                            />
+                            Show Inactive Personnel
+                        </label>
                     </div>
 
                     <div className="space-y-4">
-                        {Array.isArray(employees) && employees.filter((e: any) =>
-                            (e.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            (e.department || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            (e.role || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            (e.employeeId || '').toLowerCase().includes(searchQuery.toLowerCase())
-                        ).map((emp: any) => {
+                        {Array.isArray(employees) && employees
+                            .filter((e: any) => includeInactive || (e.status !== 'Inactive' && e.status !== 'Suspended'))
+                            .filter((e: any) =>
+                                (e.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                (e.department || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                (e.role || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                (e.employeeId || '').toLowerCase().includes(searchQuery.toLowerCase())
+                            ).map((emp: any) => {
                             const count = documents
                                 .filter((d: Document) => isDocForEmployee(d, emp))
                                 .filter((doc: Document, index: number, self: Document[]) =>

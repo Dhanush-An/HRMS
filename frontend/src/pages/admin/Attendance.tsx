@@ -28,6 +28,7 @@ interface Employee {
     department: string;
     email?: string;
     username?: string;
+    status?: string;
 }
 
 interface AttendanceRecord {
@@ -168,6 +169,9 @@ const Attendance = () => {
             (e as any).username === identifier
         );
 
+    // Active employees for active attendance operations & list
+    const activeEmployees = employees.filter(emp => emp.status !== 'Inactive' && emp.status !== 'Suspended');
+
     const getDatesOfMonth = (monthStr: string) => {
         const [yearStr, monthStrPart] = monthStr.split('-');
         const year = parseInt(yearStr, 10);
@@ -274,6 +278,12 @@ const Attendance = () => {
 
     // Change attendance status from the kebab menu
     const handleChangeStatus = async (empId: string, newStatus: 'Present' | 'Half Day' | 'Absent', record?: AttendanceRecord, date?: string) => {
+        const emp = employees.find(e => e.id === empId || (e as any).employeeId === empId);
+        if (emp && (emp.status === 'Inactive' || emp.status === 'Suspended')) {
+            alert(`Cannot mark or create attendance for ${emp.status.toLowerCase()} employee.`);
+            return;
+        }
+
         const targetRecord = record || getAttendanceStatus(empId);
         const targetDate = date || selectedDate;
         setOpenMenuId(null);
@@ -338,8 +348,8 @@ const Attendance = () => {
             const allData: AttendanceRecord[] = Array.isArray(rawData) ? rawData : [];
             const filteredAttendance = allData.filter(r => r && r.date && r.date.startsWith(reportMonth));
             
-            // Filter employees based on search query if any
-            const filteredEmployees = employees.filter(emp =>
+            // Filter active employees based on search query if any
+            const filteredEmployees = activeEmployees.filter(emp =>
                 !searchQuery ||
                 emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 emp.department.toLowerCase().includes(searchQuery.toLowerCase())
@@ -413,7 +423,7 @@ const Attendance = () => {
         if (!Array.isArray(employees) || !Array.isArray(attendance)) {
             return { present: 0, absent: 0, late: 0, halfDay: 0 };
         }
-        const allMonthlyRecords = generateMonthlyRecords(employees, attendance, reportMonth);
+        const allMonthlyRecords = generateMonthlyRecords(activeEmployees, attendance, reportMonth);
         
         let present = 0;
         let absent = 0;
@@ -439,7 +449,7 @@ const Attendance = () => {
             ? (Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0)
             : monthlyStats.present,
         absent: viewPeriod === 'daily'
-            ? (isSelectedDateSunday ? 0 : Math.max((employees?.length || 0) - (Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0), 0))
+            ? (isSelectedDateSunday ? 0 : Math.max((activeEmployees?.length || 0) - (Array.isArray(attendance) ? attendance.filter(r => ['Present', 'Late', 'Half Day'].includes(r.status)).length : 0), 0))
             : monthlyStats.absent,
         late: viewPeriod === 'daily'
             ? (Array.isArray(attendance) ? attendance.filter(r => r.status === 'Late').length : 0)
@@ -450,7 +460,7 @@ const Attendance = () => {
     };
 
     const tableRows = viewPeriod === 'daily'
-        ? employees
+        ? activeEmployees
             .filter(emp =>
                 emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 emp.department.toLowerCase().includes(searchQuery.toLowerCase())
@@ -473,7 +483,7 @@ const Attendance = () => {
                 return true;
             })
         : (() => {
-            const filteredEmployees = employees.filter(emp =>
+            const filteredEmployees = activeEmployees.filter(emp =>
                 !searchQuery ||
                 emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 emp.department.toLowerCase().includes(searchQuery.toLowerCase())

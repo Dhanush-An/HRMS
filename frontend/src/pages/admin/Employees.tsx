@@ -18,7 +18,8 @@ import {
     UserMinus,
     UserCheck,
     ShieldCheck,
-    Camera
+    Camera,
+    AlertTriangle
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import api from '../../api';
@@ -113,6 +114,7 @@ const Employees = () => {
     });
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'All' | 'Active' | 'Inactive' | 'Suspended'>('All');
     const [showPassword, setShowPassword] = useState(false);
     const [isCustomRole, setIsCustomRole] = useState(false);
 
@@ -419,12 +421,8 @@ const Employees = () => {
         }
     };
 
-    const handleToggleStatus = async (id: string, currentStatus: string) => {
-        const isCurrentlyActive = currentStatus === 'Active';
-        const newStatus = isCurrentlyActive ? 'Inactive' : 'Active';
-        const actionText = isCurrentlyActive ? 'deactivate' : 'activate';
-
-        if (!window.confirm(`Are you sure you want to ${actionText} this employee?`)) return;
+    const handleSetStatus = async (id: string, newStatus: string) => {
+        if (!window.confirm(`Are you sure you want to change this employee's status to "${newStatus}"?`)) return;
         try {
             const response = await api.put(`/api/employees/${id}/status`, { status: newStatus });
             if (response.ok) {
@@ -553,8 +551,38 @@ const Employees = () => {
             alert(`Error saving responsibilities: ${error.message || 'Unknown error'}`);
         }
     };
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+            case 'Active':
+                return {
+                    pill: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+                    dot: "bg-emerald-500",
+                    text: "text-emerald-600"
+                };
+            case 'Suspended':
+                return {
+                    pill: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                    dot: "bg-amber-500",
+                    text: "text-amber-500"
+                };
+            case 'Inactive':
+                return {
+                    pill: "bg-rose-500/10 text-rose-600 border-rose-500/20",
+                    dot: "bg-rose-500",
+                    text: "text-rose-600"
+                };
+            default:
+                return {
+                    pill: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+                    dot: "bg-blue-500",
+                    text: "text-blue-500"
+                };
+        }
+    };
+
     const filteredEmployees = employees
         .filter(emp => emp.role !== 'hr' && emp.department !== 'Human Resources')
+        .filter(emp => statusFilter === 'All' || emp.status === statusFilter)
         .filter(emp =>
             emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             emp.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -637,10 +665,19 @@ const Employees = () => {
                         className="w-full bg-brand-surface border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-brand-text focus:outline-none focus:ring-2 focus:ring-brand-primary/50 transition-all font-medium placeholder:text-brand-muted/50 text-sm"
                     />
                 </div>
-                <button className="bg-brand-surface border border-brand-border text-brand-text px-6 py-3 rounded-2xl flex items-center justify-center gap-2 hover:bg-brand-bg transition-colors font-bold text-sm shadow-sm sm:w-auto">
-                    <Filter className="w-4 h-4" />
-                    Filter
-                </button>
+                <div className="bg-brand-surface border border-brand-border text-brand-text px-4 py-2.5 rounded-2xl flex items-center gap-2 shadow-sm sm:w-auto">
+                    <Filter className="w-4 h-4 text-brand-muted" />
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value as any)}
+                        className="bg-transparent text-xs font-bold text-brand-text outline-none cursor-pointer pr-2"
+                    >
+                        <option value="All" className="bg-brand-surface text-brand-text">All Statuses</option>
+                        <option value="Active" className="bg-brand-surface text-brand-text">Active</option>
+                        <option value="Inactive" className="bg-brand-surface text-brand-text">Inactive</option>
+                        <option value="Suspended" className="bg-brand-surface text-brand-text">Suspended</option>
+                    </select>
+                </div>
             </div>
 
             {/* Employee List - Table View (Desktop) */}
@@ -696,11 +733,11 @@ const Employees = () => {
                                 <div className="flex items-center gap-2">
                                     <div className={cn(
                                         "w-2 h-2 rounded-full",
-                                        emp.status === 'Active' ? "bg-status-approved" : "bg-status-rejected"
+                                        getStatusBadge(emp.status).dot
                                     )} />
                                     <span className={cn(
                                         "text-xs font-bold",
-                                        emp.status === 'Active' ? "text-status-approved" : "text-status-rejected"
+                                        getStatusBadge(emp.status).text
                                     )}>
                                         {emp.status}
                                     </span>
@@ -762,21 +799,31 @@ const Employees = () => {
                                                             <ShieldCheck className="w-3.5 h-3.5" />
                                                             Role & Responsibility
                                                         </button>
-                                                        {emp.status === 'Active' ? (
+                                                        {emp.status !== 'Active' && (
                                                             <button
-                                                                onClick={() => handleToggleStatus(emp.id, emp.status)}
+                                                                onClick={() => handleSetStatus(emp.id, 'Active')}
+                                                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-emerald-500 hover:bg-emerald-500/10 flex items-center gap-2 transition-colors pt-2.5"
+                                                            >
+                                                                <UserCheck className="w-3.5 h-3.5" />
+                                                                Activate
+                                                            </button>
+                                                        )}
+                                                        {emp.status !== 'Inactive' && (
+                                                            <button
+                                                                onClick={() => handleSetStatus(emp.id, 'Inactive')}
                                                                 className="w-full text-left px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-500/10 flex items-center gap-2 transition-colors pt-2.5"
                                                             >
                                                                 <UserMinus className="w-3.5 h-3.5" />
                                                                 Deactivate
                                                             </button>
-                                                        ) : (
+                                                        )}
+                                                        {emp.status !== 'Suspended' && (
                                                             <button
-                                                                onClick={() => handleToggleStatus(emp.id, emp.status)}
-                                                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-emerald-500 hover:bg-emerald-500/10 flex items-center gap-2 transition-colors pt-2.5"
+                                                                onClick={() => handleSetStatus(emp.id, 'Suspended')}
+                                                                className="w-full text-left px-4 py-2.5 text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center gap-2 transition-colors pt-2.5"
                                                             >
-                                                                <UserCheck className="w-3.5 h-3.5" />
-                                                                Activate
+                                                                <AlertTriangle className="w-3.5 h-3.5" />
+                                                                Suspend
                                                             </button>
                                                         )}
                                                     </div>
@@ -815,9 +862,7 @@ const Employees = () => {
                             </div>
                             <div className={cn(
                                 "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
-                                emp.status === 'Active'
-                                    ? "bg-status-approved/10 text-status-approved border-status-approved/20"
-                                    : "bg-status-rejected/10 text-status-rejected border-status-rejected/20"
+                                getStatusBadge(emp.status).pill
                             )}>
                                 {emp.status}
                             </div>
@@ -1723,8 +1768,10 @@ const Employees = () => {
                                         </div>
                                         <div>
                                             <label className="text-[10px] text-brand-muted uppercase font-black tracking-widest mb-2">Status</label>
-                                            <span className={`inline-block mt-1 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${selectedEmployee.status === 'Active' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-rose-500/10 text-rose-600'
-                                                }`}>
+                                            <span className={cn(
+                                                "inline-block mt-1 px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border",
+                                                getStatusBadge(selectedEmployee.status).pill
+                                            )}>
                                                 {selectedEmployee.status}
                                             </span>
                                         </div>

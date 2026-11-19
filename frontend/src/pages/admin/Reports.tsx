@@ -23,6 +23,7 @@ interface Employee {
     id: string;
     name: string;
     department: string;
+    status?: string;
 }
 
 const Reports = () => { // Renamed conceptually to Daily Tasks
@@ -282,7 +283,7 @@ const Reports = () => { // Renamed conceptually to Daily Tasks
                                     required
                                 >
                                     <option value="">Select Employee</option>
-                                    {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+                                    {employees.filter(e => e.status !== 'Inactive' && e.status !== 'Suspended').map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                                 </select>
                             </div>
 
