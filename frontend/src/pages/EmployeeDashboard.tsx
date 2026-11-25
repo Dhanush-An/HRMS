@@ -27,8 +27,7 @@ import {
     RefreshCw,
     UserCheck,
     CreditCard,
-    Briefcase,
-    Users
+    Briefcase
 } from 'lucide-react';
 import { useRef } from 'react';
 import { cn } from '../utils/cn';
@@ -509,7 +508,6 @@ const EmployeeDashboard = () => {
         { icon: CreditCard, label: 'Expenses', path: '/employee-dashboard/expenses' },
         { icon: Megaphone, label: 'Announcements', path: '/employee-dashboard/announcements' },
         { icon: File, label: 'Documents', path: '/employee-dashboard/documents' },
-        { icon: Users, label: 'Our Team', path: '/employee-dashboard/team' },
         { icon: HelpCircle, label: 'Queries', path: '/employee-dashboard/queries' },
         { icon: Book, label: 'Company Policies', path: '/employee-dashboard/policies' },
         { icon: Briefcase, label: 'Jobs', path: '/employee-dashboard/jobs' },
